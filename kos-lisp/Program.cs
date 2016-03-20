@@ -17,9 +17,12 @@ namespace ZStewart.KOSLisp {
       bool version = false;
       bool help = false;
 
+      string outputFile = null;
+
       var optset = new OptionSet {
         { "version", "Print the version and exit", v => version = v != null },
         { "h|help", "Print this help information and exit", h => help = h != null },
+        { "o|outfile=", "Where to save the output file.", o => outputFile = o },
       };
       var extra = optset.Parse(args);
       if (version) {
