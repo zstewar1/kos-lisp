@@ -67,13 +67,16 @@ namespace ZStewart.KOSLisp {
         ImmutableList.Create(
           CreateMatcher(@"[+-]?[0-9]*\.[0-9]+(e[+-]?[0-9]+)?", GenericToken.CreateTokenCreator(LispTokType.FLOAT, double.Parse)),
           CreateMatcher(@"[+-]?[0-9]+", GenericToken.CreateTokenCreator(LispTokType.INT, long.Parse)),
-          CreateMatcher(@"[\p{L}_-+*/\.:][\p{L}_-+*/\.:\d]*", RawToken.CreateTokenCreator(LispTokType.IDENTIFIER)),
-          CreateMatcher(@"(", RawToken.CreateTokenCreator(LispTokType.OPEN_PAREN)),
-          CreateMatcher(@")", RawToken.CreateTokenCreator(LispTokType.CLOSE_PAREN)),
+          CreateMatcher(@"\.", RawToken.CreateTokenCreator(LispTokType.DOT)),
+          CreateMatcher(@"nil", RawToken.CreateTokenCreator(LispTokType.NIL)),
+          CreateMatcher(@"t", RawToken.CreateTokenCreator(LispTokType.T)),
+          CreateMatcher(@"[\p{L}_+*/\-\.:\d]+", RawToken.CreateTokenCreator(LispTokType.IDENTIFIER)),
+          CreateMatcher(@"\(", RawToken.CreateTokenCreator(LispTokType.OPEN_PAREN)),
+          CreateMatcher(@"\)", RawToken.CreateTokenCreator(LispTokType.CLOSE_PAREN)),
           CreateMatcher(@"'", RawToken.CreateTokenCreator(LispTokType.QUOTE)),
           CreateMatcher("\"", RawToken.CreateTokenCreator(LispTokType.STARTSTRING)),
           CreateMatcher(@";.*", (rv, i, l, c) => { throw new CommentSigil(); }),
-          CreateMatcher(@"$", (rv, i, l, c) => { throw new EOLSigil(); }),
+          CreateMatcher(@"\n", (rv, i, l, c) => { throw new EOLSigil(); }),
           CreateMatcher(@"\s", (rv, i, l, c) => { throw new SkipTextSigil(); })
         )
       );
@@ -143,8 +146,10 @@ namespace ZStewart.KOSLisp {
 
       private Token<LispTokType> NextToken (ImmutableList<Tuple<Regex, TokenCreator<LispTokType>>> lexList) {
         retry_match:
+        if (index >= Source.Length)
+          return null;
         foreach (var matcher in lexList) {
-          Match match = matcher.Item1.Match(Source, index);
+          Match match = matcher.Item1.Match(Source.Substring(index));
           // Try the next matcher if this one fails.
           if (!match.Success) continue;
           try {

@@ -6,6 +6,9 @@
     // Normal Mode:
     // Symbols
     IDENTIFIER,
+    NIL,
+    DOT,
+    T,
     FLOAT,
     INT,
 

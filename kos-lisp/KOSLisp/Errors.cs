@@ -21,10 +21,16 @@ namespace ZStewart.KOSLisp {
     /// </summary>
     public int Column { get; private set; }
 
-    public LispCompileException(string message, int index, int line, int column) : base(message) {
+    public LispCompileException (string message, int index, int line, int column) : base(message) {
       Index = index;
       Line = line;
       Column = column;
+    }
+
+    public override string ToString () {
+      return string.Format(
+        "{0}: {1}\nIndex={2}, Line={3}, Column={4}",
+        this.GetType(), Message, Index, Line, Column);
     }
   }
 
@@ -40,6 +46,11 @@ namespace ZStewart.KOSLisp {
 
   class UnexpectedSigil : LispCompileException {
     public UnexpectedSigil (string message, int index, int line, int column) 
+      : base(message, index, line, column) { }
+  }
+
+  class UnexpectedToken : LispCompileException {
+    public UnexpectedToken (string message, int index, int line, int column) 
       : base(message, index, line, column) { }
   }
 }

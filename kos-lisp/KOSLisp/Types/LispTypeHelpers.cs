@@ -14,7 +14,7 @@ namespace ZStewart.KOSLisp.Types {
     public static LispList ToLispList(IList<LispObject> list) {
       LispList res = LispNil.Nil;
       for(int i = list.Count - 1; i >= 0; i++) {
-        res = LispCons.Cons(list[i], res);
+        res = LispCons.Of(list[i], res);
       }
       return res;
     }

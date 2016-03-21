@@ -44,6 +44,8 @@ namespace ZStewart.KOSLisp {
           throw;
         }
         Tokenizer<LispTokType, LispLexMode> tokenizer = lexer.Lex(content);
+        Parser<LispTokType, LispLexMode> parser = new LispParser();
+        parser.Parse(tokenizer);
       }
     }
   }

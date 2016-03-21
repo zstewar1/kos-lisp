@@ -115,6 +115,12 @@ namespace ZStewart.Compilers {
       Column = column;
       TokenType = tokenType;
     }
+
+    public override string ToString () {
+      return string.Format(
+        "[RawToken: RawValue={0}, Index={1}, Line={2}, Column={3}, TokenType={4}]", 
+        RawValue, Index, Line, Column, TokenType);
+    }
   }
 
   /// <summary>
@@ -193,6 +199,12 @@ namespace ZStewart.Compilers {
     protected GenericToken (string rawValue, int index, int line, int column, TokType tokenType, T value) 
         : base(rawValue, index, line, column, tokenType) {
       Value = value;
+    }
+
+    public override string ToString () {
+      return string.Format(
+        "[GenericToken: Value={0}, RawValue={1}, Index={2}, Line={3}, Column={4}, TokenType={5}]", 
+        Value, RawValue, Index, Line, Column, TokenType);
     }
   }
 }

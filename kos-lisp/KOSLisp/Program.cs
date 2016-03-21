@@ -3,6 +3,8 @@ using System;
 using System.Linq;
 using System.Reflection;
 
+using ZStewart.Compilers;
+
 namespace ZStewart.KOSLisp {
 
   enum ExitCode {
@@ -48,6 +50,13 @@ namespace ZStewart.KOSLisp {
       if (extra.Count == 0) {
         Console.WriteLine("No input files. Exiting.");
         Environment.Exit((int)ExitCode.NO_INPUT);
+      }
+
+      Compiler compiler = new LispCompiler();
+      if (outputFile != null) {
+        compiler.Compile(extra, outputFile);
+      } else {
+        compiler.Compile(extra);
       }
     }
   }
