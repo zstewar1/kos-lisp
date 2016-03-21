@@ -2,6 +2,8 @@
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
+using ZStewart.Compilers;
+
 namespace ZStewart.KOSLisp {
 
   /// <summary>
@@ -12,25 +14,25 @@ namespace ZStewart.KOSLisp {
     /// <summary>
     /// An exception that indicates a state in the lexer, not an error.
     /// </summary>
-    class LexerSigil : Exception { }
+    private class LexerSigil : Exception { }
     /// <summary>
     /// A Lexer Sigil for when the end of the line is reached.
     /// </summary>
-    class EOLSigil : LexerSigil { }
+    private class EOLSigil : LexerSigil { }
     /// <summary>
     /// A Lexer Sigil for when the end of the file is reached.
     /// </summary>
-    class EOFSigil : LexerSigil { }
+    private class EOFSigil : LexerSigil { }
 
     /// <summary>
     /// A Lexer Sigil for when text is skipped.
     /// </summary>
-    class SkipTextSigil : LexerSigil { }
+    private class SkipTextSigil : LexerSigil { }
 
     /// <summary>
     /// Special case of skip-text for when the text skipped is a comment.
     /// </summary>
-    class CommentSigil : SkipTextSigil { }
+    private class CommentSigil : SkipTextSigil { }
 
     /// <summary>
     /// The configuration of the Lexer -- this is the set of modes and regexes used for parsing.
@@ -126,20 +128,17 @@ namespace ZStewart.KOSLisp {
       private readonly LispLexer conf;
       private int index = 0;
       private int line = 0, column = 0;
-      private LispLexMode mode = LispLexMode.NORMAL;
 
       internal LispTokenizer (string source, LispLexer conf) {
         this.Source = source;
         this.conf = conf;
       }
 
-      public Token<LispTokType> Next () {
+      public Token<LispTokType> Next (LispLexMode mode) {
+        if (index >= Source.Length)
+          return null;
         var lexList = conf.tokenizerConf[mode];
         return NextToken(lexList);
-      }
-
-      public void SwitchMode (LispLexMode mode) {
-        this.mode = mode;
       }
 
       private Token<LispTokType> NextToken (ImmutableList<Tuple<Regex, TokenCreator<LispTokType>>> lexList) {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ZStewart.KOSLisp {
+namespace ZStewart.Compilers {
 
   /// <summary>
   /// Represents a chunk of tokenized input file.

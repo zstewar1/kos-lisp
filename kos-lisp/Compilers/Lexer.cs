@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace ZStewart.KOSLisp {
+namespace ZStewart.Compilers {
 
   /// <summary>
   /// A token streamer for a particular input.
@@ -14,15 +14,10 @@ namespace ZStewart.KOSLisp {
     string Source { get; }
 
     /// <summary>
-    /// Get the next token from the tokenizer.
+    /// Get the next token from the tokenizer. Null indicates end of file.
     /// </summary>
-    Token<TokType> Next ();
-
-    /// <summary>
-    /// Change the tokenizer to the specified mode.
-    /// </summary>
-    /// <param name="mode">The mode to switch to. Must be a member of Modes.</param>
-    void SwitchMode (Mode mode);
+    /// <param name="mode">The lexer mode to use.</param>
+    Token<TokType> Next (Mode mode);
   }
 
   /// <summary>

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace ZStewart.KOSLisp {
+namespace ZStewart {
   /// <summary>
   /// Simple precondition checker.
   ///
@@ -40,7 +40,7 @@ namespace ZStewart.KOSLisp {
     /// <returns>The given value.</returns>
     public static T CheckNotNull<T> (T value) {
       if (value == null)
-        throw new ArgumentException();
+        throw new ArgumentNullException();
       return value;
     }
 
@@ -53,7 +53,7 @@ namespace ZStewart.KOSLisp {
     /// <returns>The given value.</returns>
     public static T CheckNotNull<T> (T value, string message) {
       if (value == null)
-        throw new ArgumentException(message);
+        throw new ArgumentNullException(message);
       return value;
     }
 

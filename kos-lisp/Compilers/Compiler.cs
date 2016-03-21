@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ZStewart.KOSLisp {
-  interface Compiler {
+namespace ZStewart.Compilers {
+  public interface Compiler {
     /// <summary>
     /// Reads input from the source files and transforms it into output in the destination file.
     /// </summary>

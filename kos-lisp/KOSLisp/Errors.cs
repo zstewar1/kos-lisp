@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ZStewart.KOSLisp {
-  class LispLexException : Exception {
+  class LispCompileException : Exception {
     /// <summary>
     /// Index in the string where the error occured.
     /// </summary>
@@ -21,24 +21,24 @@ namespace ZStewart.KOSLisp {
     /// </summary>
     public int Column { get; private set; }
 
-    public LispLexException(string message, int index, int line, int column) : base(message) {
+    public LispCompileException(string message, int index, int line, int column) : base(message) {
       Index = index;
       Line = line;
       Column = column;
     }
   }
 
-  class UnexpectedEOLException : LispLexException {
+  class UnexpectedEOLException : LispCompileException {
     public UnexpectedEOLException (string message, int index, int line, int column) 
       : base(message, index, line, column) { }
   }
 
-  class UnexpectedInput : LispLexException {
+  class UnexpectedInput : LispCompileException {
     public UnexpectedInput (string message, int index, int line, int column) 
       : base(message, index, line, column) { }
   }
 
-  class UnexpectedSigil : LispLexException {
+  class UnexpectedSigil : LispCompileException {
     public UnexpectedSigil (string message, int index, int line, int column) 
       : base(message, index, line, column) { }
   }
