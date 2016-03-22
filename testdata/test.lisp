@@ -9,6 +9,12 @@
 
 34
 
+"test string"
+
+("test string 34" 765)
+
+"Test \n escape \r \" 'sdf '"
+
 'x
 
 (let ((j 3.14)

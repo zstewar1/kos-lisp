@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ZStewart.Compilers {
+namespace ZStewart.KOSLisp {
 
   /// <summary>
   /// Represents a chunk of tokenized input file.
@@ -12,9 +12,9 @@ namespace ZStewart.Compilers {
     string RawValue { get; }
 
     /// <summary>
-    /// Index in the source where the match was found.
+    /// The line from the source file that this token was read on.
     /// </summary>
-    int Index { get; }
+    string SourceLine { get; }
 
     /// <summary>
     /// The line where this token was matched.
@@ -46,7 +46,7 @@ namespace ZStewart.Compilers {
   /// <summary>
   /// A function which can be called on a chunk of text to create a token.
   /// </summary>
-  public delegate Token<TokType> TokenCreator<out TokType> (string rawValue, int index, int line, int column);
+  public delegate Token<TokType> TokenCreator<out TokType> (string rawValue, string sourceLine, int line, int column);
 
   /// <summary>
   /// Helper class for using RawToken(TokType) without type aruments on static functions.
@@ -69,8 +69,8 @@ namespace ZStewart.Compilers {
     /// <param name="column">The column that the token starts at.</param>
     /// <param name="type">The type of the token.</param>
     /// <returns>A newly created raw token.</returns>
-    public static Token<TokType> Create<TokType>(string rawValue, int index, int line, int column, TokType type) {
-      return RawToken<TokType>.Create(rawValue, index, line, column, type);
+    public static Token<TokType> Create<TokType>(string rawValue, string sourceLine, int line, int column, TokType type) {
+      return RawToken<TokType>.Create(rawValue, sourceLine, line, column, type);
     }
   }
 
@@ -84,8 +84,8 @@ namespace ZStewart.Compilers {
     /// <param name="type">The token type for tokens created with this creator.</param>
     /// <returns>A function that creates tokens with the given token type.</returns>
     public static TokenCreator<TokType> CreateTokenCreator(TokType type) {
-      return delegate (string rawValue, int index, int line, int column) {
-        return Create(rawValue, index, line, column, type);
+      return delegate (string rawValue, string sourceLine, int line, int column) {
+        return Create(rawValue, sourceLine, line, column, type);
       };
     }
 
@@ -98,19 +98,19 @@ namespace ZStewart.Compilers {
     /// <param name="column">The column that the token starts at.</param>
     /// <param name="tokenType">The type of the token.</param>
     /// <returns>A newly created raw token.</returns>
-    public static RawToken<TokType> Create(string rawValue, int index, int line, int column, TokType tokenType) {
-      return new RawToken<TokType>(rawValue, index, line, column, tokenType);
+    public static RawToken<TokType> Create(string rawValue, string sourceLine, int line, int column, TokType tokenType) {
+      return new RawToken<TokType>(rawValue, sourceLine, line, column, tokenType);
     }
 
     public string RawValue { get; }
-    public int Index { get; }
+    public string SourceLine { get; }
     public int Line { get; }
     public int Column { get; }
     public TokType TokenType { get; }
 
-    protected RawToken (string rawValue, int index, int line, int column, TokType tokenType) {
+    protected RawToken (string rawValue, string sourceLine, int line, int column, TokType tokenType) {
       RawValue = rawValue;
-      Index = index;
+      SourceLine = sourceLine;
       Line = line;
       Column = column;
       TokenType = tokenType;
@@ -118,8 +118,8 @@ namespace ZStewart.Compilers {
 
     public override string ToString () {
       return string.Format(
-        "[RawToken: RawValue={0}, Index={1}, Line={2}, Column={3}, TokenType={4}]", 
-        RawValue, Index, Line, Column, TokenType);
+        "[RawToken: RawValue={0}, SourceLine={1}, Line={2}, Column={3}, TokenType={4}]", 
+        RawValue, SourceLine, Line, Column, TokenType);
     }
   }
 
@@ -153,8 +153,8 @@ namespace ZStewart.Compilers {
     /// <param name="tokenType">The type of the token.</param>
     /// <param name="value">The value of the token.</param>
     /// <returns></returns>
-    public static GenericToken<TokType, T> Create<TokType, T> (string rawValue, int index, int line, int column, TokType tokenType, T value) {
-      return GenericToken<TokType, T>.Create(rawValue, index, line, column, tokenType, value);
+    public static GenericToken<TokType, T> Create<TokType, T> (string rawValue, string sourceLine, int line, int column, TokType tokenType, T value) {
+      return GenericToken<TokType, T>.Create(rawValue, sourceLine, line, column, tokenType, value);
     }
   }
 
@@ -175,8 +175,8 @@ namespace ZStewart.Compilers {
     /// function.
     /// </returns>
     public static TokenCreator<TokType> CreateTokenCreator (TokType tokenType, Func<string, T> parseFunc) {
-      return delegate(string rawValue, int index, int line, int column) {
-        return Create(rawValue, index, line, column, tokenType, parseFunc(rawValue));
+      return delegate(string rawValue, string sourceLine, int line, int column) {
+        return Create(rawValue, sourceLine, line, column, tokenType, parseFunc(rawValue));
       };
     }
 
@@ -190,21 +190,21 @@ namespace ZStewart.Compilers {
     /// <param name="tokenType">The type of the token.</param>
     /// <param name="value">The value of the token.</param>
     /// <returns></returns>
-    public static GenericToken<TokType, T> Create(string rawValue, int index, int line, int column, TokType tokenType, T value) {
-      return new GenericToken<TokType, T>(rawValue, index, line, column, tokenType, value);
+    public static GenericToken<TokType, T> Create(string rawValue, string sourceLine, int line, int column, TokType tokenType, T value) {
+      return new GenericToken<TokType, T>(rawValue, sourceLine, line, column, tokenType, value);
     }
 
     public T Value { get; }
 
-    protected GenericToken (string rawValue, int index, int line, int column, TokType tokenType, T value) 
-        : base(rawValue, index, line, column, tokenType) {
+    protected GenericToken (string rawValue, string sourceLine, int line, int column, TokType tokenType, T value) 
+        : base(rawValue, sourceLine, line, column, tokenType) {
       Value = value;
     }
 
     public override string ToString () {
       return string.Format(
-        "[GenericToken: Value={0}, RawValue={1}, Index={2}, Line={3}, Column={4}, TokenType={5}]", 
-        Value, RawValue, Index, Line, Column, TokenType);
+        "[GenericToken: Value={0}, RawValue={1}, SourceLine={2}, Line={3}, Column={4}, TokenType={5}]", 
+        Value, RawValue, SourceLine, Line, Column, TokenType);
     }
   }
 }

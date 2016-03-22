@@ -1,16 +1,15 @@
 ﻿using NDesk.Options;
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-
-using ZStewart.Compilers;
 
 namespace ZStewart.KOSLisp {
 
   enum ExitCode {
     SUCCESS = 0,
     UNRECOGNIZED_OPTION = 1,
-    NO_INPUT = 2,
+    EXTRA_INPUT = 3,
   }
 
   class MainClass {
@@ -18,12 +17,12 @@ namespace ZStewart.KOSLisp {
       bool version = false;
       bool help = false;
 
-      string outputFile = null;
+      //string outputFile = null;
 
       var optset = new OptionSet {
         { "version", "Print the version and exit", v => version = v != null },
         { "h|help", "Print this help information and exit", h => help = h != null },
-        { "o|outfile=", "Where to save the output file.", o => outputFile = o },
+        //{ "o|outfile=", "Where to save the output file. Ignored if not compiling", o => outputFile = o },
       };
       var extra = optset.Parse(args);
       if (version) {
@@ -31,12 +30,12 @@ namespace ZStewart.KOSLisp {
                       Assembly.GetEntryAssembly(), typeof(AssemblyTitleAttribute), false))
           .Title;
         var ver = Assembly.GetEntryAssembly().GetName().Version;
-        Console.WriteLine("{0} {1}", title, ver);
+        Console.Error.WriteLine("{0} {1}", title, ver);
         Environment.Exit((int)ExitCode.SUCCESS);
       }
       if (help) {
-        Console.WriteLine(
-          "Usage: {0} [options] files...", System.AppDomain.CurrentDomain.FriendlyName);
+        Console.Error.WriteLine(
+          "Usage: {0} [options] [file]", System.AppDomain.CurrentDomain.FriendlyName);
         optset.WriteOptionDescriptions(Console.Out);
         Environment.Exit((int)ExitCode.SUCCESS);
       }
@@ -47,16 +46,25 @@ namespace ZStewart.KOSLisp {
           String.Join(" ", unrecognized));
         Environment.Exit((int)ExitCode.UNRECOGNIZED_OPTION);
       }
-      if (extra.Count == 0) {
-        Console.WriteLine("No input files. Exiting.");
-        Environment.Exit((int)ExitCode.NO_INPUT);
-      }
-
-      Compiler compiler = new LispCompiler();
-      if (outputFile != null) {
-        compiler.Compile(extra, outputFile);
+      if (extra.Count > 1) {
+        Console.Error.WriteLine(
+          "Unexpected extra argument{0}: {1}",
+          extra.Count == 2 ? "" : "s",
+          String.Join(" ", extra.GetRange(1, extra.Count - 1)));
+      } else if (extra.Count == 1) {
+        using (var file = File.OpenText(extra[0])) {
+          TEMPRun(file);
+        }
       } else {
-        compiler.Compile(extra);
+        TEMPRun(Console.In);
+      }
+    }
+
+    private static void TEMPRun(TextReader reader) {
+      LispLexer lexer = LispLexer.Lex(reader);
+      LispParser parser = new LispParser(lexer);
+      foreach(var tok in parser.Parse()) {
+        Console.WriteLine(tok);
       }
     }
   }

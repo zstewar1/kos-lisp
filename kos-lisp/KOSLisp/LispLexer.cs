@@ -1,56 +1,35 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
-
-using ZStewart.Compilers;
 
 namespace ZStewart.KOSLisp {
 
   /// <summary>
   /// A lexer definition for lexing kOS Lisp.
   /// </summary>
-  public class LispLexer : Lexer<LispTokType, LispLexMode> {
+  public class LispLexer {
 
-    /// <summary>
-    /// An exception that indicates a state in the lexer, not an error.
-    /// </summary>
-    private class LexerSigil : Exception { }
-    /// <summary>
-    /// A Lexer Sigil for when the end of the line is reached.
-    /// </summary>
-    private class EOLSigil : LexerSigil { }
-    /// <summary>
-    /// A Lexer Sigil for when the end of the file is reached.
-    /// </summary>
-    private class EOFSigil : LexerSigil { }
-
-    /// <summary>
-    /// A Lexer Sigil for when text is skipped.
-    /// </summary>
-    private class SkipTextSigil : LexerSigil { }
-
-    /// <summary>
-    /// Special case of skip-text for when the text skipped is a comment.
-    /// </summary>
-    private class CommentSigil : SkipTextSigil { }
-
+    #region Static Properties
     /// <summary>
     /// The configuration of the Lexer -- this is the set of modes and regexes used for parsing.
     /// </summary>
-    private readonly ImmutableDictionary<LispLexMode, ImmutableList<Tuple<Regex, TokenCreator<LispTokType>>>> tokenizerConf;
+    private static readonly ImmutableDictionary<LispLexMode, ImmutableList<Tuple<Regex, TokenCreator<LispTokType>>>> tokenizerConf;
 
     /// <summary>
     /// Regex mode options to be used in the lexer.
     /// </summary>
-    private readonly RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase;
+    private static readonly RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase;
+    #endregion //Static Properties
 
+    #region Static Setup
     /// <summary>
     /// Creates a regex matcher for the given regular expression.
     /// </summary>
     /// <param name="matcher">The regular expression to match against. This will have the ^ anchor prepended to it.</param>
     /// <param name="createFunc">The token-creation function to use for this regex.</param>
     /// <returns>A regex, token creator match line for the given regex and create func.</returns>
-    private Tuple<Regex, TokenCreator<LispTokType>> CreateMatcher (
+    private static Tuple<Regex, TokenCreator<LispTokType>> CreateMatcher (
         string matcher, TokenCreator<LispTokType> createFunc) {
       return Tuple.Create(
         new Regex("^" + matcher, regexOptions),
@@ -58,7 +37,7 @@ namespace ZStewart.KOSLisp {
       );
     }
 
-    public LispLexer () {
+    static LispLexer () {
       // Initialize the tokenizer configuration for lisp lexers.
       ImmutableDictionary<LispLexMode, ImmutableList<Tuple<Regex, TokenCreator<LispTokType>>>>.Builder db =
         ImmutableDictionary.CreateBuilder<LispLexMode, ImmutableList<Tuple<Regex, TokenCreator<LispTokType>>>>();
@@ -75,9 +54,8 @@ namespace ZStewart.KOSLisp {
           CreateMatcher(@"\)", RawToken.CreateTokenCreator(LispTokType.CLOSE_PAREN)),
           CreateMatcher(@"'", RawToken.CreateTokenCreator(LispTokType.QUOTE)),
           CreateMatcher("\"", RawToken.CreateTokenCreator(LispTokType.STARTSTRING)),
-          CreateMatcher(@";.*", (rv, i, l, c) => { throw new CommentSigil(); }),
-          CreateMatcher(@"\n", (rv, i, l, c) => { throw new EOLSigil(); }),
-          CreateMatcher(@"\s", (rv, i, l, c) => { throw new SkipTextSigil(); })
+          CreateMatcher(@";.*", (rv, i, l, c) => null),
+          CreateMatcher(@"\s", (rv, i, l, c) => null)
         )
       );
       db.Add(
@@ -100,8 +78,8 @@ namespace ZStewart.KOSLisp {
             )
           ),
           CreateMatcher(
-            @"$", (rv, index, line, column) => {
-              throw new UnexpectedEOLException("Unexpected end of line while parsing string.", index, line, column);
+            @"$", (rv, sourceLine, line, column) => {
+              throw new UnexpectedEOLException("Unexpected end of line while parsing string.", sourceLine, line, column);
             }
           ),
           CreateMatcher("\"", RawToken.CreateTokenCreator(LispTokType.ENDSTRING)),
@@ -117,61 +95,48 @@ namespace ZStewart.KOSLisp {
       );
       tokenizerConf = db.ToImmutable();
     }
+    #endregion // Static Setup
 
-    public Tokenizer<LispTokType, LispLexMode> Lex (string source) {
-      return new LispTokenizer(source, this);
+    #region Static Methods
+    public static LispLexer Lex (TextReader source) {
+      return new LispLexer(source);
+    }
+    #endregion 
+
+    #region Instance Properties
+    private readonly TextReader source;
+    private int lineNumber = 0, columnIndex = 0;
+    private string line = "";
+    #endregion
+
+    private LispLexer (TextReader source) {
+      this.source = source;
     }
 
-    /// <summary>
-    /// Implementation of the tokenizer for the lisp lexer.
-    /// </summary>
-    private class LispTokenizer : Tokenizer<LispTokType, LispLexMode> {
-      public string Source { get; }
+    public Token<LispTokType> Next (LispLexMode mode) {
+      var lexList = tokenizerConf[mode];
 
-      private readonly LispLexer conf;
-      private int index = 0;
-      private int line = 0, column = 0;
-
-      internal LispTokenizer (string source, LispLexer conf) {
-        this.Source = source;
-        this.conf = conf;
-      }
-
-      public Token<LispTokType> Next (LispLexMode mode) {
-        if (index >= Source.Length)
+      retry_match:
+      while (columnIndex >= line.Length) {
+        lineNumber += 1;
+        columnIndex = 0;
+        line = source.ReadLine();
+        if (line == null) {
           return null;
-        var lexList = conf.tokenizerConf[mode];
-        return NextToken(lexList);
-      }
-
-      private Token<LispTokType> NextToken (ImmutableList<Tuple<Regex, TokenCreator<LispTokType>>> lexList) {
-        retry_match:
-        if (index >= Source.Length)
-          return null;
-        foreach (var matcher in lexList) {
-          Match match = matcher.Item1.Match(Source.Substring(index));
-          // Try the next matcher if this one fails.
-          if (!match.Success) continue;
-          try {
-            var val = matcher.Item2(match.Value, index, line, column);
-            index += match.Length;
-            column += match.Length;
-            return val;
-          } catch (EOLSigil) {
-            index += match.Length;
-            line += 1;
-            column = 0;
-            goto retry_match;
-          } catch (SkipTextSigil) {
-            column += match.Length;
-            index += match.Length;
-            goto retry_match;
-          } catch (LexerSigil sig) {
-            throw new UnexpectedSigil(string.Format("Unexpected lexer sigil {0}", sig), index, line, column);
-          }
         }
-        throw new UnexpectedInput(string.Format("Unrecognized input"), index, line, column);
       }
+      foreach (var matcher in lexList) {
+        Match match = matcher.Item1.Match(line.Substring(columnIndex));
+        // Try the next matcher if this one fails.
+        if (!match.Success) continue;
+        columnIndex += match.Length;
+        var val = matcher.Item2(match.Value, line, lineNumber, columnIndex);
+        if (val == null) {
+          goto retry_match;
+        }
+        return val;
+      }
+      throw new UnexpectedInput(string.Format("Unrecognized input"), line, lineNumber, columnIndex);
     }
   }
 }
