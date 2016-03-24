@@ -19,12 +19,12 @@ namespace ZStewart.KOSLisp {
     /// <summary>
     /// The line where this token was matched.
     /// </summary>
-    int Line { get; }
+    int LineNumber { get; }
 
     /// <summary>
     /// The column that this token started in.
     /// </summary>
-    int Column { get; }
+    int ColumnIndex { get; }
 
     /// <summary>
     /// The type of this token.
@@ -104,22 +104,22 @@ namespace ZStewart.KOSLisp {
 
     public string RawValue { get; }
     public string SourceLine { get; }
-    public int Line { get; }
-    public int Column { get; }
+    public int LineNumber { get; }
+    public int ColumnIndex { get; }
     public TokType TokenType { get; }
 
     protected RawToken (string rawValue, string sourceLine, int line, int column, TokType tokenType) {
       RawValue = rawValue;
       SourceLine = sourceLine;
-      Line = line;
-      Column = column;
+      LineNumber = line;
+      ColumnIndex = column;
       TokenType = tokenType;
     }
 
     public override string ToString () {
       return string.Format(
         "[RawToken: RawValue={0}, SourceLine={1}, Line={2}, Column={3}, TokenType={4}]", 
-        RawValue, SourceLine, Line, Column, TokenType);
+        RawValue, SourceLine, LineNumber, ColumnIndex, TokenType);
     }
   }
 
@@ -204,7 +204,7 @@ namespace ZStewart.KOSLisp {
     public override string ToString () {
       return string.Format(
         "[GenericToken: Value={0}, RawValue={1}, SourceLine={2}, Line={3}, Column={4}, TokenType={5}]", 
-        Value, RawValue, SourceLine, Line, Column, TokenType);
+        Value, RawValue, SourceLine, LineNumber, ColumnIndex, TokenType);
     }
   }
 }

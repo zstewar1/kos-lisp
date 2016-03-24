@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace ZStewart.KOSLisp.Types {
+namespace ZStewart.KOSLisp.Interpreter {
   /// <summary>
   /// Helper functions for working with Lisp types.
   /// </summary>

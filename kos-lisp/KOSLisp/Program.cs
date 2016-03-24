@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using ZStewart.KOSLisp.Interpreter;
 
 namespace ZStewart.KOSLisp {
 
@@ -63,8 +64,9 @@ namespace ZStewart.KOSLisp {
     private static void TEMPRun(TextReader reader) {
       LispLexer lexer = LispLexer.Lex(reader);
       LispParser parser = new LispParser(lexer);
-      foreach(var tok in parser.Parse()) {
-        Console.WriteLine(tok);
+      LispObject parsed;
+      while ((parsed = parser.Parse()) != null) {
+        Console.WriteLine(parsed);
       }
     }
   }

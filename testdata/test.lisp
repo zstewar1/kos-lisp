@@ -16,6 +16,14 @@
 "Test \n escape \r \" 'sdf '"
 
 'x
+'(y z)
+(quote a)
+(quote (a b))
+(quote a b)
+(quote (a b) c)
+(quote (a . b))
+(quote (a b) . c)
+(quote a . b)
 
 (let ((j 3.14)
       (k 50)
@@ -29,3 +37,6 @@
       (jd 'lsd)
       (jdk '(sdaf sl 34 15.5)))
   (+ k l))
+
+(a . b)
+(a.b . c)

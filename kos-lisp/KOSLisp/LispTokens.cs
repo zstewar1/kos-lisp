@@ -6,16 +6,17 @@
     // Normal Mode:
     // Symbols
     IDENTIFIER,
-    NIL,
-    DOT,
-    T,
     FLOAT,
     INT,
 
     // Syntax
+    DOT,
     OPEN_PAREN,
     CLOSE_PAREN,
     QUOTE,
+    BACKQUOTE,
+    SPLICE,
+    UNQUOTE,
     STARTSTRING,
 
     // String Mode

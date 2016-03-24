@@ -75,6 +75,25 @@ namespace ZStewart {
       if (!expression)
         throw new ArgumentException(message);
     }
+
+    /// <summary>
+    /// Raises an invalid operation exception if the condition is false.
+    /// </summary>
+    /// <param name="expression">A condition which must be true.</param>
+    public static void CheckState (bool expression) {
+      if (!expression)
+        throw new InvalidOperationException();
+    }
+
+    /// <summary>
+    /// Raises an invalid operation exception with the specified message if the condition is false.
+    /// </summary>
+    /// <param name="expression">A condition which must be true.</param>
+    /// <param name="message">The message to set on the raised exception.</param>
+    public static void CheckState (bool expression, string message) {
+      if (!expression)
+        throw new InvalidOperationException(message);
+    }   
   }
 }
 
