@@ -25,6 +25,12 @@
 (quote (a b) . c)
 (quote a . b)
 
+`(a b ,c d)
+`(a b ,(c d) e)
+`(a b ,@(c d) e)
+`(a b ,@c d)
+`(a ,(`,b))
+
 (let ((j 3.14)
       (k 50)
       (l -10)

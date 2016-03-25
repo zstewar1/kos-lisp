@@ -45,5 +45,16 @@ namespace ZStewart.KOSLisp.Interpreter {
       if (copyl == LispNil.Nil) return append;
       return LispCons.Of(copyl.Car, AppendHelper(copyl.Cdr, append));
     }
+
+    /// <summary>
+    /// Returns true if "item" is a single-element list.
+    /// </summary>
+    /// <param name="item">A lisp object to check.</param>
+    /// <returns>True if item is a cons cell and the cdr of item is nil.</returns>
+    public static bool List1P(LispObject item) {
+      // (defun list1p (item)
+      //     (and (consp item) (nilp (cdr item))))
+      return item is LispCons && (item as LispCons).Cdr == LispNil.Nil;
+    }
   }
 }

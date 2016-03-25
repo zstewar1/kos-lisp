@@ -77,4 +77,11 @@ namespace ZStewart.KOSLisp {
     public IllegalDottedList (string message, Token<LispTokType> srcToken)
       : base(message, srcToken) { }
   }
+
+  class IllegalUnquote : LispCompileException {
+    public IllegalUnquote (string message, string sourceLine, int lineNumber, int columnIndex) 
+      : base(message, sourceLine, lineNumber, columnIndex) { }
+    public IllegalUnquote (string message, Token<LispTokType> srcToken)
+      : base(message, srcToken) { }
+  }
 }

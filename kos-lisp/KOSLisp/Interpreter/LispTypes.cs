@@ -50,20 +50,31 @@ namespace ZStewart.KOSLisp.Interpreter {
     }
 
     /// <summary>
-    /// Serves as a hash function for a <see cref="ZStewart.KOSLisp.Interpreter.LispCons"/> object.
+    /// Serves as a hash function for a 
+    /// <see cref="ZStewart.KOSLisp.Interpreter.LispCons"/> object.
     ///
-    /// Warning: This hash code is computed based on the hash of the Car and Cdr. If this cons is 
-    /// part of a large data structure, this *will* traverse the entire structure.
+    /// Warning: This hash code is computed based on the hash of the Car and Cdr. If this 
+    /// cons is part of a large data structure, this *will* traverse the entire structure.
     /// </summary>
-    /// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a hash table.</returns>
+    /// <returns>
+    /// A hash code for this instance that is suitable for use in hashing algorithms and 
+    /// data structures such as a hash table.
+    /// </returns>
     public override int GetHashCode () {
-      // TODO(zstewar1): If we ever need to actually hash Conses, we'll need to find a better way to do this.
+      // TODO(zstewar1): If we ever need to actually hash Conses, we'll need to find a 
+      // better way to do this.
       return Car.GetHashCode() ^ Cdr.GetHashCode();
     }
 
     public override string ToString () {
-      if (Car.Equals(LispSymbol.Of("quote")) && Cdr is LispCons && (Cdr as LispCons).Cdr == LispNil.Nil) {
+      if (Car.Equals(LispSymbol.Of("quote")) && LispFunctions.List1P(Cdr)) {
         return "'" + (Cdr as LispCons).Car.ToString();
+      } else if(Car.Equals(LispSymbol.Of("--backquote--")) && LispFunctions.List1P(Cdr)) {
+        return "`" + (Cdr as LispCons).Car.ToString();
+      } else if(Car.Equals(LispSymbol.Of("--unquote--")) && LispFunctions.List1P(Cdr)) {
+        return "," + (Cdr as LispCons).Car.ToString();
+      } else if(Car.Equals(LispSymbol.Of("--splice--")) && LispFunctions.List1P(Cdr)) {
+        return ",@" + (Cdr as LispCons).Car.ToString();
       } else {
         List<string> elements = new List<string>();
         LispObject current = this;
