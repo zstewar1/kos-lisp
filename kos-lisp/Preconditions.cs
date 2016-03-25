@@ -21,7 +21,8 @@ namespace ZStewart {
     }
 
     /// <summary>
-    /// Raises an argument exception with the given message if the given string is null or empty.
+    /// Raises an argument exception with the given message if the given string is null or
+    /// empty.
     /// </summary>
     /// <returns>The string given.</returns>
     /// <param name="s">The string to check.</param>
@@ -86,7 +87,8 @@ namespace ZStewart {
     }
 
     /// <summary>
-    /// Raises an invalid operation exception with the specified message if the condition is false.
+    /// Raises an invalid operation exception with the specified message if the condition
+    /// is false.
     /// </summary>
     /// <param name="expression">A condition which must be true.</param>
     /// <param name="message">The message to set on the raised exception.</param>

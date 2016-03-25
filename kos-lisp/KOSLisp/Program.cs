@@ -3,7 +3,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using ZStewart.KOSLisp.Interpreter;
+
+using ZStewart.KOSLisp.Interpreter.Types;
 
 namespace ZStewart.KOSLisp {
 

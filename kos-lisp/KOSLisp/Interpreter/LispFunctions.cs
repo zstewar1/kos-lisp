@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ZStewart.KOSLisp.Interpreter.Types;
+﻿using ZStewart.KOSLisp.Interpreter.Types;
 
 namespace ZStewart.KOSLisp.Interpreter {
   public static class LispFunctions {

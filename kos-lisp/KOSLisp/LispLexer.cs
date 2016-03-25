@@ -75,17 +75,20 @@ namespace ZStewart.KOSLisp {
         LispLexMode.NORMAL,
         new LexerModeConfig.Builder()
           .SetAllowLineBreaks(true)
-          .AddMatcher(@"[+-]?[0-9]*\.[0-9]+(e[+-]?[0-9]+)?", GenericToken.CreateTokenCreator(LispTokType.FLOAT, double.Parse))
-          .AddMatcher(@"[+-]?[0-9]+", GenericToken.CreateTokenCreator(LispTokType.INT, long.Parse))
+          .AddMatcher(
+            @"[+-]?[0-9]*\.?[0-9]+(e[+-]?[0-9]+)?",
+            GenericToken.CreateTokenCreator(LispTokType.NUMBER, double.Parse))
           .AddMatcher(@"[\p{L}&_+*/\-\.:\d]+", (rv, s, l, c) => {
-            // We have to combine the rules for things that *could* be identifiers to prevent certain kinds of parse errors.
+            // We have to combine the rules for things that *could* be identifiers to 
+            // prevent certain kinds of parse errors.
             // If we were to split these rules out:
             // .A -> DOT IDENTIFIER, should be Error.
             // A. -> IDENTIFIER DOT, should be Error.
             if (rv == ".")
               return RawToken.Create(rv, s, l, c, LispTokType.DOT);
             if (rv.StartsWith(".") || rv.EndsWith("."))
-              throw new InvalidIdentifier("Identifiers cannot start or end with '.'", s, l, c);
+              throw new InvalidIdentifier(
+                "Identifiers cannot start or end with '.'", s, l, c);
             return RawToken.Create(rv, s, l, c, LispTokType.IDENTIFIER);
           })
           .AddMatcher(@"\(", RawToken.CreateTokenCreator(LispTokType.OPEN_PAREN))
@@ -103,23 +106,30 @@ namespace ZStewart.KOSLisp {
         LispLexMode.STRING,
         new LexerModeConfig.Builder()
           .SetAllowLineBreaks(false)
-          .AddMatcher(@"\\[rn""\\]", GenericToken.CreateTokenCreator(LispTokType.CHARACTER, escape => {
-            switch (escape.ToLowerInvariant()) {
-              case "\\\"":
-                return '"';
-              case "\\r":
-                return '\r';
-              case "\\n":
-                return '\n';
-              default:
-                throw new ArgumentException(String.Format("Unknown escape sequence: \"{0}\".", escape));
+          .AddMatcher(
+            @"\\[rn""\\]",
+            GenericToken.CreateTokenCreator(LispTokType.CHARACTER, escape => {
+              switch (escape.ToLowerInvariant()) {
+                case "\\\"":
+                  return '"';
+                case "\\r":
+                  return '\r';
+                case "\\n":
+                  return '\n';
+                default:
+                  throw new ArgumentException(
+                    string.Format("Unknown escape sequence: \"{0}\".", escape));
+              }
             }
-          }))
+          ))
           .AddMatcher("\"", RawToken.CreateTokenCreator(LispTokType.ENDSTRING))
-          .AddMatcher(@".", GenericToken.CreateTokenCreator(LispTokType.CHARACTER, c => {
-            Preconditions.CheckArgument(c.Length == 1, "Character match must be of length 1.");
-            return c[0];
-          }))
+          .AddMatcher(
+            @".", GenericToken.CreateTokenCreator(LispTokType.CHARACTER, c => {
+              Preconditions.CheckArgument(
+                c.Length == 1, "Character match must be of length 1.");
+              return c[0];
+            }
+          ))
           .Build()
       );
       tokenizerConf = db.ToImmutable();
@@ -149,7 +159,8 @@ namespace ZStewart.KOSLisp {
       while (columnIndex >= line.Length) {
         if (!lexConf.AllowLineBreaks)
           // TODO(zstewar1): Better error messaging for this, maybe based on mode?
-          throw new UnexpectedEOLException("Unexpected end-of-line.", line, lineNumber, columnIndex);
+          throw new UnexpectedEOLException(
+            "Unexpected end-of-line.", line, lineNumber, columnIndex);
         lineNumber += 1;
         columnIndex = 0;
         line = source.ReadLine();
@@ -168,7 +179,8 @@ namespace ZStewart.KOSLisp {
         }
         return val;
       }
-      throw new UnexpectedInput(string.Format("Unrecognized input"), line, lineNumber, columnIndex);
+      throw new UnexpectedInput(
+        string.Format("Unrecognized input"), line, lineNumber, columnIndex);
     }
   }
 }

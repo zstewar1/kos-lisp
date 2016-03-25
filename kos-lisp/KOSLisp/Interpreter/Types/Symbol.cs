@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace ZStewart.KOSLisp.Interpreter.Types {
   /// <summary>
@@ -15,6 +11,8 @@ namespace ZStewart.KOSLisp.Interpreter.Types {
     /// Global dictionary of extant symbols. This is used to ensure that the same symbol
     /// name always references the same value.
     /// </summary>
+    // TODO(zstewart): Maybe use WeakReference<LispSymbol> and add a destructor that 
+    // removes the entry? Probably not worthwhile now, and might never be.
     private static readonly IDictionary<string, LispSymbol> existingSymbols =
       new Dictionary<string, LispSymbol>();
 

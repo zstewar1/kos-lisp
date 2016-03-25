@@ -6,8 +6,7 @@
     // Normal Mode:
     // Symbols
     IDENTIFIER,
-    FLOAT,
-    INT,
+    NUMBER,
 
     // Syntax
     DOT,

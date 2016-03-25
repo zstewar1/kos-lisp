@@ -54,8 +54,16 @@
     <Compile Include="KOSLisp\Interpreter\Errors.cs" />
     <Compile Include="KOSLisp\Interpreter\LispFunctions.cs" />
     <Compile Include="KOSLisp\Interpreter\LispTypeHelpers.cs" />
-    <Compile Include="KOSLisp\Interpreter\LispTypes.cs" />
     <Compile Include="KOSLisp\Errors.cs" />
+    <Compile Include="KOSLisp\Interpreter\Types\Atom.cs" />
+    <Compile Include="KOSLisp\Interpreter\Types\Cons.cs" />
+    <Compile Include="KOSLisp\Interpreter\Types\Number.cs" />
+    <Compile Include="KOSLisp\Interpreter\Types\List.cs" />
+    <Compile Include="KOSLisp\Interpreter\Types\Nil.cs" />
+    <Compile Include="KOSLisp\Interpreter\Types\Object.cs" />
+    <Compile Include="KOSLisp\Interpreter\Types\String.cs" />
+    <Compile Include="KOSLisp\Interpreter\Types\Symbol.cs" />
+    <Compile Include="KOSLisp\Interpreter\Types\T.cs" />
     <Compile Include="KOSLisp\LispParser.cs" />
     <Compile Include="KOSLisp\LispTokens.cs" />
     <Compile Include="KOSLisp\Program.cs" />
@@ -81,4 +89,5 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
 </Project>

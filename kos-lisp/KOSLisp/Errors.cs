@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ZStewart.KOSLisp {
   class LispCompileException : Exception {
@@ -21,7 +17,9 @@ namespace ZStewart.KOSLisp {
     /// </summary>
     public int ColumnIndex { get; }
 
-    public LispCompileException (string message, string sourceLine, int lineNumber, int columnIndex) : base(message) {
+    public LispCompileException (
+        string message, string sourceLine, int lineNumber, int columnIndex) 
+        : base(message) {
       SourceLine = sourceLine;
       LineNumber = lineNumber;
       ColumnIndex = columnIndex;
@@ -37,50 +35,58 @@ namespace ZStewart.KOSLisp {
   }
 
   class UnexpectedEOLException : LispCompileException {
-    public UnexpectedEOLException (string message, string sourceLine, int lineNumber, int columnIndex) 
-      : base(message, sourceLine, lineNumber, columnIndex) { }
-    public UnexpectedEOLException (string message, Token<LispTokType> srcToken)
-      : base(message, srcToken) { }
+    public UnexpectedEOLException (
+        string message, string sourceLine, int lineNumber, int columnIndex) 
+        : base(message, sourceLine, lineNumber, columnIndex) { }
+    public UnexpectedEOLException (
+        string message, Token<LispTokType> srcToken)
+        : base(message, srcToken) { }
   }
 
   class InvalidIdentifier : LispCompileException {
-    public InvalidIdentifier (string message, string sourceLine, int lineNumber, int columnIndex) 
-      : base(message, sourceLine, lineNumber, columnIndex) { }
+    public InvalidIdentifier (
+        string message, string sourceLine, int lineNumber, int columnIndex) 
+        : base(message, sourceLine, lineNumber, columnIndex) { }
     public InvalidIdentifier (string message, Token<LispTokType> srcToken)
       : base(message, srcToken) { }
   }
 
   class UnexpectedInput : LispCompileException {
-    public UnexpectedInput (string message, string sourceLine, int lineNumber, int columnIndex) 
-      : base(message, sourceLine, lineNumber, columnIndex) { }
+    public UnexpectedInput (
+        string message, string sourceLine, int lineNumber, int columnIndex) 
+        : base(message, sourceLine, lineNumber, columnIndex) { }
     public UnexpectedInput (string message, Token<LispTokType> srcToken)
       : base(message, srcToken) { }
   }
 
   class UnexpectedToken : LispCompileException {
-    public UnexpectedToken (string message, string sourceLine, int lineNumber, int columnIndex) 
-      : base(message, sourceLine, lineNumber, columnIndex) { }
+    public UnexpectedToken (
+        string message, string sourceLine, int lineNumber, int columnIndex) 
+        : base(message, sourceLine, lineNumber, columnIndex) { }
     public UnexpectedToken (string message, Token<LispTokType> srcToken)
       : base(message, srcToken) { }
   }
 
   class UnexpectedEndOfInput : LispCompileException {
-    public UnexpectedEndOfInput (string message, string sourceLine, int lineNumber, int columnIndex) 
-      : base(message, sourceLine, lineNumber, columnIndex) { }
+    public UnexpectedEndOfInput (
+        string message, string sourceLine, int lineNumber, int columnIndex) 
+        : base(message, sourceLine, lineNumber, columnIndex) { }
     public UnexpectedEndOfInput (string message, Token<LispTokType> srcToken)
       : base(message, srcToken) { }
   }
 
   class IllegalDottedList : LispCompileException {
-    public IllegalDottedList (string message, string sourceLine, int lineNumber, int columnIndex) 
-      : base(message, sourceLine, lineNumber, columnIndex) { }
+    public IllegalDottedList (
+        string message, string sourceLine, int lineNumber, int columnIndex) 
+        : base(message, sourceLine, lineNumber, columnIndex) { }
     public IllegalDottedList (string message, Token<LispTokType> srcToken)
       : base(message, srcToken) { }
   }
 
   class IllegalUnquote : LispCompileException {
-    public IllegalUnquote (string message, string sourceLine, int lineNumber, int columnIndex) 
-      : base(message, sourceLine, lineNumber, columnIndex) { }
+    public IllegalUnquote (
+        string message, string sourceLine, int lineNumber, int columnIndex) 
+        : base(message, sourceLine, lineNumber, columnIndex) { }
     public IllegalUnquote (string message, Token<LispTokType> srcToken)
       : base(message, srcToken) { }
   }

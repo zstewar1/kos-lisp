@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ZStewart.KOSLisp.Interpreter.Types {
+﻿namespace ZStewart.KOSLisp.Interpreter.Types {
   /// <summary>
   /// A symbol which represents the boolean value "True". As a symbol, this is a 
   /// singleton.

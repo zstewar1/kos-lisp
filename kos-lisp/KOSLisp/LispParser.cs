@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ZStewart.KOSLisp.Interpreter;
+﻿using System.Text;
+using ZStewart.KOSLisp.Interpreter.Types;
 
 namespace ZStewart.KOSLisp {
   /// <summary>
@@ -61,10 +58,8 @@ namespace ZStewart.KOSLisp {
           return ParseString();
         case LispTokType.IDENTIFIER:
           return LispSymbol.Of(tok.RawValue);
-        case LispTokType.FLOAT:
-          return LispFloat.Of((tok as GenericToken<LispTokType, double>).Value);
-        case LispTokType.INT:
-          return LispInt.Of((tok as GenericToken<LispTokType, long>).Value);
+        case LispTokType.NUMBER:
+          return LispNumber.Of((tok as GenericToken<LispTokType, double>).Value);
         case LispTokType.QUOTE:
           return ParseQuoted();
         case LispTokType.BACKQUOTE:
