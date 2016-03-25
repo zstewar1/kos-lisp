@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ZStewart.KOSLisp.Interpreter.Types;
 
 namespace ZStewart.KOSLisp.Interpreter {
   public static class LispFunctions {
@@ -30,9 +31,16 @@ namespace ZStewart.KOSLisp.Interpreter {
     /// <summary>
     /// Internal helper for the Append function.
     /// </summary>
-    /// <param name="copy">The list being appended to -- it needs to have all its cars copied to the new list.</param>
-    /// <param name="append">The list being appended -- it can just be consed onto the end.</param>
-    /// <returns>A list with the elements of "append" added to the end of "copy".</returns>
+    /// <param name="copy">
+    /// The list being appended to -- it needs to have all its cars copied to the new 
+    /// list.
+    /// </param>
+    /// <param name="append">
+    /// The list being appended -- it can just be consed onto the end.
+    /// </param>
+    /// <returns>
+    /// A list with the elements of "append" added to the end of "copy".
+    /// </returns>
     private static LispObject AppendHelper(LispObject copy, LispObject append) {
       // (defun append-helper (copy append)
       //     (when (not (listp copy)) (error "Append: argument was not a proper list."))
