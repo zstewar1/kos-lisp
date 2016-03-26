@@ -1,4 +1,4 @@
-﻿namespace ZStewart.KOSLisp.Interpreter.Types {
+﻿namespace ZStewart.KOSLisp.Types {
   /// <summary>
   /// A symbol which represents the boolean value "True". As a symbol, this is a 
   /// singleton.

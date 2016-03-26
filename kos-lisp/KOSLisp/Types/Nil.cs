@@ -1,4 +1,6 @@
-﻿namespace ZStewart.KOSLisp.Interpreter.Types {
+﻿using System;
+
+namespace ZStewart.KOSLisp.Types {
   /// <summary>
   /// The nil type. Represents false, the empty list, and nothing. Is both a Symbol and a 
   /// List. It is also a singleton so only one instance ever exists.

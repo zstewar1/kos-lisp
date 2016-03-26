@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using ZStewart.KOSLisp.Interpreter.Types;
+using ZStewart.KOSLisp.Types;
 
 namespace ZStewart.KOSLisp.Parser {
   /// <summary>

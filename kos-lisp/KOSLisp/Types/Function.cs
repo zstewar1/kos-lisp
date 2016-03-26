@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ZStewart.KOSLisp.Interpreter.Types {
+namespace ZStewart.KOSLisp.Types {
   /// <summary>
   /// Represents a function which can be called with an argument list. This will typically
   /// be the cons of all of the arguments passed to it, though it may also be nil for zero

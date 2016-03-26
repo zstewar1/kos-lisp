@@ -26,8 +26,4 @@ namespace ZStewart.KOSLisp.Interpreter {
   public class LispSystemException : Exception {
     public LispSystemException (string message) : base(message) { }
   }
-
-  public class DuplicatedSymbolException : LispSystemException {
-    public DuplicatedSymbolException (string message) : base(message) { }
-  }
 }

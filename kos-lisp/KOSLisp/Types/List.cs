@@ -1,4 +1,4 @@
-﻿namespace ZStewart.KOSLisp.Interpreter.Types {
+﻿namespace ZStewart.KOSLisp.Types {
   /// <summary>
   /// Interface for a lisp list. Represents a list as a pair -- Car (the current element)
   /// and Cdr (a pointer to the next pair).

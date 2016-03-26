@@ -1,6 +1,7 @@
-﻿using ZStewart.KOSLisp.Interpreter.Types;
+﻿using System;
+using ZStewart.KOSLisp.Types;
 
-namespace ZStewart.KOSLisp.Interpreter {
+namespace ZStewart.KOSLisp.Functions {
   public static class LispFunctions {
     /// <summary>
     /// Builitin lisp function to append two lists together.
@@ -59,5 +60,6 @@ namespace ZStewart.KOSLisp.Interpreter {
       //     (and (consp item) (nilp (cdr item))))
       return item is LispCons && (item as LispCons).Cdr == LispNil.Nil;
     }
+
   }
 }

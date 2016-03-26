@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using ZStewart.KOSLisp.Interpreter.Types;
+
+using ZStewart.KOSLisp.Types;
 
 namespace ZStewart.KOSLisp.Interpreter {
   /// <summary>

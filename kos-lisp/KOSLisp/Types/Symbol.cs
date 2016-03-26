@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ZStewart.KOSLisp.Interpreter.Types {
+namespace ZStewart.KOSLisp.Types {
   /// <summary>
   /// Represents a symbol in lisp. A symbol is sort of a singleton string. Symbols are
   /// generally used to access variables, but they can also be used as variables to
@@ -74,7 +74,7 @@ namespace ZStewart.KOSLisp.Interpreter.Types {
       // Always check if this symbol exists, then added it if it doesn't.
       // Throw if it does to prevent copied symbols.
       if (existingSymbols.ContainsKey(identifier)) {
-        throw new DuplicatedSymbolException(
+        throw new InvalidOperationException(
           string.Format("Duplicate definition of symbol {0}", identifier));
       }
       existingSymbols.Add(identifier, this);

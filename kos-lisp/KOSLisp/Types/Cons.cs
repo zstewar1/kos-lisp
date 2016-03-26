@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using ZStewart.KOSLisp.Functions;
 
-namespace ZStewart.KOSLisp.Interpreter.Types {
+namespace ZStewart.KOSLisp.Types {
   /// <summary>
   /// Represents a cons cell. A cons cell consists of two pointers to lisp objects, Car 
   /// and Cdr.

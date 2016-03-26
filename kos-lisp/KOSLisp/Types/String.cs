@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
 
-namespace ZStewart.KOSLisp.Interpreter.Types {
+namespace ZStewart.KOSLisp.Types {
   /// <summary>
   /// A lisp string. These are always case insensitive because Kerboscript is 
   /// case-insensitive.

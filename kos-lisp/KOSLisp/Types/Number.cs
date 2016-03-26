@@ -1,4 +1,4 @@
-﻿namespace ZStewart.KOSLisp.Interpreter.Types {
+﻿namespace ZStewart.KOSLisp.Types {
   /// <summary>
   /// Represents a floating point number in lisp.
   /// </summary>
