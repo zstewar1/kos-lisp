@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ZStewart.KOSLisp.Interpreter.Types {
   /// <summary>
@@ -6,7 +8,9 @@ namespace ZStewart.KOSLisp.Interpreter.Types {
   /// generally used to access variables, but they can also be used as variables to
   /// represent whatever.
   /// </summary>
-  public class LispSymbol : LispAtom {
+  // TODO(zstewar1): Self-evaluating symbols? :keyword type. These need to be handled in 
+  // the lookup system, probably.
+  public abstract class LispSymbol : LispAtom {
     /// <summary>
     /// Global dictionary of extant symbols. This is used to ensure that the same symbol
     /// name always references the same value.
@@ -30,14 +34,30 @@ namespace ZStewart.KOSLisp.Interpreter.Types {
       if (existingSymbols.TryGetValue(identifier, out symb)) {
         return symb;
       } else {
-        return new LispSymbol(identifier);
+        try {
+          if (identifier.StartsWith(":")) {
+            // Construct the keyword subtype if this symbol starts with the keyword marker.
+            return new LispKeyword(identifier);
+          } else if (identifier.Contains(".")) {
+            return new LispSubreferenceSymbol(identifier);
+          } else {
+            return new LispBasicSymbol(identifier);
+          }
+        } catch {
+          // If we got here then the symbol wasn't already in the lookup table.
+          // Make sure it remains that way, since constuction failed.
+          existingSymbols.Remove(identifier);
+          // Rethrow the exception -- we don't actually want to catch it, but we do only
+          // want to execute this cleanup on error.
+          throw;
+        }
       }
     }
 
     /// <summary>
     /// The string value of this symbol.
     /// </summary>
-    private string Identifier { get; }
+    public string Identifier { get; }
 
     /// <summary>
     /// Constructs a symbol. It is an error to construct a symbol that already exists in 
@@ -64,5 +84,49 @@ namespace ZStewart.KOSLisp.Interpreter.Types {
     public override string ToString () {
       return Identifier;
     }
+  }
+
+  /// <summary>
+  /// Represents a : prefixed symbol. These should be setup to always refer to themselves.
+  /// </summary>
+  public sealed class LispKeyword : LispSymbol {
+    /// <summary>
+    /// Gets the equivalent non-keyword identifier.
+    /// </summary>
+    public LispSymbol Unprefixed { get { return Of(Identifier.Substring(1)); } }
+
+    internal LispKeyword(string identifier) : base(identifier) {
+      Preconditions.CheckArgument(identifier.StartsWith(":"));
+    }
+  }
+
+  /// <summary>
+  /// Represents a subreference symbol -- a symbol containing ".", e.g "A.B". This symbol
+  /// represents a subreference -- a lookup within a lookup -- and can be broken down into
+  /// sub symbols for each element of the path it represents.
+  /// </summary>
+  public sealed class LispSubreferenceSymbol : LispSymbol {
+
+    /// <summary>
+    /// Computes and returns the array of symbols that make up the subreferences of this
+    /// symbol.
+    /// </summary>
+    public LispSymbol[] SubSymbols {
+      get {
+        return Identifier.Split('.').Select(symb => Of(symb)).ToArray();
+      }
+    }
+
+    internal LispSubreferenceSymbol(string identifier) : base(identifier) {
+      Preconditions.CheckArgument(
+        identifier.Split('.').All(s => !string.IsNullOrEmpty(s)));
+    }
+  }
+
+  /// <summary>
+  /// A basic symbol with no special properties.
+  /// </summary>
+  public sealed class LispBasicSymbol : LispSymbol {
+    internal LispBasicSymbol (string identifier) : base(identifier) { }
   }
 }

@@ -7,8 +7,17 @@ namespace ZStewart.KOSLisp.Interpreter {
   public class LispException : Exception {
     public LispException (string message) : base(message) { }
   }
+  /// <summary>
+  /// Thrown when something illegal happens in a lisp function.
+  /// </summary>
   public class InvalidOperationException : LispException {
     public InvalidOperationException (string message) : base(message) { }
+  }
+  /// <summary>
+  /// Thrown when a lisp function encounters an invalid argument.
+  /// </summary>
+  public class IllegalArgumentException : LispException {
+    public IllegalArgumentException (string message) : base(message) { }
   }
 
   /// <summary>

@@ -57,6 +57,7 @@
     <Compile Include="KOSLisp\Errors.cs" />
     <Compile Include="KOSLisp\Interpreter\Types\Atom.cs" />
     <Compile Include="KOSLisp\Interpreter\Types\Cons.cs" />
+    <Compile Include="KOSLisp\Interpreter\Types\Function.cs" />
     <Compile Include="KOSLisp\Interpreter\Types\Number.cs" />
     <Compile Include="KOSLisp\Interpreter\Types\List.cs" />
     <Compile Include="KOSLisp\Interpreter\Types\Nil.cs" />

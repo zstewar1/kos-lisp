@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ZStewart.KOSLisp {
 
@@ -55,6 +56,8 @@ namespace ZStewart.KOSLisp {
     #endregion 
 
     #region Static Properties
+    private const string SYMBOL_REGEX = @":?[\p{L}&<>=_+*^/\-\.\d]+";
+
     /// <summary>
     /// The configuration of the Lexer -- this is the set of modes and regexes used for parsing.
     /// </summary>
@@ -78,7 +81,7 @@ namespace ZStewart.KOSLisp {
           .AddMatcher(
             @"[+-]?[0-9]*\.?[0-9]+(e[+-]?[0-9]+)?",
             GenericToken.CreateTokenCreator(LispTokType.NUMBER, double.Parse))
-          .AddMatcher(@"[\p{L}&_+*/\-\.:\d]+", (rv, s, l, c) => {
+          .AddMatcher(SYMBOL_REGEX, (rv, s, l, c) => {
             // We have to combine the rules for things that *could* be identifiers to 
             // prevent certain kinds of parse errors.
             // If we were to split these rules out:
@@ -86,9 +89,13 @@ namespace ZStewart.KOSLisp {
             // A. -> IDENTIFIER DOT, should be Error.
             if (rv == ".")
               return RawToken.Create(rv, s, l, c, LispTokType.DOT);
-            if (rv.StartsWith(".") || rv.EndsWith("."))
+            if (rv.Split('.').Any(st => string.IsNullOrEmpty(st)))
               throw new InvalidIdentifier(
-                "Identifiers cannot start or end with '.'", s, l, c);
+                "Invalid identifier. Cannot have adjacent dots or start/end with dot.",
+                s, l, c);
+            if (rv.StartsWith(":") && rv.Contains("."))
+              throw new InvalidIdentifier(
+                "Invalid identifier. Keword identifiers cannot contain dot.", s, l, c);
             return RawToken.Create(rv, s, l, c, LispTokType.IDENTIFIER);
           })
           .AddMatcher(@"\(", RawToken.CreateTokenCreator(LispTokType.OPEN_PAREN))
