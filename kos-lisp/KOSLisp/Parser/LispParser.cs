@@ -72,7 +72,7 @@ namespace ZStewart.KOSLisp.Parser {
           throw new UnexpectedToken(
             string.Format(
               "Unexpected token of type {0} while parsing expression.", tok.TokenType),
-            tok);
+            tok.SourceInformation);
       }
     }
 
@@ -94,16 +94,19 @@ namespace ZStewart.KOSLisp.Parser {
         tok = lexer.Next(LispLexMode.NORMAL);
         if (tok == null)
           throw new UnexpectedEndOfInput(
-            "Unexpected End of Input while reading list.", start);
+            "Unexpected End of Input while reading list.", start.SourceInformation);
         if (tok.TokenType == LispTokType.CLOSE_PAREN) {
           if (dot && !dotDone)
-            throw new IllegalDottedList("Illegal end of dotted list.", tok);
+            throw new IllegalDottedList(
+              "Illegal end of dotted list.", tok.SourceInformation);
           return list;
         } else if (tok.TokenType == LispTokType.DOT) {
           if (list == LispNil.Nil)
-            throw new IllegalDottedList("List cannot start with dot.", tok);
+            throw new IllegalDottedList(
+              "List cannot start with dot.", tok.SourceInformation);
           if (dot || dotDone)
-            throw new IllegalDottedList("Cannot have more than one dot in a list", tok);
+            throw new IllegalDottedList(
+              "Cannot have more than one dot in a list", tok.SourceInformation);
           // Read next expression as dotted list element.
           dot = true;
         } else {
@@ -112,11 +115,11 @@ namespace ZStewart.KOSLisp.Parser {
           var obj = ParseExpression();
           if (obj == null)
             throw new UnexpectedEndOfInput(
-              "Unexpected End of Input while reading list.", tok);
+              "Unexpected End of Input while reading list.", tok.SourceInformation);
           if (dot) {
             if (dotDone)
               throw new IllegalDottedList(
-                "Only one expression is allowed after dot.", tok);
+                "Only one expression is allowed after dot.", tok.SourceInformation);
             else {
               list.Cdr = obj;
               dotDone = true;
@@ -141,7 +144,7 @@ namespace ZStewart.KOSLisp.Parser {
         tok = lexer.Next(LispLexMode.STRING);
         if (tok == null) {
           throw new UnexpectedEndOfInput(
-            "Unexpected end of input while reading string.", start);
+            "Unexpected end of input while reading string.", start.SourceInformation);
         } else if (tok.TokenType == LispTokType.ENDSTRING) {
           return LispString.Of(builder.ToString());
         } else if (tok.TokenType == LispTokType.CHARACTER) {
@@ -150,7 +153,7 @@ namespace ZStewart.KOSLisp.Parser {
           throw new UnexpectedToken(
             string.Format(
               "Unexpected token type {0} while parsing string.", tok.TokenType),
-            tok);
+            tok.SourceInformation);
         }
       }
     }
@@ -167,14 +170,14 @@ namespace ZStewart.KOSLisp.Parser {
         throw new UnexpectedEndOfInput(
           string.Format(
             "Unexpected end of input while reading {0} expression.", exprType),
-          start);
+          start.SourceInformation);
       }
       var expr = ParseExpression();
       if (expr == null) {
         throw new UnexpectedEndOfInput(
           string.Format(
             "Unexpected end of input while reading quoted expression.", exprType),
-          tok);
+          tok.SourceInformation);
       }
       return LispCons.Of(LispSymbol.Of(wrapper), LispCons.Of(expr, LispNil.Nil));
     }
@@ -195,10 +198,11 @@ namespace ZStewart.KOSLisp.Parser {
       Preconditions.CheckState(tok.TokenType == LispTokType.UNQUOTE);
       Preconditions.CheckState(backquoteDepth >= unquoteDepth);
       if (backquoteDepth == 0)
-        throw new IllegalUnquote("Unquote is only allowed inside of backquote.", tok);
+        throw new IllegalUnquote(
+          "Unquote is only allowed inside of backquote.", tok.SourceInformation);
       else if (backquoteDepth == unquoteDepth)
         throw new IllegalUnquote(
-          "Read too many unquotes for the depth of backquotes.", tok);
+          "Read too many unquotes for the depth of backquotes.", tok.SourceInformation);
       var orignalUnquoteDepth = unquoteDepth;
       try {
         unquoteDepth++;
@@ -212,10 +216,11 @@ namespace ZStewart.KOSLisp.Parser {
       Preconditions.CheckState(tok.TokenType == LispTokType.SPLICE);
       Preconditions.CheckState(backquoteDepth >= unquoteDepth);
       if (backquoteDepth == 0)
-        throw new IllegalUnquote("Splice is only allowed inside of backquote", tok);
+        throw new IllegalUnquote(
+          "Splice is only allowed inside of backquote", tok.SourceInformation);
       else if (backquoteDepth == unquoteDepth)
         throw new IllegalUnquote(
-          "Read too many unquotes for the depth of backquotes.", tok);
+          "Read too many unquotes for the depth of backquotes.", tok.SourceInformation);
       var orignalUnquoteDepth = unquoteDepth;
       try {
         unquoteDepth++;

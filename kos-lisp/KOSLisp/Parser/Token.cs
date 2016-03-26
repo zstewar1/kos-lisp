@@ -12,19 +12,9 @@ namespace ZStewart.KOSLisp.Parser {
     string RawValue { get; }
 
     /// <summary>
-    /// The line from the source file that this token was read on.
+    /// Where this token came from.
     /// </summary>
-    string SourceLine { get; }
-
-    /// <summary>
-    /// The line where this token was matched.
-    /// </summary>
-    int LineNumber { get; }
-
-    /// <summary>
-    /// The column that this token started in.
-    /// </summary>
-    int ColumnIndex { get; }
+    SourceInformation SourceInformation { get; }
 
     /// <summary>
     /// The type of this token.
@@ -46,7 +36,8 @@ namespace ZStewart.KOSLisp.Parser {
   /// <summary>
   /// A function which can be called on a chunk of text to create a token.
   /// </summary>
-  public delegate Token<TokType> TokenCreator<out TokType> (string rawValue, string sourceLine, int line, int column);
+  public delegate Token<TokType> TokenCreator<out TokType> (
+    string rawValue, SourceInformation sourceInformation);
 
   /// <summary>
   /// Helper class for using RawToken(TokType) without type aruments on static functions.
@@ -63,14 +54,13 @@ namespace ZStewart.KOSLisp.Parser {
     /// <summary>
     /// Creates a raw token with the specified type.
     /// </summary>
-    /// <param name="rawValue">The matched value of the token.</param>
-    /// <param name="index">The index where the token started.</param>
-    /// <param name="line">The line that the token was on.</param>
-    /// <param name="column">The column that the token starts at.</param>
+    /// <param name="rv">The matched value of the token.</param>
+    /// <param name="si">Information about where this token originated.</param>
     /// <param name="type">The type of the token.</param>
     /// <returns>A newly created raw token.</returns>
-    public static Token<TokType> Create<TokType>(string rawValue, string sourceLine, int line, int column, TokType type) {
-      return RawToken<TokType>.Create(rawValue, sourceLine, line, column, type);
+    public static Token<TokType> Create<TokType>(
+        string rv, SourceInformation si, TokType type) {
+      return RawToken<TokType>.Create(rv, si, type);
     }
   }
 
@@ -84,77 +74,76 @@ namespace ZStewart.KOSLisp.Parser {
     /// <param name="type">The token type for tokens created with this creator.</param>
     /// <returns>A function that creates tokens with the given token type.</returns>
     public static TokenCreator<TokType> CreateTokenCreator(TokType type) {
-      return delegate (string rawValue, string sourceLine, int line, int column) {
-        return Create(rawValue, sourceLine, line, column, type);
+      return delegate (string rv, SourceInformation si) {
+        return Create(rv, si, type);
       };
     }
 
     /// <summary>
     /// Creates a raw token with the specified type.
     /// </summary>
-    /// <param name="rawValue">The matched value of the token.</param>
-    /// <param name="index">The index where the token started</param>
-    /// <param name="line">The line that the token was on.</param>
-    /// <param name="column">The column that the token starts at.</param>
-    /// <param name="tokenType">The type of the token.</param>
+    /// <param name="rv">The matched value of the token.</param>
+    /// <param name="si">Information about where this token originated.</param>
+    /// <param name="type">The type of the token.</param>
     /// <returns>A newly created raw token.</returns>
-    public static RawToken<TokType> Create(string rawValue, string sourceLine, int line, int column, TokType tokenType) {
-      return new RawToken<TokType>(rawValue, sourceLine, line, column, tokenType);
+    public static RawToken<TokType> Create(
+        string rv, SourceInformation si, TokType type) {
+      return new RawToken<TokType>(rv, si, type);
     }
 
     public string RawValue { get; }
-    public string SourceLine { get; }
-    public int LineNumber { get; }
-    public int ColumnIndex { get; }
+    public SourceInformation SourceInformation { get; }
     public TokType TokenType { get; }
 
-    protected RawToken (string rawValue, string sourceLine, int line, int column, TokType tokenType) {
-      RawValue = rawValue;
-      SourceLine = sourceLine;
-      LineNumber = line;
-      ColumnIndex = column;
-      TokenType = tokenType;
+    protected RawToken (string rv, SourceInformation si, TokType type) {
+      RawValue = rv;
+      SourceInformation = si;
+      TokenType = type;
     }
 
     public override string ToString () {
       return string.Format(
-        "[RawToken: RawValue={0}, SourceLine={1}, Line={2}, Column={3}, TokenType={4}]", 
-        RawValue, SourceLine, LineNumber, ColumnIndex, TokenType);
+        "[RawToken: RawValue={0}, SourceInfo={1}, TokenType={2}]", 
+        RawValue, SourceInformation, TokenType);
     }
   }
 
   /// <summary>
-  /// Helper class for using static functions of GenericToken(TokType, T) without type arguments.
+  /// Helper class for using static functions of GenericToken(TokType, T) without type 
+  /// arguments.
   /// </summary>
   public static class GenericToken {
     /// <summary>
-    /// Creates a token creator function which creates generic tokens based on the provided parser
-    /// function.
+    /// Creates a token creator function which creates generic tokens based on the 
+    /// provided parser function.
     /// </summary>
-    /// <param name="tokenType">The type of token that this creator function should create.</param>
+    /// <param name="tokenType">
+    /// The type of token that this creator function should create.
+    /// </param>
     /// <param name="parseFunc">
-    /// Parse func the function to use to conver the raw token into the token's value type.
+    /// Parse func the function to use to conver the raw token into the token's value 
+    /// type.
     /// </param>
     /// <returns>
-    /// The a new delegate which can be used to create GenericTokens based on the given parse 
-    /// function.
+    /// The a new delegate which can be used to create GenericTokens based on the given 
+    /// parse function.
     /// </returns>
-    public static TokenCreator<TokType> CreateTokenCreator<TokType, T> (TokType tokenType, Func<string, T> parseFunc) {
+    public static TokenCreator<TokType> CreateTokenCreator<TokType, T> (
+        TokType tokenType, Func<string, T> parseFunc) {
       return GenericToken<TokType, T>.CreateTokenCreator(tokenType, parseFunc);
     }
 
     /// <summary>
     /// Creates a generic token with specified raw/parsed value and token type.
     /// </summary>
-    /// <param name="rawValue">The raw, matched value of the token</param>
-    /// <param name="index">The index in the source where this token starts.</param>
-    /// <param name="line">The line that the token was on.</param>
-    /// <param name="column">The column that the token starts at.</param>
-    /// <param name="tokenType">The type of the token.</param>
-    /// <param name="value">The value of the token.</param>
+    /// <param name="rv">The raw, matched value of the token</param>
+    /// <param name="si">Information about where this token originated.</param>
+    /// <param name="type">The type of the token.</param>
+    /// <param name="val">The value of the token.</param>
     /// <returns></returns>
-    public static GenericToken<TokType, T> Create<TokType, T> (string rawValue, string sourceLine, int line, int column, TokType tokenType, T value) {
-      return GenericToken<TokType, T>.Create(rawValue, sourceLine, line, column, tokenType, value);
+    public static GenericToken<TokType, T> Create<TokType, T> (
+        string rv, SourceInformation si, TokType type, T val) {
+      return GenericToken<TokType, T>.Create(rv, si, type, val);
     }
   }
 
@@ -163,48 +152,51 @@ namespace ZStewart.KOSLisp.Parser {
   /// </summary>
   public class GenericToken<TokType, T> : RawToken<TokType>, Token<TokType, T> {
     /// <summary>
-    /// Creates a token creator function which creates generic tokens based on the provided parser
-    /// function.
+    /// Creates a token creator function which creates generic tokens based on the 
+    /// provided parser function.
     /// </summary>
-    /// <param name="tokenType">The type of token that this creator function should create.</param>
+    /// <param name="type">
+    /// The type of token that this creator function should create.
+    /// </param>
     /// <param name="parseFunc">
-    /// Parse func the function to use to conver the raw token into the token's value type.
+    /// Parse func the function to use to conver the raw token into the token's value 
+    /// type.
     /// </param>
     /// <returns>
-    /// The a new delegate which can be used to create GenericTokens based on the given parse 
-    /// function.
+    /// The a new delegate which can be used to create GenericTokens based on the given 
+    /// parse function.
     /// </returns>
-    public static TokenCreator<TokType> CreateTokenCreator (TokType tokenType, Func<string, T> parseFunc) {
-      return delegate(string rawValue, string sourceLine, int line, int column) {
-        return Create(rawValue, sourceLine, line, column, tokenType, parseFunc(rawValue));
+    public static TokenCreator<TokType> CreateTokenCreator (
+        TokType type, Func<string, T> parseFunc) {
+      return delegate(string rv, SourceInformation si) {
+        return Create(rv, si, type, parseFunc(rv));
       };
     }
 
     /// <summary>
     /// Creates a generic token with specified raw/parsed value and token type.
     /// </summary>
-    /// <param name="rawValue">The raw, matched value of the token</param>
-    /// <param name="index">The index in the source where this token starts.</param>
-    /// <param name="line">The line that the token was on.</param>
-    /// <param name="column">The column that the token starts at.</param>
-    /// <param name="tokenType">The type of the token.</param>
-    /// <param name="value">The value of the token.</param>
+    /// <param name="rv">The raw, matched value of the token</param>
+    /// <param name="si">Information about where this token originated.</param>
+    /// <param name="type">The type of the token.</param>
+    /// <param name="val">The value of the token.</param>
     /// <returns></returns>
-    public static GenericToken<TokType, T> Create(string rawValue, string sourceLine, int line, int column, TokType tokenType, T value) {
-      return new GenericToken<TokType, T>(rawValue, sourceLine, line, column, tokenType, value);
+    public static GenericToken<TokType, T> Create(
+        string rv, SourceInformation si, TokType type, T val) {
+      return new GenericToken<TokType, T>(rv, si, type, val);
     }
 
     public T Value { get; }
 
-    protected GenericToken (string rawValue, string sourceLine, int line, int column, TokType tokenType, T value) 
-        : base(rawValue, sourceLine, line, column, tokenType) {
+    protected GenericToken (string rv, SourceInformation si, TokType type, T value) 
+        : base(rv, si, type) {
       Value = value;
     }
 
     public override string ToString () {
       return string.Format(
-        "[GenericToken: Value={0}, RawValue={1}, SourceLine={2}, Line={3}, Column={4}, TokenType={5}]", 
-        Value, RawValue, SourceLine, LineNumber, ColumnIndex, TokenType);
+        "[GenericToken: Value={0}, RawValue={1}, SourceInformation={2} TokenType={3}]", 
+        Value, RawValue, SourceInformation, TokenType);
     }
   }
 }

@@ -81,22 +81,22 @@ namespace ZStewart.KOSLisp.Parser {
           .AddMatcher(
             @"[+-]?[0-9]*\.?[0-9]+(e[+-]?[0-9]+)?",
             GenericToken.CreateTokenCreator(LispTokType.NUMBER, double.Parse))
-          .AddMatcher(SYMBOL_REGEX, (rv, s, l, c) => {
+          .AddMatcher(SYMBOL_REGEX, (rv, s) => {
             // We have to combine the rules for things that *could* be identifiers to 
             // prevent certain kinds of parse errors.
             // If we were to split these rules out:
             // .A -> DOT IDENTIFIER, should be Error.
             // A. -> IDENTIFIER DOT, should be Error.
             if (rv == ".")
-              return RawToken.Create(rv, s, l, c, LispTokType.DOT);
+              return RawToken.Create(rv, s, LispTokType.DOT);
             if (rv.Split('.').Any(st => string.IsNullOrEmpty(st)))
               throw new InvalidIdentifier(
                 "Invalid identifier. Cannot have adjacent dots or start/end with dot.",
-                s, l, c);
+                s);
             if (rv.StartsWith(":") && rv.Contains("."))
               throw new InvalidIdentifier(
-                "Invalid identifier. Keword identifiers cannot contain dot.", s, l, c);
-            return RawToken.Create(rv, s, l, c, LispTokType.IDENTIFIER);
+                "Invalid identifier. Keword identifiers cannot contain dot.", s);
+            return RawToken.Create(rv, s, LispTokType.IDENTIFIER);
           })
           .AddMatcher(@"\(", RawToken.CreateTokenCreator(LispTokType.OPEN_PAREN))
           .AddMatcher(@"\)", RawToken.CreateTokenCreator(LispTokType.CLOSE_PAREN))
@@ -105,8 +105,8 @@ namespace ZStewart.KOSLisp.Parser {
           .AddMatcher(@",@", RawToken.CreateTokenCreator(LispTokType.SPLICE))
           .AddMatcher(@",", RawToken.CreateTokenCreator(LispTokType.UNQUOTE))
           .AddMatcher("\"", RawToken.CreateTokenCreator(LispTokType.STARTSTRING))
-          .AddMatcher(@";.*", (rv, s, l, c) => null)
-          .AddMatcher(@"\s", (rv, s, l, c) => null)
+          .AddMatcher(@";.*", (rv, s) => null)
+          .AddMatcher(@"\s", (rv, s) => null)
           .Build()
       );
       db.Add(
@@ -144,50 +144,70 @@ namespace ZStewart.KOSLisp.Parser {
     #endregion // Static Setup
 
     #region Static Methods
-    public static LispLexer Lex (TextReader source) {
-      return new LispLexer(source);
+    public static LispLexer Lex (string name, TextReader source) {
+      return new LispLexer(name, source);
     }
     #endregion 
 
     #region Instance Properties
     private readonly TextReader source;
-    private int lineNumber = 0, columnIndex = 0;
-    private string line = "";
+    private SourceInformation currentLoc;
+
+    // Delegate these private variables to the source location structure. This 
+    // automatically keeps them in sync so that the currentLoc can be copied out at any 
+    // time. Since it's a struct, no reference is kept.
+    private string Line {
+      get { return currentLoc.Line; }
+      set { currentLoc.Line = value; }
+    }
+    
+    private int LineNumber {
+      get { return currentLoc.LineNumber; }
+      set { currentLoc.LineNumber = value; }
+    }
+
+    private int ColumnIndex {
+      get { return currentLoc.ColumnIndex; }
+      set { currentLoc.ColumnIndex = value; }
+    }
     #endregion
 
-    private LispLexer (TextReader source) {
-      this.source = source;
+    private LispLexer (string fileName, TextReader source) {
+      this.source = Preconditions.CheckNotNull(source);
+      currentLoc = new SourceInformation(
+        Preconditions.CheckNotNullOrEmpty(fileName),
+        "", 0, 0);
     }
 
     public Token<LispTokType> Next (LispLexMode mode) {
       var lexConf = tokenizerConf[mode];
 
       retry_match:
-      while (columnIndex >= line.Length) {
+      while (ColumnIndex >= Line.Length) {
         if (!lexConf.AllowLineBreaks)
           // TODO(zstewar1): Better error messaging for this, maybe based on mode?
           throw new UnexpectedEOLException(
-            "Unexpected end-of-line.", line, lineNumber, columnIndex);
-        lineNumber += 1;
-        columnIndex = 0;
-        line = source.ReadLine();
-        if (line == null) {
+            "Unexpected end-of-line.", currentLoc);
+        LineNumber += 1;
+        ColumnIndex = 0;
+        Line = source.ReadLine();
+        if (Line == null) {
           return null;
         }
       }
       foreach (var matcher in lexConf.Matchers) {
-        Match match = matcher.Item1.Match(line.Substring(columnIndex));
+        Match match = matcher.Item1.Match(Line.Substring(ColumnIndex));
         // Try the next matcher if this one fails.
         if (!match.Success) continue;
-        columnIndex += match.Length;
-        var val = matcher.Item2(match.Value, line, lineNumber, columnIndex);
+        ColumnIndex += match.Length;
+        var val = matcher.Item2(match.Value, currentLoc);
         if (val == null) {
           goto retry_match;
         }
         return val;
       }
       throw new UnexpectedInput(
-        string.Format("Unrecognized input"), line, lineNumber, columnIndex);
+        string.Format("Unrecognized input"), currentLoc);
     }
   }
 }

@@ -56,15 +56,15 @@ namespace ZStewart.KOSLisp {
           String.Join(" ", extra.GetRange(1, extra.Count - 1)));
       } else if (extra.Count == 1) {
         using (var file = File.OpenText(extra[0])) {
-          TEMPRun(file);
+          TEMPRun(extra[0], file);
         }
       } else {
-        TEMPRun(Console.In);
+        TEMPRun("<stdin>", Console.In);
       }
     }
 
-    private static void TEMPRun(TextReader reader) {
-      LispLexer lexer = LispLexer.Lex(reader);
+    private static void TEMPRun(string name, TextReader reader) {
+      LispLexer lexer = LispLexer.Lex(name, reader);
       LispParser parser = new LispParser(lexer);
       LispObject parsed;
       while ((parsed = parser.Parse()) != null) {

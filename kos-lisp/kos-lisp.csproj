@@ -68,6 +68,7 @@
     <Compile Include="KOSLisp\Parser\LispParser.cs" />
     <Compile Include="KOSLisp\Parser\LispTokens.cs" />
     <Compile Include="KOSLisp\Program.cs" />
+    <Compile Include="KOSLisp\SourceInformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="KOSLisp\Parser\Token.cs" />
