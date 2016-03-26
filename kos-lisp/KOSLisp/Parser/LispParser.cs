@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using ZStewart.KOSLisp.Interpreter.Types;
 
-namespace ZStewart.KOSLisp {
+namespace ZStewart.KOSLisp.Parser {
   /// <summary>
   /// Parses a token stream into s-expressions.
   /// </summary>

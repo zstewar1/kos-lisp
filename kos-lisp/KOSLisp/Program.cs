@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 
 using ZStewart.KOSLisp.Interpreter.Types;
+using ZStewart.KOSLisp.Parser;
 
 namespace ZStewart.KOSLisp {
 

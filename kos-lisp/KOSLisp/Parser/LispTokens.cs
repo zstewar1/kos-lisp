@@ -1,4 +1,4 @@
-﻿namespace ZStewart.KOSLisp {
+﻿namespace ZStewart.KOSLisp.Parser {
   /// <summary>
   /// Enumeration of the various types of tokens available in this lisp.
   /// </summary>

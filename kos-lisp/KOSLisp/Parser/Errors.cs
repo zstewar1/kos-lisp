@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ZStewart.KOSLisp {
+namespace ZStewart.KOSLisp.Parser {
   class LispCompileException : Exception {
     /// <summary>
     /// Index in the string where the error occured.
