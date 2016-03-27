@@ -53,7 +53,7 @@ namespace ZStewart.KOSLisp.Parser {
         }
       }
     }
-    #endregion 
+    #endregion Configuration Classes
 
     #region Static Properties
     private const string SYMBOL_REGEX = @":?[\p{L}&<>=_+*^/\-\.\d]+";
@@ -67,7 +67,7 @@ namespace ZStewart.KOSLisp.Parser {
     /// Regex mode options to be used in the lexer.
     /// </summary>
     private static readonly RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase;
-    #endregion //Static Properties
+    #endregion Static Properties
 
     #region Static Setup
     static LispLexer () {
@@ -141,13 +141,13 @@ namespace ZStewart.KOSLisp.Parser {
       );
       tokenizerConf = db.ToImmutable();
     }
-    #endregion // Static Setup
+    #endregion Static Setup
 
     #region Static Methods
     public static LispLexer Lex (string name, TextReader source) {
       return new LispLexer(name, source);
     }
-    #endregion 
+    #endregion Static Methods
 
     #region Instance Properties
     private readonly TextReader source;
@@ -170,7 +170,7 @@ namespace ZStewart.KOSLisp.Parser {
       get { return currentLoc.ColumnIndex; }
       set { currentLoc.ColumnIndex = value; }
     }
-    #endregion
+    #endregion Instance Properties
 
     private LispLexer (string fileName, TextReader source) {
       this.source = Preconditions.CheckNotNull(source);

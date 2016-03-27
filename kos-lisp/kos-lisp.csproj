@@ -51,24 +51,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KOSLisp\Functions\Predicates.cs" />
+    <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
     <Compile Include="KOSLisp\Interpreter\Errors.cs" />
     <Compile Include="KOSLisp\Functions\LispFunctions.cs" />
     <Compile Include="KOSLisp\Interpreter\LispTypeHelpers.cs" />
     <Compile Include="KOSLisp\Parser\Errors.cs" />
-    <Compile Include="KOSLisp\Types\Atom.cs" />
-    <Compile Include="KOSLisp\Types\Cons.cs" />
-    <Compile Include="KOSLisp\Types\Function.cs" />
-    <Compile Include="KOSLisp\Types\Number.cs" />
-    <Compile Include="KOSLisp\Types\List.cs" />
-    <Compile Include="KOSLisp\Types\Nil.cs" />
-    <Compile Include="KOSLisp\Types\Object.cs" />
-    <Compile Include="KOSLisp\Types\String.cs" />
-    <Compile Include="KOSLisp\Types\Symbol.cs" />
-    <Compile Include="KOSLisp\Types\T.cs" />
+    <Compile Include="KOSLisp\Types\ConsType.cs" />
+    <Compile Include="KOSLisp\Types\LispObject.cs" />
     <Compile Include="KOSLisp\Parser\LispParser.cs" />
     <Compile Include="KOSLisp\Parser\LispTokens.cs" />
     <Compile Include="KOSLisp\Program.cs" />
     <Compile Include="KOSLisp\Parser\SourceInformation.cs" />
+    <Compile Include="KOSLisp\Types\LispTypeObject.cs" />
+    <Compile Include="KOSLisp\Types\TypeType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="KOSLisp\Parser\Token.cs" />
@@ -91,5 +87,4 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
 </Project>

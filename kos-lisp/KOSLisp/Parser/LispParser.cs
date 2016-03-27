@@ -83,8 +83,8 @@ namespace ZStewart.KOSLisp.Parser {
     private LispObject ParseList () {
       Preconditions.CheckState(tok.TokenType == LispTokType.OPEN_PAREN);
       var start = tok;
-      LispList list = LispNil.Nil;
-      LispList end = list;
+      LispObject list = NilType.Nil;
+      LispObject end = list;
       // Whether the last token was a dot. If it was, we insert the next read value in the
       // cdr instead of appending.
       bool dot = false;
@@ -101,7 +101,7 @@ namespace ZStewart.KOSLisp.Parser {
               "Illegal end of dotted list.", tok.SourceInformation);
           return list;
         } else if (tok.TokenType == LispTokType.DOT) {
-          if (list == LispNil.Nil)
+          if (list == NilType.Nil)
             throw new IllegalDottedList(
               "List cannot start with dot.", tok.SourceInformation);
           if (dot || dotDone)
@@ -121,16 +121,16 @@ namespace ZStewart.KOSLisp.Parser {
               throw new IllegalDottedList(
                 "Only one expression is allowed after dot.", tok.SourceInformation);
             else {
-              list.Cdr = obj;
+              (list as ConsType).Cdr = obj;
               dotDone = true;
             }
-          } else if (list == LispNil.Nil) {
-            list = LispCons.Of(obj, LispNil.Nil);
+          } else if (list == NilType.Nil) {
+            list = ConsType.Create(obj, NilType.Nil);
             end = list;
           } else {
             // Maybe assert that cdr is nil?
-            end.Cdr = LispCons.Of(obj, LispNil.Nil);
-            end = (LispList)end.Cdr;
+            (end as ConsType).Cdr = ConsType.Create(obj, NilType.Nil);
+            end = (end as ConsType).Cdr;
           }
         }
       }
@@ -179,7 +179,7 @@ namespace ZStewart.KOSLisp.Parser {
             "Unexpected end of input while reading quoted expression.", exprType),
           tok.SourceInformation);
       }
-      return LispCons.Of(LispSymbol.Of(wrapper), LispCons.Of(expr, LispNil.Nil));
+      return ConsType.Create(LispSymbol.Of(wrapper), ConsType.Create(expr, NilType.Nil));
     }
 
     private LispObject ParseBackquote () {
