@@ -57,9 +57,9 @@ namespace ZStewart.KOSLisp.Parser {
         case LispTokType.STARTSTRING:
           return ParseString();
         case LispTokType.IDENTIFIER:
-          return LispSymbol.Of(tok.RawValue);
+          return SymbolType.Create(tok.RawValue);
         case LispTokType.NUMBER:
-          return LispNumber.Of((tok as GenericToken<LispTokType, double>).Value);
+          return NumberType.Create((tok as GenericToken<LispTokType, double>).Value);
         case LispTokType.QUOTE:
           return ParseQuoted();
         case LispTokType.BACKQUOTE:
@@ -146,7 +146,7 @@ namespace ZStewart.KOSLisp.Parser {
           throw new UnexpectedEndOfInput(
             "Unexpected end of input while reading string.", start.SourceInformation);
         } else if (tok.TokenType == LispTokType.ENDSTRING) {
-          return LispString.Of(builder.ToString());
+          return StringType.Create(builder.ToString());
         } else if (tok.TokenType == LispTokType.CHARACTER) {
           builder.Append((tok as GenericToken<LispTokType, char>).Value);
         } else {
@@ -179,7 +179,8 @@ namespace ZStewart.KOSLisp.Parser {
             "Unexpected end of input while reading quoted expression.", exprType),
           tok.SourceInformation);
       }
-      return ConsType.Create(LispSymbol.Of(wrapper), ConsType.Create(expr, NilType.Nil));
+      return ConsType.Create(
+        SymbolType.Create(wrapper), ConsType.Create(expr, NilType.Nil));
     }
 
     private LispObject ParseBackquote () {

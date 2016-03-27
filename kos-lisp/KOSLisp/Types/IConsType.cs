@@ -8,11 +8,17 @@ namespace ZStewart.KOSLisp.Types {
   /// <summary>
   /// Immutable cons type.
   /// </summary>
-  public sealed class IConsType : LispObject {
+  public class IConsType : LispObject {
+    protected IConsType () { }
+
     /// <summary>
-    /// Private constructor -- use a creation method.
+    /// Since ICons is immutable, it provides a second constructor so subtypes can
+    /// instantiate the car and cdr.
     /// </summary>
-    private IConsType () { }
+    protected IConsType (LispObject car, LispObject cdr) {
+      this.car = car;
+      this.cdr = cdr;
+    }
 
     // Configuration for the static type object that represents this type.
     #region Static Type Setup

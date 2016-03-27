@@ -2,7 +2,9 @@
   /// <summary>
   /// Represents the lisp cons type.
   /// </summary>
-  public sealed class ConsType : LispObject {
+  public class ConsType : LispObject {
+    protected ConsType () { }
+
     // Configuration for the static type object that represents this type.
     #region Static Type Setup
     /// <summary>
