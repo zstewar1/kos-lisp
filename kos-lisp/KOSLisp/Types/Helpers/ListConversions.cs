@@ -20,6 +20,10 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       return res;
     }
 
+    public static IEnumerable<LispObject> IterList(LispObject list) {
+      
+    }
+
     ///// <summary>
     ///// Reads an argument list and extracts a list of arguments and dict of keyword 
     ///// arguments.

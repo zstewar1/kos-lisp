@@ -51,19 +51,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="KOSLisp\Functions\Predicates.cs" />
     <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
     <Compile Include="KOSLisp\Interpreter\Errors.cs" />
-    <Compile Include="KOSLisp\Functions\LispFunctions.cs" />
-    <Compile Include="KOSLisp\Interpreter\LispTypeHelpers.cs" />
+    <Compile Include="KOSLisp\Types\Helpers\ListConversions.cs" />
     <Compile Include="KOSLisp\Parser\Errors.cs" />
     <Compile Include="KOSLisp\Types\ConsType.cs" />
+    <Compile Include="KOSLisp\Types\IConsType.cs" />
     <Compile Include="KOSLisp\Types\LispObject.cs" />
     <Compile Include="KOSLisp\Parser\LispParser.cs" />
     <Compile Include="KOSLisp\Parser\LispTokens.cs" />
     <Compile Include="KOSLisp\Program.cs" />
     <Compile Include="KOSLisp\Parser\SourceInformation.cs" />
     <Compile Include="KOSLisp\Types\LispTypeObject.cs" />
+    <Compile Include="KOSLisp\Types\NilType.cs" />
+    <Compile Include="KOSLisp\Types\NumberType.cs" />
+    <Compile Include="KOSLisp\Types\ObjectType.cs" />
+    <Compile Include="KOSLisp\Types\StringType.cs" />
+    <Compile Include="KOSLisp\Types\SymbolType.cs" />
     <Compile Include="KOSLisp\Types\TypeType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Options.cs" />
