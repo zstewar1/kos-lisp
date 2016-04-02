@@ -8,7 +8,7 @@ namespace ZStewart.KOSLisp.Types.TypeCategories {
   /// <summary>
   /// Methods used to define the dictionary protocol.
   /// </summary>
-  public class DictMethods {
+  public class MappingMethods {
     /// <summary>
     /// Called to retrieve an item from a dictionary. Called with two arguments, the
     /// dictionary object, and the key to look up.

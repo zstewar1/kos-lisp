@@ -13,7 +13,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
             && targetType._list_methods.__getcar__ != null) {
           return targetType._list_methods.__getcar__(target);
         } else {
-          LispObject __getcar__ = DictOperations.GetItem(targetType.__dict__, getcarattr);
+          LispObject __getcar__ = MappingOperations.GetItem(targetType.__dict__, getcarattr);
           if (__getcar__ == null) {
             // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
           } else {
@@ -46,7 +46,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
             && targetType._list_methods.__getcdr__ != null) {
           return targetType._list_methods.__getcdr__(target);
         } else {
-          LispObject __getcdr__ = DictOperations.GetItem(targetType.__dict__, getcarattr);
+          LispObject __getcdr__ = MappingOperations.GetItem(
+            targetType.__dict__, getcarattr);
           if (__getcdr__ == null) {
             // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
           } else {

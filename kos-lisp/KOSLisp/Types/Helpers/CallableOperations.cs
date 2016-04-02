@@ -26,7 +26,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         if (targetType.__call__ != null) {
           return targetType.__call__(callable, args);
         } else {
-          LispObject __call__ = DictOperations.GetItem(
+          LispObject __call__ = MappingOperations.GetItem(
             targetType.__dict__, callattr);
           if (__call__ == null) {
             // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.

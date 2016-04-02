@@ -1,5 +1,5 @@
 ﻿namespace ZStewart.KOSLisp.Types.Helpers {
-  public static class DictOperations {
+  public static class MappingOperations {
     private static readonly LispObject getitemattr = StringType.Create("--getitem--");
 
     public static LispObject GetItem(LispObject target, LispObject key) {

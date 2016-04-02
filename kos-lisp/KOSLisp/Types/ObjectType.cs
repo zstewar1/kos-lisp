@@ -78,7 +78,8 @@ namespace ZStewart.KOSLisp.Types {
         if (objType.__getattr__ != null) {
           return objType.__getattr__(obj, attribute);
         } else {
-          LispObject __getattr__ = DictOperations.GetItem(objType.__dict__, getattrattr);
+          LispObject __getattr__ = MappingOperations.GetItem(
+            objType.__dict__, getattrattr);
           if (__getattr__ == null) {
             // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
           } else {
