@@ -43,6 +43,6 @@ namespace ZStewart.KOSLisp.Types {
     /// <summary>
     /// Methods used to implement the Dict protocol.
     /// </summary>
-    public DictMethods _dict_methods;
+    public MappingMethods _map_methods;
   }
 }

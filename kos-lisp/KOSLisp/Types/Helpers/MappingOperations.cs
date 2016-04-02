@@ -6,9 +6,9 @@
       LispTypeObject targetType = target.__class__;
       LispObject __mro__ = targetType.__mro__;
       for (;;) {
-        if (targetType._dict_methods != null
-            && targetType._dict_methods.__getitem__ != null) {
-          return targetType._dict_methods.__getitem__(target, key);
+        if (targetType._map_methods != null
+            && targetType._map_methods.__getitem__ != null) {
+          return targetType._map_methods.__getitem__(target, key);
         } else {
           LispObject __getitem__ = GetItem(targetType.__dict__, getitemattr);
           if (__getitem__ == null) {
