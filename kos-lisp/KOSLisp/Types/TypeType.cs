@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace ZStewart.KOSLisp.Types {
   public static class TypeType {
+
+    #region Static Type Setup
     public static readonly LispTypeObject Type = new LispTypeObject();
 
     static TypeType () {
@@ -47,5 +49,20 @@ namespace ZStewart.KOSLisp.Types {
       // TODO(zstewar1): Calling a type calls new then maybe init.
       return null;
     }
+    #endregion Static Type Setup
+
+    #region Static Helper Methods
+    /// <summary>
+    /// Determines if the instance is of the given type.
+    /// </summary>
+    /// <param name="instance">The instance to look up.</param>
+    /// <param name="type">The type to look for.</param>
+    /// <returns>
+    /// True if instance is of type type, false if it is not, and null on error.
+    /// </returns>
+    public static bool? IsInstance(LispObject instance, LispObject type) {
+      return null;
+    }
+    #endregion Static Helper Methods
   }
 }

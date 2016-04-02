@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Types {
   public static class ObjectType {
@@ -51,5 +52,56 @@ namespace ZStewart.KOSLisp.Types {
     }
     #endregion Static Type Setup
 
+    #region Static Helper Methods
+    // in-lang --getattr-- is a different method. --getattribute-- is the real 
+    // unconditional lookup function in the language, as in Python.
+    private static LispObject getattrattr = StringType.Create("--getattribute--");
+
+    /// <summary>
+    /// Call a method on the given object.
+    /// </summary>
+    /// <param name="obj">The object to call a method on.</param>
+    /// <param name="method">The name of the method to call.</param>
+    /// <param name="args">The arguments to the method.</param>
+    /// <returns>The result of calling method method of object</returns>
+    public static LispObject Call(LispObject obj, string method, LispObject args) {
+      var m = GetAttribute(obj, StringType.Create(method));
+      if (m == null) return null;
+      return CallableOperations.Call(m, args);
+    }
+
+    public static LispObject GetAttribute(LispObject obj, LispObject attribute) {
+      // TODO(zstewar1): maybe check that attribute is a string?
+      LispTypeObject objType = obj.__class__;
+      LispObject __mro__ = objType.__mro__;
+      for (;;) {
+        if (objType.__getattr__ != null) {
+          return objType.__getattr__(obj, attribute);
+        } else {
+          LispObject __getattr__ = DictOperations.GetItem(objType.__dict__, getattrattr);
+          if (__getattr__ == null) {
+            // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
+          } else {
+            return CallableOperations.Call(
+              __getattr__, IConsType.ToLispTuple(obj, attribute));
+          }
+        }
+        if (__mro__ == NilType.Nil) {
+          // TODO(zstewar1): __getcar__ not found error.
+          return null;
+        }
+        LispObject nextType = ListOperations.GetCar(__mro__);
+        if (nextType == null) return null; // Propagate errors.
+        objType = nextType as LispTypeObject;
+        if (objType == null) {
+          // TODO(zstewar1): set a type error: types must be type type. (This should be
+          // impossible anyway, since we should prevent setting arbitrary types).
+          return null;
+        }
+        __mro__ = ListOperations.GetCdr(__mro__);
+        if (__mro__ == null) return null; // Propagate errors.      
+      }
+    }
+    #endregion Static Helper Methods
   }
 }

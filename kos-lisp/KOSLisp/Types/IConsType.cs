@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
@@ -80,6 +77,49 @@ namespace ZStewart.KOSLisp.Types {
         car = car,
         cdr = cdr,
       };
+    }
+
+    /// <summary>
+    /// Convert another lisp object which supports the list protocol to an ICons.
+    /// </summary>
+    /// <param name="originalList">The list to convert.</param>
+    /// <returns>The converted list.</returns>
+    public static LispObject AsICons(LispObject originalList) {
+      if (originalList == NilType.Nil) return NilType.Nil;
+      var car = ListOperations.GetCar(originalList);
+      if (car == null) return null;
+      var cdr = ListOperations.GetCdr(originalList);
+      if (cdr == null) return null;
+      var newcdr = AsICons(cdr);
+      if (newcdr == null) return null;
+      if (newcdr == cdr) {
+        var alreadyICons = TypeType.IsInstance(originalList, ICons);
+        if (!alreadyICons.HasValue) return null;
+        if (alreadyICons.Value) return originalList;
+      }
+      return Create(car, newcdr);
+    }
+    
+    /// <summary>
+    /// Converts a list to a lisp tuple.
+    /// </summary>
+    /// <param name="list">The list to convert.</param>
+    /// <returns>A lisp tuple with the same contents as the original list.</returns>
+    public static LispObject ToLispTuple(IList<LispObject> list) {
+      LispObject res = NilType.Nil;
+      for(int i = list.Count - 1; i >= 0; i++) {
+        res = Create(list[i], res);
+      }
+      return res;
+    }
+
+    /// <summary>
+    /// Creates a tuple from an arbitrary number of lisp objects.
+    /// </summary>
+    /// <param name="args">The objects that should be contained in the tuple.</param>
+    /// <returns>A lisp tuple containing the given objects.</returns>
+    public static LispObject ToLispTuple(params LispObject[] args) {
+      return ToLispTuple((IList<LispObject>)args);
     }
     #endregion Static Helper Methods
 

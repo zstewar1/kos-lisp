@@ -1,4 +1,5 @@
-﻿using ZStewart.KOSLisp.Types.TypeCategories;
+﻿using System.Collections.Generic;
+using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
   /// <summary>
@@ -89,6 +90,28 @@ namespace ZStewart.KOSLisp.Types {
         Car = car,
         Cdr = cdr,
       };
+    }
+
+    /// <summary>
+    /// Converts a list to a lisp list.
+    /// </summary>
+    /// <param name="list">The list to convert.</param>
+    /// <returns>A lisp list with the same contents as the original list.</returns>
+    public static LispObject ToLispList(IList<LispObject> list) {
+      LispObject res = NilType.Nil;
+      for(int i = list.Count - 1; i >= 0; i++) {
+        res = Create(list[i], res);
+      }
+      return res;
+    }
+
+    /// <summary>
+    /// Creates a list from an arbitrary number of lisp objects.
+    /// </summary>
+    /// <param name="args">The objects that should be contained in the list.</param>
+    /// <returns>A lisp list containing the given objects.</returns>
+    public static LispObject ToLispList(params LispObject[] args) {
+      return ToLispList((IList<LispObject>)args);
     }
     #endregion
 

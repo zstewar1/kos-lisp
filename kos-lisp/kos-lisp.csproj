@@ -53,9 +53,12 @@
   <ItemGroup>
     <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
     <Compile Include="KOSLisp\Interpreter\Errors.cs" />
-    <Compile Include="KOSLisp\Types\Helpers\ListConversions.cs" />
+    <Compile Include="KOSLisp\Types\Helpers\Arguments.cs" />
+    <Compile Include="KOSLisp\Types\Helpers\CallableOperations.cs" />
+    <Compile Include="KOSLisp\Types\Helpers\DictOperations.cs" />
     <Compile Include="KOSLisp\Parser\Errors.cs" />
     <Compile Include="KOSLisp\Types\ConsType.cs" />
+    <Compile Include="KOSLisp\Types\Helpers\ListOperations.cs" />
     <Compile Include="KOSLisp\Types\IConsType.cs" />
     <Compile Include="KOSLisp\Types\LispObject.cs" />
     <Compile Include="KOSLisp\Parser\LispParser.cs" />
@@ -68,6 +71,9 @@
     <Compile Include="KOSLisp\Types\ObjectType.cs" />
     <Compile Include="KOSLisp\Types\StringType.cs" />
     <Compile Include="KOSLisp\Types\SymbolType.cs" />
+    <Compile Include="KOSLisp\Types\TypeCategories\DictMethods.cs" />
+    <Compile Include="KOSLisp\Types\TypeCategories\ListMethods.cs" />
+    <Compile Include="KOSLisp\Types\TypeCategories\NumberMethods.cs" />
     <Compile Include="KOSLisp\Types\TypeType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Options.cs" />
