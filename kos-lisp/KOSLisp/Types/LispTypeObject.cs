@@ -40,5 +40,9 @@ namespace ZStewart.KOSLisp.Types {
     /// Methods used to implent the Cons-List protocol.
     /// </summary>
     public ListMethods _list_methods;
+    /// <summary>
+    /// Methods used to implement the Dict protocol.
+    /// </summary>
+    public DictMethods _dict_methods;
   }
 }
