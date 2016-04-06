@@ -81,6 +81,18 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       keywordArgs = kwargs;
     }
 
+    public static List<LispObject> GetPositionalArguments(LispObject args) {
+      List<LispObject> pargs;
+      Dictionary<LispObject, LispObject> kwargs;
+      GetArguments(args, out pargs, out kwargs);
+      if (pargs == null || kwargs == null) return null;
+      if (kwargs.Count > 0) {
+        // TODO(zstewar1): Set Error "unexpected keyword arguments"
+        return null;
+      }
+      return pargs;
+    }
+
     /// <summary>
     /// Reads an argument list and extracts a list of arguments and dict of keyword 
     /// arguments.

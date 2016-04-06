@@ -4,6 +4,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
   public static class ListOperations {
     private static readonly LispObject getcarattr = StringType.Create("--getcar--");
     private static readonly LispObject getcdrattr = StringType.Create("--getcdr--");
+    private static readonly LispObject setcarattr = StringType.Create("--setcar--");
+    private static readonly LispObject setcdrattr = StringType.Create("--setcdr--");
 
     public static LispObject GetCar(LispObject target) {
       LispTypeObject targetType = target.__class__;
@@ -17,8 +19,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           if (__getcar__ == null) {
             // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
           } else {
-            CallableOperations.Call(__getcar__, IConsType.Create(target, NilType.Nil));
-            return null;
+            return CallableOperations.Call(__getcar__, IConsType.ToLispTuple(target));
           }
         }
         if (__mro__ == NilType.Nil) {
@@ -47,16 +48,15 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           return targetType._list_methods.__getcdr__(target);
         } else {
           LispObject __getcdr__ = MappingOperations.GetItem(
-            targetType.__dict__, getcarattr);
+            targetType.__dict__, getcdrattr);
           if (__getcdr__ == null) {
             // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
           } else {
-            // TODO(zstewar1): Call the retrieved object.
-            return null;
+            return CallableOperations.Call(__getcdr__, IConsType.ToLispTuple(target));
           }
         }
         if (__mro__ == NilType.Nil) {
-          // TODO(zstewar1): __getcar__ not found error.
+          // TODO(zstewar1): __getcdr__ not found error.
           return null;
         }
         LispObject nextType = GetCar(__mro__);
@@ -72,7 +72,72 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       }
     }
 
-    // TODO(zstewar1): Implement SetCar and SetCdr.
+    public static LispObject SetCar(LispObject target, LispObject value) {
+      LispTypeObject targetType = target.__class__;
+      LispObject __mro__ = targetType.__mro__;
+      for (;;) {
+        if (targetType._list_methods != null
+            && targetType._list_methods.__setcar__ != null) {
+          return targetType._list_methods.__setcar__(target, value);
+        } else {
+          LispObject __setcar__ = MappingOperations.GetItem(targetType.__dict__, setcarattr);
+          if (__setcar__ == null) {
+            // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
+          } else {
+            return CallableOperations.Call(
+              __setcar__, IConsType.ToLispTuple(target, value));
+          }
+        }
+        if (__mro__ == NilType.Nil) {
+          // TODO(zstewar1): __setcar__ not found error.
+          return null;
+        }
+        LispObject nextType = GetCar(__mro__);
+        if (nextType == null) return null; // Propagate errors.
+        targetType = nextType as LispTypeObject;
+        if (targetType == null) {
+          // TODO(zstewar1): set a type error: types must be type type. (This should be
+          // impossible anyway, since we should prevent setting arbitrary types).
+          return null;
+        }
+        __mro__ = GetCdr(__mro__);
+        if (__mro__ == null) return null; // Propagate errors.      
+      }
+    }
+
+    public static LispObject SetCdr(LispObject target, LispObject value) {
+      LispTypeObject targetType = target.__class__;
+      LispObject __mro__ = targetType.__mro__;
+      for (;;) {
+        if (targetType._list_methods != null
+            && targetType._list_methods.__setcdr__ != null) {
+          return targetType._list_methods.__setcdr__(target, value);
+        } else {
+          LispObject __setcdr__ = MappingOperations.GetItem(
+            targetType.__dict__, setcdrattr);
+          if (__setcdr__ == null) {
+            // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
+          } else {
+            return CallableOperations.Call(
+              __setcdr__, IConsType.ToLispTuple(target, value));
+          }
+        }
+        if (__mro__ == NilType.Nil) {
+          // TODO(zstewar1): __setcdr__ not found error.
+          return null;
+        }
+        LispObject nextType = GetCar(__mro__);
+        if (nextType == null) return null; // Propagate errors.
+        targetType = nextType as LispTypeObject;
+        if (targetType == null) {
+          // TODO(zstewar1): set a type error: types must be type type. (This should be
+          // impossible anyway, since we should prevent setting arbitrary types).
+          return null;
+        }
+        __mro__ = GetCdr(__mro__);
+        if (__mro__ == null) return null; // Propagate errors.      
+      }
+    }    // TODO(zstewar1): Implement SetCar and SetCdr.
 
     /// <summary>
     /// Creates an iterator that iterates over an object that implements the lisp list 

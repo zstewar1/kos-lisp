@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using ZStewart.KOSLisp.Types;
+using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Parser {
   /// <summary>
@@ -121,16 +122,16 @@ namespace ZStewart.KOSLisp.Parser {
               throw new IllegalDottedList(
                 "Only one expression is allowed after dot.", tok.SourceInformation);
             else {
-              (list as ConsType).Cdr = obj;
+              ListOperations.SetCdr(list, obj);
               dotDone = true;
             }
           } else if (list == NilType.Nil) {
             list = ConsType.Create(obj, NilType.Nil);
             end = list;
           } else {
-            // Maybe assert that cdr is nil?
-            (end as ConsType).Cdr = ConsType.Create(obj, NilType.Nil);
-            end = (end as ConsType).Cdr;
+            var newEnd = ConsType.Create(obj, NilType.Nil);
+            ListOperations.SetCdr(end, newEnd);
+            end = newEnd;
           }
         }
       }

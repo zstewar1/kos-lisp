@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
@@ -24,6 +25,7 @@ namespace ZStewart.KOSLisp.Types {
       Cons.__class__ = TypeType.Type;
       Cons.__bases__ = IConsType.Create(ObjectType.Object, NilType.Nil);
       Cons.__new__ = New;
+      Cons.__init__ = Init;
       Cons._list_methods = new ListMethods {
         __getcar__ = GetCar,
         __setcar__ = SetCar,
@@ -33,8 +35,32 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject New (LispObject subtype, LispObject args) {
-      // TODO(zstewar1)
-      return null;
+      // TODO(zstewar1): Check that subtype is really a subtype.
+      var pargs = Arguments.GetPositionalArguments(args);
+      if (pargs == null) return null;
+      if (subtype != Cons && pargs.Count > 0) {
+        // TODO(zstewar1): Expected no additional arguments.
+        return null;
+      } else if (subtype == Cons && pargs.Count != 2) {
+        // TODO(zstewar1): Expected exactly two arguments.
+        return null;
+      }
+      var result = new ConsType();
+      result.__class__ = (LispTypeObject)subtype;
+      // TODO(zstewar1): if subtype is the dynamic type type, add an __dict__
+      return result;
+    }
+
+    private static LispObject Init (LispObject self, LispObject args) {
+      var pargs = Arguments.GetPositionalArguments(args);
+      if (pargs == null) return null;
+      if (pargs.Count != 2) {
+        // TODO(zstewar1): Wrong argument count
+        return null;
+      }
+      ((ConsType)self).Car = pargs[0];
+      ((ConsType)self).Cdr = pargs[1];
+      return NilType.Nil;
     }
 
     private static LispObject GetCar(LispObject instance) {
