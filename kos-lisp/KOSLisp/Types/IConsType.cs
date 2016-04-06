@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
@@ -129,10 +130,31 @@ namespace ZStewart.KOSLisp.Types {
     /// <summary>
     /// This is the car of the icons.
     /// </summary>
-    public LispObject Car { get; }
+    public LispObject Car { get { return car; } }
     /// <summary>
     /// This is the cdr of the icons.
     /// </summary>
-    public LispObject Cdr { get; }
+    public LispObject Cdr { get { return cdr; } }
+
+    public override string ToString () {
+      StringBuilder val = new StringBuilder("(tuple ");
+      IConsType value = this;
+      while (value != null) {
+        val.Append(value.Car.ToString());
+        LispObject cdr = value.Cdr;
+        if (cdr is IConsType) {
+          value = (IConsType)cdr;
+          val.Append(" ");
+        } else {
+          value = null;
+          if (cdr != NilType.Nil) {
+            val.Append(" . ");
+            val.Append(cdr.ToString());
+          }
+        }
+      }
+      val.Append(")");
+      return val.ToString();
+    }
   }
 }

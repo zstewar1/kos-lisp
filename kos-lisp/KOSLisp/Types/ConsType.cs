@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
@@ -144,10 +146,59 @@ namespace ZStewart.KOSLisp.Types {
     /// <summary>
     /// The first element of the cons. In a list this is the pointer to the contents.
     /// </summary>
-    public LispObject Car;
+    public LispObject Car { get; set; }
     /// <summary>
     /// The second element of the cons. In a list this is the pointer to the next cons.
     /// </summary>
-    public LispObject Cdr;
+    public LispObject Cdr { get; set; }
+
+    public override string ToString () {
+      // TODO(zstewar1): This could raise an error. Later we should change these to call
+      // the in-language --str-- method and return the value from that.
+      var len = ListOperations.Count(this);
+      if (!len.HasValue) return null;
+      if (len.Value == 2) {
+        var instance = TypeType.IsInstance(Car, SymbolType.Symbol);
+        if (!instance.HasValue) return null;
+        if (instance.Value) {
+          var symb = (SymbolType)Car;
+          if (string.Compare(
+              symb.Identifier, "quote", 
+              StringComparison.InvariantCultureIgnoreCase) == 0) {
+            return "'" + ListOperations.GetCar(Cdr).ToString();
+          } else if (string.Compare(
+              symb.Identifier, "--backquote--",
+              StringComparison.InvariantCultureIgnoreCase) == 0) {
+            return "`" + ListOperations.GetCar(Cdr).ToString();
+          } else if (string.Compare(
+              symb.Identifier, "--unquote--",
+              StringComparison.InvariantCultureIgnoreCase) == 0) {
+            return "," + ListOperations.GetCar(Cdr).ToString();
+          } else if (string.Compare(
+              symb.Identifier, "--splice--",
+              StringComparison.InvariantCultureIgnoreCase) == 0) {
+            return ",@" + ListOperations.GetCar(Cdr).ToString();
+          }
+        }
+      }
+      StringBuilder val = new StringBuilder("(");
+      ConsType value = this;
+      while (value != null) {
+        val.Append(value.Car.ToString());
+        LispObject cdr = value.Cdr;
+        if (cdr is ConsType) {
+          value = (ConsType)cdr;
+          val.Append(" ");
+        } else {
+          value = null;
+          if (cdr != NilType.Nil) {
+            val.Append(" . ");
+            val.Append(cdr.ToString());
+          }
+        }
+      }
+      val.Append(")");
+      return val.ToString();
+    }
   }
 }

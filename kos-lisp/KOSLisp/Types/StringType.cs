@@ -36,6 +36,16 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Helper Methods
 
     private string value;
-    public string Value { get; }
+    public string Value { get { return value; } }
+
+    public override string ToString () {
+      StringBuilder val = new StringBuilder(Value);
+      val.Replace("\"", "\\\"");
+      val.Replace("\n", "\\n");
+      val.Replace("\r", "\\r");
+      val.Insert(0, "\"");
+      val.Append("\"");
+      return val.ToString();
+    }
   }
 }

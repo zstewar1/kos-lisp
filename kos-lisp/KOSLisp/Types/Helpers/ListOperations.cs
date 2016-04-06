@@ -137,7 +137,22 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         __mro__ = GetCdr(__mro__);
         if (__mro__ == null) return null; // Propagate errors.      
       }
-    }    // TODO(zstewar1): Implement SetCar and SetCdr.
+    }
+
+    /// <summary>
+    /// Returns the number of elements in a lisp list. (This will traverse the list).
+    /// </summary>
+    /// <param name="list">The list.</param>
+    /// <returns>The number of elements or null if there is an error counting.</returns>
+    public static int? Count(LispObject list) {
+      int cnt = 0;
+      while (list != NilType.Nil) {
+        cnt++;
+        list = GetCdr(list);
+        if (list == null) return null;
+      }
+      return cnt;
+    }
 
     /// <summary>
     /// Creates an iterator that iterates over an object that implements the lisp list 

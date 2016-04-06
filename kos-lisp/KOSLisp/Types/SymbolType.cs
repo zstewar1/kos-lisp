@@ -42,5 +42,9 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     public string Identifier { get; }
+
+    public override string ToString () {
+      return Identifier;
+    }
   }
 }

@@ -36,6 +36,10 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Helper Methods
 
     private double value;
-    public double Value { get; }
+    public double Value { get { return value; } }
+
+    public override string ToString () {
+      return Value.ToString();
+    }
   }
 }
