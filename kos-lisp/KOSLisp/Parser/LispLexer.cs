@@ -89,9 +89,10 @@ namespace ZStewart.KOSLisp.Parser {
             // A. -> IDENTIFIER DOT, should be Error.
             if (rv == ".")
               return RawToken.Create(rv, s, LispTokType.DOT);
-            if (rv.Split('.').Any(st => string.IsNullOrEmpty(st)))
+            if ((rv.StartsWith(".") ? rv.Substring(1) : rv).Split('.')
+                .Any(st => string.IsNullOrEmpty(st)))
               throw new InvalidIdentifier(
-                "Invalid identifier. Cannot have adjacent dots or start/end with dot.",
+                "Invalid identifier. Cannot have adjacent dots or end with dot.",
                 s);
             if (rv.StartsWith(":") && rv.Contains("."))
               throw new InvalidIdentifier(

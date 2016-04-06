@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ZStewart.KOSLisp.Types {
-  public sealed class NilType : LispObject {
-    private NilType () { }
+  public sealed class NilType : SymbolType {
+    private NilType () : base("nil") { }
 
     #region Static Type Setup
     /// <summary>
@@ -18,7 +18,7 @@ namespace ZStewart.KOSLisp.Types {
       // See the TypeType static initializer for a note on static initializers.
       NilClass.__name__ = "NilType";
       NilClass.__class__ = TypeType.Type;
-      NilClass.__bases__ = IConsType.Create(ObjectType.Object, Nil);
+      NilClass.__bases__ = IConsType.Create(Symbol, Nil);
       NilClass.__new__ = New;
 
       Nil.__class__ = NilClass;
