@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
     <Compile Include="KOSLisp\Interpreter\Errors.cs" />
+    <Compile Include="KOSLisp\Types\DictType.cs" />
     <Compile Include="KOSLisp\Types\Helpers\Arguments.cs" />
     <Compile Include="KOSLisp\Types\Helpers\CallableOperations.cs" />
     <Compile Include="KOSLisp\Types\Helpers\MappingOperations.cs" />
