@@ -122,7 +122,7 @@ namespace ZStewart.KOSLisp.Parser {
               throw new IllegalDottedList(
                 "Only one expression is allowed after dot.", tok.SourceInformation);
             else {
-              ListOperations.SetCdr(list, obj);
+              ListOperations.SetCdr(end, obj);
               dotDone = true;
             }
           } else if (list == NilType.Nil) {

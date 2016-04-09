@@ -25,7 +25,8 @@ namespace ZStewart.KOSLisp.Types {
     static ConsType () {
       Cons.__name__ = "cons";
       Cons.__class__ = TypeType.Type;
-      Cons.__bases__ = IConsType.Create(ObjectType.Object, NilType.Nil);
+      Cons.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
+      Cons.__mro__ = IConsType.ToLispTuple(Cons, ObjectType.Object);
       Cons.__new__ = New;
       Cons.__init__ = Init;
       Cons._list_methods = new ListMethods {
@@ -34,6 +35,8 @@ namespace ZStewart.KOSLisp.Types {
         __getcdr__ = GetCdr,
         __setcdr__ = SetCdr,
       };
+
+      LispTypeObject.ConfigureType(Cons);
     }
 
     private static LispObject New (LispObject subtype, LispObject args) {
@@ -140,7 +143,7 @@ namespace ZStewart.KOSLisp.Types {
     /// </summary>
     /// <param name="list">The list to convert.</param>
     /// <returns>A lisp list with the same contents as the original list.</returns>
-    public static LispObject ToLispList(IList<LispObject> list) {
+    public static LispObject ToLispList(IReadOnlyList<LispObject> list) {
       LispObject res = NilType.Nil;
       for(int i = list.Count - 1; i >= 0; i--) {
         res = Create(list[i], res);
@@ -154,7 +157,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="args">The objects that should be contained in the list.</param>
     /// <returns>A lisp list containing the given objects.</returns>
     public static LispObject ToLispList(params LispObject[] args) {
-      return ToLispList((IList<LispObject>)args);
+      return ToLispList((IReadOnlyList<LispObject>)args);
     }
     #endregion
 
@@ -171,8 +174,9 @@ namespace ZStewart.KOSLisp.Types {
       // TODO(zstewar1): This could raise an error. Later we should change these to call
       // the in-language --str-- method and return the value from that.
       var len = ListOperations.Count(this);
-      if (!len.HasValue) return null;
-      if (len.Value == 2) {
+      // TODO(zstewar1): Check if this is an improper list error.
+      // if (!len.HasValue) return null;
+      if (len.HasValue && len.Value == 2) {
         var instance = TypeType.IsInstance(Car, SymbolType.Symbol);
         if (!instance.HasValue) return null;
         if (instance.Value) {

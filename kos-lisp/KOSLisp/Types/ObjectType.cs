@@ -18,6 +18,8 @@ namespace ZStewart.KOSLisp.Types {
       Object.__name__ = "object";
       Object.__class__ = TypeType.Type;
       Object.__bases__ = NilType.Nil;
+      Object.__mro__ = IConsType.ToLispTuple(Object);
+      LispTypeObject.ConfigureType(Object);
     }
 
     /// <summary>

@@ -12,7 +12,9 @@ namespace ZStewart.KOSLisp.Types {
     static SymbolType () {
       Symbol.__name__ = "symbol";
       Symbol.__class__ = TypeType.Type;
-      Symbol.__bases__ = IConsType.Create(ObjectType.Object, NilType.Nil);
+      Symbol.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
+      Symbol.__mro__ = IConsType.ToLispTuple(Symbol, ObjectType.Object);
+      LispTypeObject.ConfigureType(Symbol);
     }
 
     // TODO(zstewar1): In language instantiation stuff.

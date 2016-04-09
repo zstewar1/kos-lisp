@@ -150,6 +150,30 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     }
 
     /// <summary>
+    /// Iterates over a lisp list of type T. Generates a Lisp error if any of the items in
+    /// the list are not of type T.
+    /// </summary>
+    /// <typeparam name="T">The type of objects to return.</typeparam>
+    /// <param name="list">The lisp list to iterate over.</param>
+    /// <returns>An enumerable of the list that returns elements as type T.</returns>
+    public static IEnumerable<T> IterList<T>(LispObject list) where T : LispObject {
+      foreach (var next in IterList(list)) {
+        // Propagate errors.
+        if (next == null) {
+          yield return null;
+          yield break;
+        }
+        if (next is T) {
+          yield return next as T;
+        } else {
+          // TODO(zstewar1): Set type error.
+          yield return null;
+          yield break;
+        }
+      }
+    }
+
+    /// <summary>
     /// Creates an iterator that iterates over the types in the method resolution order
     /// for the class of the target.
     /// </summary>
@@ -158,22 +182,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </param>
     /// <returns>A C# iterator that iterates over the given Lisp object's MRO</returns>
     public static IEnumerable<LispTypeObject> IterMro(LispObject target) {
-      foreach (var nextType in IterList(target.__class__.__mro__)) {
-        // Propagate errors.
-        if (nextType == null) {
-          yield return null;
-          // Probably unnecessary because the inner iterator should end after an error,
-          // but there's no real reason not to include this.
-          yield break;
-        }
-        if (nextType is LispTypeObject) {
-          yield return nextType as LispTypeObject;
-        } else {
-          // TODO(zstewar1): Set type error.
-          yield return null;
-          yield break;
-        }
-      }
+      return IterList<LispTypeObject>(target.__class__.__mro__);
     }
   }
 }

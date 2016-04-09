@@ -22,7 +22,9 @@ namespace ZStewart.KOSLisp.Types {
     static NumberType () {
       Number.__name__ = "num";
       Number.__class__ = TypeType.Type;
-      Number.__bases__ = IConsType.Create(ObjectType.Object, NilType.Nil);
+      Number.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
+      Number.__mro__ = IConsType.ToLispTuple(Number, ObjectType.Object);
+      LispTypeObject.ConfigureType(Number);
     }
     #endregion
 

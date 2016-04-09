@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Types {
   public static class TypeType {
@@ -34,9 +35,11 @@ namespace ZStewart.KOSLisp.Types {
       // initializers.
       Type.__name__ = "type";
       Type.__class__ = Type;
-      Type.__bases__ = IConsType.Create(ObjectType.Object, NilType.Nil);
+      Type.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
+      Type.__mro__ = IConsType.ToLispTuple(Type, ObjectType.Object);
       Type.__new__ = New;
       Type.__call__ = Call;
+      LispTypeObject.ConfigureType(Type);
     }
 
     private static LispObject New(LispObject subtype, LispObject args) {
@@ -61,7 +64,11 @@ namespace ZStewart.KOSLisp.Types {
     /// True if instance is of type type, false if it is not, and null on error.
     /// </returns>
     public static bool? IsInstance(LispObject instance, LispObject type) {
-      return null;
+      foreach (var t in ListOperations.IterMro(instance)) {
+        if (t == null) return null;
+        if (t == type) return true;
+      }
+      return false;
     }
     #endregion Static Helper Methods
   }

@@ -18,8 +18,10 @@ namespace ZStewart.KOSLisp.Types {
       // See the TypeType static initializer for a note on static initializers.
       NilClass.__name__ = "NilType";
       NilClass.__class__ = TypeType.Type;
-      NilClass.__bases__ = IConsType.Create(Symbol, Nil);
+      NilClass.__bases__ = IConsType.ToLispTuple(Symbol);
+      NilClass.__mro__ = IConsType.ToLispTuple(NilClass, Symbol, ObjectType.Object);
       NilClass.__new__ = New;
+      LispTypeObject.ConfigureType(NilClass);
 
       Nil.__class__ = NilClass;
     }

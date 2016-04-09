@@ -22,7 +22,9 @@ namespace ZStewart.KOSLisp.Types {
     static StringType () {
       String.__name__ = "str";
       String.__class__ = TypeType.Type;
-      String.__bases__ = IConsType.Create(ObjectType.Object, NilType.Nil);
+      String.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
+      String.__mro__ = IConsType.ToLispTuple(String, ObjectType.Object);
+      LispTypeObject.ConfigureType(String);
     }
     #endregion
 

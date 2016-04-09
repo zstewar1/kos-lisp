@@ -34,12 +34,15 @@ namespace ZStewart.KOSLisp.Types {
       // See the TypeType static initializer for a note on static initializers.
       ICons.__name__ = "icons";
       ICons.__class__ = TypeType.Type;
-      ICons.__bases__ = Create(ObjectType.Object, NilType.Nil);
+      ICons.__bases__ = ToLispTuple(ObjectType.Object);
+      ICons.__mro__ = ToLispTuple(ICons, ObjectType.Object);
       ICons.__new__ = New;
       ICons._list_methods = new ListMethods {
         __getcar__ = GetCar,
         __getcdr__ = GetCdr,
       };
+
+      LispTypeObject.ConfigureType(ICons);
     }
 
     private static LispObject New (LispObject subtype, LispObject args) {
@@ -62,8 +65,8 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject GetCdr (LispObject instance) {
-      if (instance is ConsType) {
-        return (instance as ConsType).Cdr;
+      if (instance is IConsType) {
+        return (instance as IConsType).Cdr;
       } else {
         // TODO(zstewar1): Set Error.
         return null;
@@ -108,7 +111,7 @@ namespace ZStewart.KOSLisp.Types {
     /// </summary>
     /// <param name="list">The list to convert.</param>
     /// <returns>A lisp tuple with the same contents as the original list.</returns>
-    public static LispObject ToLispTuple(IList<LispObject> list) {
+    public static LispObject ToLispTuple(IReadOnlyList<LispObject> list) {
       LispObject res = NilType.Nil;
       for(int i = list.Count - 1; i >= 0; i--) {
         res = Create(list[i], res);
@@ -122,7 +125,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="args">The objects that should be contained in the tuple.</param>
     /// <returns>A lisp tuple containing the given objects.</returns>
     public static LispObject ToLispTuple(params LispObject[] args) {
-      return ToLispTuple((IList<LispObject>)args);
+      return ToLispTuple((IReadOnlyList<LispObject>)args);
     }
     #endregion Static Helper Methods
 
