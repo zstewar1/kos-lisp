@@ -35,7 +35,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           return null;
         }
         __mro__ = GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.      
+        if (__mro__ == null) return null; // Propagate errors.
       }
     }
 
@@ -68,7 +68,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           return null;
         }
         __mro__ = GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.      
+        if (__mro__ == null) return null; // Propagate errors.
       }
     }
 
@@ -101,7 +101,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           return null;
         }
         __mro__ = GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.      
+        if (__mro__ == null) return null; // Propagate errors.
       }
     }
 
@@ -135,7 +135,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           return null;
         }
         __mro__ = GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.      
+        if (__mro__ == null) return null; // Propagate errors.
       }
     }
 
@@ -155,12 +155,12 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     }
 
     /// <summary>
-    /// Creates an iterator that iterates over an object that implements the lisp list 
-    /// protocol. The iterator returns null after any failure getting the next item, and 
+    /// Creates an iterator that iterates over an object that implements the lisp list
+    /// protocol. The iterator returns null after any failure getting the next item, and
     /// then after any failure advancing to the next cons.
     /// </summary>
     /// <param name="list">
-    /// The lisp list to iterate. Can be any object that has a class level 
+    /// The lisp list to iterate. Can be any object that has a class level
     /// --getcar--/--getcdr--
     /// </param>
     /// <returns>A C# iterator that iterates over the given Lisp List.</returns>

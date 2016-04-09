@@ -18,7 +18,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="args">The arguments to the callable.</param>
     /// <returns></returns>
     public static LispObject Call(LispObject callable, LispObject args) {
-      args = IConsType.AsICons(args);
+      args = IConsType.Copy(args);
       if (args == null) return null;
       LispTypeObject targetType = callable.__class__;
       LispObject __mro__ = targetType.__mro__;
@@ -47,7 +47,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           return null;
         }
         __mro__ = ListOperations.GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.      
+        if (__mro__ == null) return null; // Propagate errors.
       }
     }
   }

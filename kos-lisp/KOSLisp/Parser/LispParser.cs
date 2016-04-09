@@ -10,17 +10,17 @@ namespace ZStewart.KOSLisp.Parser {
     private readonly LispLexer lexer;
 
     /// <summary>
-    /// The last-read token. Sometimes we need to know what a token is before we can 
+    /// The last-read token. Sometimes we need to know what a token is before we can
     /// decide what to do.
-    /// 
-    /// Tokens are only read by certain parser functions. Parse advances the stream to 
-    /// start an expression, 
+    ///
+    /// Tokens are only read by certain parser functions. Parse advances the stream to
+    /// start an expression,
     /// </summary>
     private Token<LispTokType> tok;
 
     /// <summary>
-    /// Indicates the depth to which the parser is in backquotes. , and ,@ are illegal 
-    /// outside of backquotes, or within other ,/,@ expressions unless an additional 
+    /// Indicates the depth to which the parser is in backquotes. , and ,@ are illegal
+    /// outside of backquotes, or within other ,/,@ expressions unless an additional
     /// backquote layer has been introduced.
     /// </summary>
     private int backquoteDepth = 0;
@@ -111,7 +111,7 @@ namespace ZStewart.KOSLisp.Parser {
           // Read next expression as dotted list element.
           dot = true;
         } else {
-          // If it isn't an empty-line error and isn't a close-paren, go back to 
+          // If it isn't an empty-line error and isn't a close-paren, go back to
           // ParseExpression to figure out what it is.
           var obj = ParseExpression();
           if (obj == null)
@@ -161,7 +161,7 @@ namespace ZStewart.KOSLisp.Parser {
 
     LispObject ParseQuoted() {
       Preconditions.CheckState(tok.TokenType == LispTokType.QUOTE);
-      return ParseWrappingExpression("quote", "quoted");     
+      return ParseWrappingExpression("quote", "quoted");
     }
 
     private LispObject ParseWrappingExpression(string wrapper, string exprType) {
@@ -180,8 +180,7 @@ namespace ZStewart.KOSLisp.Parser {
             "Unexpected end of input while reading quoted expression.", exprType),
           tok.SourceInformation);
       }
-      return ConsType.Create(
-        SymbolType.Create(wrapper), ConsType.Create(expr, NilType.Nil));
+      return ConsType.ToLispList(SymbolType.Create(wrapper), expr);
     }
 
     private LispObject ParseBackquote () {

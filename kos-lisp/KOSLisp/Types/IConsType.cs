@@ -27,7 +27,7 @@ namespace ZStewart.KOSLisp.Types {
     public static readonly LispTypeObject ICons = new LispTypeObject();
 
     /// <summary>
-    /// Prepares the cons type object by filling out its fields with appropriate values 
+    /// Prepares the cons type object by filling out its fields with appropriate values
     /// and methods.
     /// </summary>
     static IConsType () {
@@ -69,7 +69,7 @@ namespace ZStewart.KOSLisp.Types {
         return null;
       }
     }
-    #endregion Static Type Setup 
+    #endregion Static Type Setup
 
     #region Static Helper Methods
     public static IConsType Create(LispObject car, LispObject cdr) {
@@ -81,26 +81,28 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     /// <summary>
-    /// Convert another lisp object which supports the list protocol to an ICons.
+    /// Converts the given lisp list to a tuple (consisting of only IConses). Attempts to
+    /// reuse as many existing IConses as possible, so any tail portion of the list
+    /// consisting only of IConses will return the same reference.
     /// </summary>
     /// <param name="originalList">The list to convert.</param>
     /// <returns>The converted list.</returns>
-    public static LispObject AsICons(LispObject originalList) {
+    public static LispObject Copy(LispObject originalList) {
       if (originalList == NilType.Nil) return NilType.Nil;
       var car = ListOperations.GetCar(originalList);
       if (car == null) return null;
       var cdr = ListOperations.GetCdr(originalList);
       if (cdr == null) return null;
-      var newcdr = AsICons(cdr);
+      var newcdr = Copy(cdr);
       if (newcdr == null) return null;
-      if (newcdr == cdr) {
-        var alreadyICons = TypeType.IsInstance(originalList, ICons);
-        if (!alreadyICons.HasValue) return null;
-        if (alreadyICons.Value) return originalList;
+      // We use exact type equality because any subtype of ICons should still be
+      // converted.
+      if (newcdr == cdr && originalList.__class__ == ICons) {
+        return originalList;
       }
       return Create(car, newcdr);
     }
-    
+
     /// <summary>
     /// Converts a list to a lisp tuple.
     /// </summary>
@@ -108,7 +110,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>A lisp tuple with the same contents as the original list.</returns>
     public static LispObject ToLispTuple(IList<LispObject> list) {
       LispObject res = NilType.Nil;
-      for(int i = list.Count - 1; i >= 0; i++) {
+      for(int i = list.Count - 1; i >= 0; i--) {
         res = Create(list[i], res);
       }
       return res;

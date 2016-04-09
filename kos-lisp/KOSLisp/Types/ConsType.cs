@@ -19,7 +19,7 @@ namespace ZStewart.KOSLisp.Types {
     public static readonly LispTypeObject Cons = new LispTypeObject();
 
     /// <summary>
-    /// Prepares the cons type object by filling out its fields with appropriate values 
+    /// Prepares the cons type object by filling out its fields with appropriate values
     /// and methods.
     /// </summary>
     static ConsType () {
@@ -121,13 +121,28 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     /// <summary>
+    /// Creates a copy of a lisp list consisting of all normal Conses.
+    /// </summary>
+    /// <param name="orignalList">The list to copy.</param>
+    /// <returns>A copy of the given list as only normal conses.</returns>
+    public static LispObject Copy(LispObject originalList) {
+      if (originalList == NilType.Nil) return NilType.Nil;
+      var car = ListOperations.GetCar(originalList);
+      if (car == null) return null;
+      var cdr = ListOperations.GetCdr(originalList);
+      if (cdr == null) return null;
+      var newcdr = Copy(cdr);
+      return Create(car, newcdr);
+    }
+
+    /// <summary>
     /// Converts a list to a lisp list.
     /// </summary>
     /// <param name="list">The list to convert.</param>
     /// <returns>A lisp list with the same contents as the original list.</returns>
     public static LispObject ToLispList(IList<LispObject> list) {
       LispObject res = NilType.Nil;
-      for(int i = list.Count - 1; i >= 0; i++) {
+      for(int i = list.Count - 1; i >= 0; i--) {
         res = Create(list[i], res);
       }
       return res;
@@ -163,7 +178,7 @@ namespace ZStewart.KOSLisp.Types {
         if (instance.Value) {
           var symb = (SymbolType)Car;
           if (string.Compare(
-              symb.Identifier, "quote", 
+              symb.Identifier, "quote",
               StringComparison.InvariantCultureIgnoreCase) == 0) {
             return "'" + ListOperations.GetCar(Cdr).ToString();
           } else if (string.Compare(
