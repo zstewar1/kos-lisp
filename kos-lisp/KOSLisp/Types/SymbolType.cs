@@ -7,14 +7,22 @@ using System.Threading.Tasks;
 namespace ZStewart.KOSLisp.Types {
   public class SymbolType : LispObject {
     #region Static Type Setup
-    public static readonly LispTypeObject Symbol = new LispTypeObject();
+    private static LispTypeObject _symbol;
+    public static LispTypeObject Symbol {
+      get {
+        if (_symbol != null) return _symbol;
 
-    static SymbolType () {
-      Symbol.__name__ = "symbol";
-      Symbol.__class__ = TypeType.Type;
-      Symbol.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
-      Symbol.__mro__ = IConsType.ToLispTuple(Symbol, ObjectType.Object);
-      LispTypeObject.ConfigureType(Symbol);
+        _symbol = new LispTypeObject {
+          __name__ = "symbol",
+        };
+        _symbol.__class__ = TypeType.Type;
+        _symbol.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
+        _symbol.__mro__ = IConsType.ToLispTuple(Symbol, ObjectType.Object);
+        _symbol = LispTypeObject.ConfigureType(_symbol);
+        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
+        if (_symbol == null) throw new InvalidOperationException();
+        return _symbol;
+      }
     }
 
     // TODO(zstewar1): In language instantiation stuff.

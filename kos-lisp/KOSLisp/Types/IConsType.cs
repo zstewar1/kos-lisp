@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
@@ -21,28 +22,30 @@ namespace ZStewart.KOSLisp.Types {
 
     // Configuration for the static type object that represents this type.
     #region Static Type Setup
+    private static LispTypeObject _icons;
     /// <summary>
     /// The singleton instance that represents the type "cons"
     /// </summary>
-    public static readonly LispTypeObject ICons = new LispTypeObject();
+    public static LispTypeObject ICons {
+      get {
+        if (_icons != null) return _icons;
 
-    /// <summary>
-    /// Prepares the cons type object by filling out its fields with appropriate values
-    /// and methods.
-    /// </summary>
-    static IConsType () {
-      // See the TypeType static initializer for a note on static initializers.
-      ICons.__name__ = "icons";
-      ICons.__class__ = TypeType.Type;
-      ICons.__bases__ = ToLispTuple(ObjectType.Object);
-      ICons.__mro__ = ToLispTuple(ICons, ObjectType.Object);
-      ICons.__new__ = New;
-      ICons._list_methods = new ListMethods {
-        __getcar__ = GetCar,
-        __getcdr__ = GetCdr,
-      };
-
-      LispTypeObject.ConfigureType(ICons);
+        _icons = new LispTypeObject {
+          __name__ = "icons",
+          __new__ = New,
+          _list_methods = new ListMethods {
+            __getcar__ = GetCar,
+            __getcdr__ = GetCdr,
+          },
+        };
+        _icons.__class__ = TypeType.Type;
+        _icons.__bases__ = ToLispTuple(ObjectType.Object);
+        _icons.__mro__ = ToLispTuple(_icons, ObjectType.Object);
+        _icons = LispTypeObject.ConfigureType(_icons);
+        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
+        if (_icons == null) throw new InvalidOperationException();
+        return _icons;
+      }
     }
 
     private static LispObject New (LispObject subtype, LispObject args) {

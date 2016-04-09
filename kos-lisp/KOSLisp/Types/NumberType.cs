@@ -17,14 +17,22 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     #region Static Type Setup
-    public static readonly LispTypeObject Number = new LispTypeObject();
+    private static LispTypeObject _number;
+    public static LispTypeObject Number {
+      get {
+        if (_number != null) return _number;
 
-    static NumberType () {
-      Number.__name__ = "num";
-      Number.__class__ = TypeType.Type;
-      Number.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
-      Number.__mro__ = IConsType.ToLispTuple(Number, ObjectType.Object);
-      LispTypeObject.ConfigureType(Number);
+        _number = new LispTypeObject {
+          __name__ = "num",
+        };
+        _number.__class__ = TypeType.Type;
+        _number.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
+        _number.__mro__ = IConsType.ToLispTuple(_number, ObjectType.Object);
+        _number = LispTypeObject.ConfigureType(_number);
+        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
+        if (_number == null) throw new InvalidOperationException();
+        return _number;
+      }
     }
     #endregion
 

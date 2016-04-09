@@ -9,37 +9,28 @@ namespace ZStewart.KOSLisp.Types {
   public static class TypeType {
 
     #region Static Type Setup
-    public static readonly LispTypeObject Type = new LispTypeObject();
+    private static LispTypeObject _type;
+    public static LispTypeObject Type {
+      get {
+        // These initializers are designed to get the references correct among these
+        // objects, but there's no guarantee that the properties will be correct during
+        // setup.
+        if (_type != null) return _type;
 
-    static TypeType () {
-      // The static initializers for the builtin types Type, Object, ICons, and Nil are
-      // all interdependent and contain references which will cause the others to be 
-      // triggered to make sure these work correctly, these types are required to set all
-      // static references before assigning any properties.
-      //
-      // This ensures that when they reference each other's global statics they alway get
-      // the correct reference. The references will be updated later with actual values.
-      //
-      // If the type references are not done this way, problems can occur. Example:
-      // Client code references NilType.Nil. This triggers the static initializer of
-      // NilType. However the construction of NilType.NilClass and NilType.Nil depend on
-      // ObjectType.Object and TypeType.Type, so they trigger those static initializers.
-      // Those initializers in turn depend on ICons, which depends on NilType and Nil. If 
-      // the references in global static variables were not assigned initially, this could
-      // result in one or more of these initializer picking up a null reference instead of
-      // the object. 
-      //
-      // To avoid this, these core types must assign their global static references to an
-      // empty object, then assign the properties of that reference in the static
-      // initializer. This could also be considered best practice for all types' static
-      // initializers.
-      Type.__name__ = "type";
-      Type.__class__ = Type;
-      Type.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
-      Type.__mro__ = IConsType.ToLispTuple(Type, ObjectType.Object);
-      Type.__new__ = New;
-      Type.__call__ = Call;
-      LispTypeObject.ConfigureType(Type);
+        // Setup the type.
+        _type = new LispTypeObject {
+          __name__ = "type",
+          __new__ = New,
+          __call__ = Call,
+        };
+        _type.__class__ = _type;
+        _type.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
+        _type.__mro__ = IConsType.ToLispTuple(_type, ObjectType.Object);
+        _type = LispTypeObject.ConfigureType(_type);
+        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
+        if (_type == null) throw new InvalidOperationException();
+        return _type;
+      }
     }
 
     private static LispObject New(LispObject subtype, LispObject args) {

@@ -13,30 +13,33 @@ namespace ZStewart.KOSLisp.Types {
 
     // Configuration for the static type object that represents this type.
     #region Static Type Setup
+    private static LispTypeObject _cons;
     /// <summary>
     /// The singleton instance that represents the type "cons"
     /// </summary>
-    public static readonly LispTypeObject Cons = new LispTypeObject();
+    public static LispTypeObject Cons {
+      get {
+        if (_cons != null) return _cons;
 
-    /// <summary>
-    /// Prepares the cons type object by filling out its fields with appropriate values
-    /// and methods.
-    /// </summary>
-    static ConsType () {
-      Cons.__name__ = "cons";
-      Cons.__class__ = TypeType.Type;
-      Cons.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
-      Cons.__mro__ = IConsType.ToLispTuple(Cons, ObjectType.Object);
-      Cons.__new__ = New;
-      Cons.__init__ = Init;
-      Cons._list_methods = new ListMethods {
-        __getcar__ = GetCar,
-        __setcar__ = SetCar,
-        __getcdr__ = GetCdr,
-        __setcdr__ = SetCdr,
-      };
-
-      LispTypeObject.ConfigureType(Cons);
+        _cons = new LispTypeObject {
+          __name__ = "cons",
+          __new__ = New,
+          __init__ = Init,
+          _list_methods = new ListMethods {
+            __getcar__ = GetCar,
+            __setcar__ = SetCar,
+            __getcdr__ = GetCdr,
+            __setcdr__ = SetCdr,
+          },
+        };
+        _cons.__class__ = TypeType.Type;
+        _cons.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
+        _cons.__mro__ = IConsType.ToLispTuple(_cons, ObjectType.Object);
+        _cons = LispTypeObject.ConfigureType(_cons);
+        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
+        if (_cons == null) throw new InvalidOperationException();
+        return _cons;
+      }
     }
 
     private static LispObject New (LispObject subtype, LispObject args) {

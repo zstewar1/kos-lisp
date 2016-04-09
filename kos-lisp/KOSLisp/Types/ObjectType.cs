@@ -8,18 +8,26 @@ using ZStewart.KOSLisp.Types.Helpers;
 namespace ZStewart.KOSLisp.Types {
   public static class ObjectType {
     #region Static Type Setup
+    private static LispTypeObject _object;
     /// <summary>
     /// The singleton instance that represents the type "object".
     /// </summary>
-    public static readonly LispTypeObject Object = new LispTypeObject();
+    public static LispTypeObject Object {
+      get {
+        if (_object != null) return _object;
 
-    static ObjectType () {
-      // See the TypeType static initializer for a note on static initializers.
-      Object.__name__ = "object";
-      Object.__class__ = TypeType.Type;
-      Object.__bases__ = NilType.Nil;
-      Object.__mro__ = IConsType.ToLispTuple(Object);
-      LispTypeObject.ConfigureType(Object);
+        _object = new LispTypeObject {
+          __name__ = "object",
+          __new__ = New,
+        };
+        _object.__class__ = TypeType.Type;
+        _object.__bases__ = NilType.Nil;
+        _object.__mro__ = IConsType.ToLispTuple(_object);
+        _object = LispTypeObject.ConfigureType(_object);
+        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
+        if (_object == null) throw new InvalidOperationException();
+        return _object;
+      }
     }
 
     /// <summary>
@@ -55,7 +63,7 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Type Setup
 
     #region Static Helper Methods
-    // in-lang --getattr-- is a different method. --getattribute-- is the real 
+    // in-lang --getattr-- is a different method. --getattribute-- is the real
     // unconditional lookup function in the language, as in Python.
     private static LispObject getattrattr = StringType.Create("--getattribute--");
 
@@ -102,7 +110,7 @@ namespace ZStewart.KOSLisp.Types {
           return null;
         }
         __mro__ = ListOperations.GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.      
+        if (__mro__ == null) return null; // Propagate errors.
       }
     }
     #endregion Static Helper Methods

@@ -14,19 +14,26 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     #region Static Type Setup
-    public static readonly LispTypeObject Dict = new LispTypeObject();
+    private static LispTypeObject _dict;
+    public static LispTypeObject Dict {
+      get {
+        if (_dict != null) return _dict;
 
-    static DictType () {
-      Dict.__name__ = "dict";
-      Dict.__class__ = TypeType.Type;
-      Dict.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
-      Dict.__mro__ = IConsType.ToLispTuple(Dict, ObjectType.Object);
-      Dict._map_methods = new MappingMethods() {
-        __getitem__ = GetItem,
-        __setitem__ = SetItem,
-      };
-
-      LispTypeObject.ConfigureType(Dict);
+        _dict = new LispTypeObject {
+          __name__ = "dict",
+          _map_methods = new MappingMethods {
+            __getitem__ = GetItem,
+            __setitem__ = SetItem,
+          },
+        };
+        _dict.__class__ = TypeType.Type;
+        _dict.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
+        _dict.__mro__ = IConsType.ToLispTuple(_dict, ObjectType.Object);
+        _dict = LispTypeObject.ConfigureType(_dict);
+        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
+        if (_dict == null) throw new InvalidOperationException();
+        return _dict;
+      }
     }
 
     private static LispObject GetItem(LispObject dict, LispObject key) {
