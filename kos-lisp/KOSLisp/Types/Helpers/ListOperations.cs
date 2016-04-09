@@ -9,6 +9,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
 
     public static LispObject GetCar(LispObject target) {
       LispTypeObject targetType = target.__class__;
+      // __class__ should be the first element of __mro__, but we can't use IterMro in
+      // this method, because IterMro depends on being able to call GetCar, so trying to
+      // use it would cause an infinite recursion.
       LispObject __mro__ = targetType.__mro__;
       for (;;) {
         if (targetType._list_methods != null
@@ -22,6 +25,10 @@ namespace ZStewart.KOSLisp.Types.Helpers {
             return CallableOperations.Call(__getcar__, IConsType.ToLispTuple(target));
           }
         }
+        // Advance to CDR before continuing, since we have to force-skip the first
+        // element.
+        __mro__ = GetCdr(__mro__);
+        if (__mro__ == null) return null; // Propagate errors.
         if (__mro__ == NilType.Nil) {
           // TODO(zstewar1): __getcar__ not found error.
           return null;
@@ -34,15 +41,16 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           // impossible anyway, since we should prevent setting arbitrary types).
           return null;
         }
-        __mro__ = GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.
       }
     }
 
     public static LispObject GetCdr(LispObject target) {
-      LispTypeObject targetType = target.__class__;
-      LispObject __mro__ = targetType.__mro__;
-      for (;;) {
+      // It should be possible to iterate over the MRO of the target this way because
+      // GetCdr is not called inside of the iterator until MoveNext is called for the
+      // first time.
+      foreach (var targetType in IterMro(target)) {
+        // Propagate errors.
+        if (targetType == null) return null;
         if (targetType._list_methods != null
             && targetType._list_methods.__getcdr__ != null) {
           return targetType._list_methods.__getcdr__(target);
@@ -55,27 +63,15 @@ namespace ZStewart.KOSLisp.Types.Helpers {
             return CallableOperations.Call(__getcdr__, IConsType.ToLispTuple(target));
           }
         }
-        if (__mro__ == NilType.Nil) {
-          // TODO(zstewar1): __getcdr__ not found error.
-          return null;
-        }
-        LispObject nextType = GetCar(__mro__);
-        if (nextType == null) return null; // Propagate errors.
-        targetType = nextType as LispTypeObject;
-        if (targetType == null) {
-          // TODO(zstewar1): set a type error: types must be type type. (This should be
-          // impossible anyway, since we should prevent setting arbitrary types).
-          return null;
-        }
-        __mro__ = GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.
       }
+      // TODO(zstewar1): No __getcdr__
+      return null;
     }
 
     public static LispObject SetCar(LispObject target, LispObject value) {
-      LispTypeObject targetType = target.__class__;
-      LispObject __mro__ = targetType.__mro__;
-      for (;;) {
+      foreach (var targetType in IterMro(target)) {
+        // Propagate errors.
+        if (targetType == null) return null;
         if (targetType._list_methods != null
             && targetType._list_methods.__setcar__ != null) {
           return targetType._list_methods.__setcar__(target, value);
@@ -88,27 +84,15 @@ namespace ZStewart.KOSLisp.Types.Helpers {
               __setcar__, IConsType.ToLispTuple(target, value));
           }
         }
-        if (__mro__ == NilType.Nil) {
-          // TODO(zstewar1): __setcar__ not found error.
-          return null;
-        }
-        LispObject nextType = GetCar(__mro__);
-        if (nextType == null) return null; // Propagate errors.
-        targetType = nextType as LispTypeObject;
-        if (targetType == null) {
-          // TODO(zstewar1): set a type error: types must be type type. (This should be
-          // impossible anyway, since we should prevent setting arbitrary types).
-          return null;
-        }
-        __mro__ = GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.
       }
+      // TODO(zstewar1): No __setcar__
+      return null;
     }
 
     public static LispObject SetCdr(LispObject target, LispObject value) {
-      LispTypeObject targetType = target.__class__;
-      LispObject __mro__ = targetType.__mro__;
-      for (;;) {
+      foreach (var targetType in IterMro(target)) {
+        // Propagate errors.
+        if (targetType == null) return null;
         if (targetType._list_methods != null
             && targetType._list_methods.__setcdr__ != null) {
           return targetType._list_methods.__setcdr__(target, value);
@@ -122,21 +106,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
               __setcdr__, IConsType.ToLispTuple(target, value));
           }
         }
-        if (__mro__ == NilType.Nil) {
-          // TODO(zstewar1): __setcdr__ not found error.
-          return null;
-        }
-        LispObject nextType = GetCar(__mro__);
-        if (nextType == null) return null; // Propagate errors.
-        targetType = nextType as LispTypeObject;
-        if (targetType == null) {
-          // TODO(zstewar1): set a type error: types must be type type. (This should be
-          // impossible anyway, since we should prevent setting arbitrary types).
-          return null;
-        }
-        __mro__ = GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.
       }
+      // TODO(zstewar1): No __setcdr__
+      return null;
     }
 
     /// <summary>
@@ -171,6 +143,33 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         if (value == null) yield break;
         list = GetCdr(list);
         if (list == null) {
+          yield return null;
+          yield break;
+        }
+      }
+    }
+
+    /// <summary>
+    /// Creates an iterator that iterates over the types in the method resolution order
+    /// for the class of the target.
+    /// </summary>
+    /// <param name="target">
+    /// The object to resolve on. This method iterates over target.__class__.__mro__
+    /// </param>
+    /// <returns>A C# iterator that iterates over the given Lisp object's MRO</returns>
+    public static IEnumerable<LispTypeObject> IterMro(LispObject target) {
+      foreach (var nextType in IterList(target.__class__.__mro__)) {
+        // Propagate errors.
+        if (nextType == null) {
+          yield return null;
+          // Probably unnecessary because the inner iterator should end after an error,
+          // but there's no real reason not to include this.
+          yield break;
+        }
+        if (nextType is LispTypeObject) {
+          yield return nextType as LispTypeObject;
+        } else {
+          // TODO(zstewar1): Set type error.
           yield return null;
           yield break;
         }

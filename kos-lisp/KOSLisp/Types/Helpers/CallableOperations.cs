@@ -20,9 +20,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     public static LispObject Call(LispObject callable, LispObject args) {
       args = IConsType.Copy(args);
       if (args == null) return null;
-      LispTypeObject targetType = callable.__class__;
-      LispObject __mro__ = targetType.__mro__;
-      for (;;) {
+      foreach (var targetType in ListOperations.IterMro(callable)) {
+        // Propagate errors.
+        if (targetType == null) return null;
         if (targetType.__call__ != null) {
           return targetType.__call__(callable, args);
         } else {
@@ -34,21 +34,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
             return Call(__call__, IConsType.Create(callable, args));
           }
         }
-        if (__mro__ == NilType.Nil) {
-          // TODO(zstewar1): __call__ not found error.
-          return null;
-        }
-        LispObject nextType = ListOperations.GetCar(__mro__);
-        if (nextType == null) return null; // Propagate errors.
-        targetType = nextType as LispTypeObject;
-        if (targetType == null) {
-          // TODO(zstewar1): set a type error: types must be type type. (This should be
-          // impossible anyway, since we should prevent setting arbitrary types).
-          return null;
-        }
-        __mro__ = ListOperations.GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.
       }
+      // TODO(zstewar1): __call__ not found error.
+      return null;
     }
   }
 }
