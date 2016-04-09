@@ -19,7 +19,7 @@ namespace ZStewart.KOSLisp.Parser {
     /// </summary>
     private class LexerModeConfig {
       /// <summary>
-      /// List of token regex matchers to try in order, and the token creator functions 
+      /// List of token regex matchers to try in order, and the token creator functions
       /// to use on the values they match.
       /// </summary>
       public ImmutableList<Tuple<Regex, TokenCreator<LispTokType>>> Matchers { get; }
@@ -29,13 +29,16 @@ namespace ZStewart.KOSLisp.Parser {
       /// </summary>
       public bool AllowLineBreaks { get; }
 
-      private LexerModeConfig(ImmutableList<Tuple<Regex, TokenCreator<LispTokType>>> matchers, bool allowLineBreaks) {
+      private LexerModeConfig(
+          ImmutableList<Tuple<Regex, TokenCreator<LispTokType>>> matchers,
+          bool allowLineBreaks) {
         Matchers = matchers;
         AllowLineBreaks = allowLineBreaks;
       }
 
       public class Builder {
-        private List<Tuple<Regex, TokenCreator<LispTokType>>> matchers = new List<Tuple<Regex, TokenCreator<LispTokType>>>();
+        private List<Tuple<Regex, TokenCreator<LispTokType>>> matchers =
+          new List<Tuple<Regex, TokenCreator<LispTokType>>>();
         private bool allowLineBreaks = true;
 
         public Builder () { }
@@ -56,7 +59,8 @@ namespace ZStewart.KOSLisp.Parser {
     #endregion Configuration Classes
 
     #region Static Properties
-    private const string SYMBOL_REGEX = @":?[\p{L}&<>=_+*^/\-\.\d]+";
+    private const string SUBSYMBOL_REGEX = @"[\p{L}@<>=_+*^/\-\.\d]";
+    private const string SYMBOL_REGEX = @"([&:]|" + SUBSYMBOL_REGEX + ")" + SUBSYMBOL_REGEX + "*";
 
     /// <summary>
     /// The configuration of the Lexer -- this is the set of modes and regexes used for parsing.
@@ -82,7 +86,7 @@ namespace ZStewart.KOSLisp.Parser {
             @"[+-]?[0-9]*\.?[0-9]+(e[+-]?[0-9]+)?",
             GenericToken.CreateTokenCreator(LispTokType.NUMBER, double.Parse))
           .AddMatcher(SYMBOL_REGEX, (rv, s) => {
-            // We have to combine the rules for things that *could* be identifiers to 
+            // We have to combine the rules for things that *could* be identifiers to
             // prevent certain kinds of parse errors.
             // If we were to split these rules out:
             // .A -> DOT IDENTIFIER, should be Error.
@@ -94,7 +98,7 @@ namespace ZStewart.KOSLisp.Parser {
               throw new InvalidIdentifier(
                 "Invalid identifier. Cannot have adjacent dots or end with dot.",
                 s);
-            if (rv.StartsWith(":") && rv.Contains("."))
+            if ((rv.StartsWith(":") || rv.StartsWith("&")) && rv.Contains("."))
               throw new InvalidIdentifier(
                 "Invalid identifier. Keword identifiers cannot contain dot.", s);
             return RawToken.Create(rv, s, LispTokType.IDENTIFIER);
@@ -154,14 +158,14 @@ namespace ZStewart.KOSLisp.Parser {
     private readonly TextReader source;
     private SourceInformation currentLoc;
 
-    // Delegate these private variables to the source location structure. This 
-    // automatically keeps them in sync so that the currentLoc can be copied out at any 
+    // Delegate these private variables to the source location structure. This
+    // automatically keeps them in sync so that the currentLoc can be copied out at any
     // time. Since it's a struct, no reference is kept.
     private string Line {
       get { return currentLoc.Line; }
       set { currentLoc.Line = value; }
     }
-    
+
     private int LineNumber {
       get { return currentLoc.LineNumber; }
       set { currentLoc.LineNumber = value; }
