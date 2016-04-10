@@ -13,22 +13,42 @@ namespace ZStewart.KOSLisp.Interpreter {
   /// </summary>
   public sealed class LispInterpreter {
     #region Singletonness
-    private readonly static LispInterpreter instance = new LispInterpreter();
-    public static LispInterpreter Instance { get { return instance; } }
+    private static LispInterpreter _instance;
+    public static LispInterpreter Instance {
+      get {
+        if (_instance != null) return _instance;
+
+        _instance = new LispInterpreter();
+        return _instance;
+      }
+    }
     private LispInterpreter () { }
     #endregion Singletonness
 
     /// <summary>
     /// The currently set exception.
     /// </summary>
-    private LispObject exception = null;
+    private ExceptionType exception = null;
 
-    public LispObject ErrorOccurred() {
-      return exception;
+    /// <summary>
+    /// Checks the current exception value.
+    /// </summary>
+    public ExceptionType Exception { get { return exception; } }
+
+    /// <summary>
+    /// Tells whether there is a currently set exception.
+    /// </summary>
+    public bool ExceptionOccurred { get { return exception != null; } }
+
+    /// <summary>
+    /// Resets the exception status
+    /// </summary>
+    public void ClearException() {
+      exception = null;
     }
 
-    public void SetErrorString(
-        LispObject errorType, string message, params object[] args) {
+    public void SetExceptionString(
+        LispTypeObject exceptionType, string message, params object[] args) {
       throw new NotImplementedException();
       // TODO(zstewar1): Setting errors.
     }
