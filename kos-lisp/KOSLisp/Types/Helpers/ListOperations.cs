@@ -134,7 +134,17 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       while (list != NilType.Nil) {
         cnt++;
         list = GetCdr(list);
-        if (list == null) return null;
+        if (list == null) {
+          if (LispInterpreter.CheckException(ExceptionType.TypeError)) {
+            var cause = LispInterpreter.Exception;
+            LispInterpreter.ClearException();
+            var extended = ExceptionType.CreateTypeError(
+              "Count list failed: not a proper list.");
+            extended.__cause__ = cause;
+            LispInterpreter.SetException(extended);
+          }
+          return null;
+        }
       }
       return cnt;
     }

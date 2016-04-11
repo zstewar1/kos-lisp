@@ -188,9 +188,13 @@ namespace ZStewart.KOSLisp.Types {
       // TODO(zstewar1): This could raise an error. Later we should change these to call
       // the in-language --str-- method and return the value from that.
       var len = ListOperations.Count(this);
-      // TODO(zstewar1): Check if this is an improper list error.
-      // if (!len.HasValue) return null;
-      if (len.HasValue && len.Value == 2) {
+      if (!len.HasValue) {
+        if (LispInterpreter.CheckException(ExceptionType.TypeError)) {
+          LispInterpreter.ClearException();
+        } else {
+          return null;
+        }
+      } else if (len.Value == 2) {
         var instance = TypeType.IsInstance(Car, SymbolType.Symbol);
         if (!instance.HasValue) return null;
         if (instance.Value) {
