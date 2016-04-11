@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+
+using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
@@ -47,23 +49,28 @@ namespace ZStewart.KOSLisp.Types {
       var pargs = Arguments.GetPositionalArguments(args);
       if (pargs == null) return null;
       if (subtype != Cons && pargs.Count > 0) {
-        // TODO(zstewar1): Expected no additional arguments.
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "got {0} arguments, expected 1", pargs.Count + 1));
         return null;
       } else if (subtype == Cons && pargs.Count != 2) {
-        // TODO(zstewar1): Expected exactly two arguments.
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "got {0} arguments, expected 3", pargs.Count + 1));
         return null;
       }
       var result = new ConsType();
       result.__class__ = (LispTypeObject)subtype;
-      // TODO(zstewar1): if subtype is the dynamic type type, add an __dict__
+      // TODO(zstewar1): add an __dict__ for subtypes (dynamic types). (maybe, unless we
+      // setup to do this somewhere else).
       return result;
     }
 
     private static LispObject Init (LispObject self, LispObject args) {
       var pargs = Arguments.GetPositionalArguments(args);
+      // TODO(zstewar1): subtype argument checking as above.
       if (pargs == null) return null;
       if (pargs.Count != 2) {
-        // TODO(zstewar1): Wrong argument count
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "got {0} arguments, expected 3", pargs.Count + 1));
         return null;
       }
       ((ConsType)self).Car = pargs[0];
@@ -80,7 +87,8 @@ namespace ZStewart.KOSLisp.Types {
       if (instance is ConsType) {
         return (instance as ConsType).Car;
       } else {
-        // TODO(zstewar1): Set error.
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "instance must be of type {0}, was {1}", Cons, instance.__class__));
         return null;
       }
     }
@@ -89,7 +97,8 @@ namespace ZStewart.KOSLisp.Types {
       if (instance is ConsType) {
         return (instance as ConsType).Cdr;
       } else {
-        // TODO(zstewar1): Set Error.
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "instance must be of type {0}, was {1}", Cons, instance.__class__));
         return null;
       }
     }
@@ -99,7 +108,8 @@ namespace ZStewart.KOSLisp.Types {
         (instance as ConsType).Car = value;
         return NilType.Nil;
       } else {
-        // TODO(zstewar1): Set Error.
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "instance must be of type {0}, was {1}", Cons, instance.__class__));
         return null;
       }
     }
@@ -109,7 +119,8 @@ namespace ZStewart.KOSLisp.Types {
         (instance as ConsType).Cdr = value;
         return NilType.Nil;
       } else {
-        // TODO(zstewar1): Set Error.
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "instance must be of type {0}, was {1}", Cons, instance.__class__));
         return null;
       }
     }

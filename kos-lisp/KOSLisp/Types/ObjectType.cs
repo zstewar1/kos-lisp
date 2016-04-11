@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Types {
@@ -44,6 +46,7 @@ namespace ZStewart.KOSLisp.Types {
       // See http://stackoverflow.com/a/19277824/1036501
 
       // TODO(zstewar1): Check that type is a "type" (Correctly, using isinstance)
+      // (Possibly not necessary, since all types should be LispTypeObject-s)
       if (type is LispTypeObject) {
         var t = (type as LispTypeObject);
         if (t == Object) {
@@ -56,7 +59,8 @@ namespace ZStewart.KOSLisp.Types {
           return null;
         }
       } else {
-        // TODO(zstewar1): Set an error.
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "Argument must be a type"));
         return null;
       }
     }
@@ -80,38 +84,33 @@ namespace ZStewart.KOSLisp.Types {
       return CallableOperations.Call(m, args);
     }
 
+    /// <summary>
+    /// Get an attribute of an object using its builtin __getattr__, or --getattribute--
+    /// if provided.
+    /// </summary>
     public static LispObject GetAttribute(LispObject obj, LispObject attribute) {
-      // TODO(zstewar1): maybe check that attribute is a string?
-      LispTypeObject objType = obj.__class__;
-      LispObject __mro__ = objType.__mro__;
-      for (;;) {
+      // TODO(zstewar1): maybe check that attribute is a symbol?
+      foreach (var objType in ListOperations.IterMro(obj)) {
+        // Propagate errors.
+        if (objType == null) return null;
         if (objType.__getattr__ != null) {
           return objType.__getattr__(obj, attribute);
         } else {
           LispObject __getattr__ = MappingOperations.GetItem(
             objType.__dict__, getattrattr);
           if (__getattr__ == null) {
-            // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
+            if (LispInterpreter.CheckException(ExceptionType.KeyError))
+              LispInterpreter.ClearException();
+            else return null;
           } else {
             return CallableOperations.Call(
               __getattr__, IConsType.ToLispTuple(obj, attribute));
           }
         }
-        if (__mro__ == NilType.Nil) {
-          // TODO(zstewar1): __getcar__ not found error.
-          return null;
-        }
-        LispObject nextType = ListOperations.GetCar(__mro__);
-        if (nextType == null) return null; // Propagate errors.
-        objType = nextType as LispTypeObject;
-        if (objType == null) {
-          // TODO(zstewar1): set a type error: types must be type type. (This should be
-          // impossible anyway, since we should prevent setting arbitrary types).
-          return null;
-        }
-        __mro__ = ListOperations.GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.
       }
+      LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
+      return null;
     }
     #endregion Static Helper Methods
   }

@@ -12,45 +12,67 @@ namespace ZStewart.KOSLisp.Interpreter {
   /// This is a singleton currently.
   /// </summary>
   public sealed class LispInterpreter {
-    #region Singletonness
-    private static LispInterpreter _instance;
-    public static LispInterpreter Instance {
-      get {
-        if (_instance != null) return _instance;
-
-        _instance = new LispInterpreter();
-        return _instance;
-      }
-    }
-    private LispInterpreter () { }
-    #endregion Singletonness
-
     /// <summary>
     /// The currently set exception.
     /// </summary>
-    private ExceptionType exception = null;
+    private static ExceptionType exception = null;
 
     /// <summary>
     /// Checks the current exception value.
     /// </summary>
-    public ExceptionType Exception { get { return exception; } }
+    public static ExceptionType Exception { get { return exception; } }
 
     /// <summary>
     /// Tells whether there is a currently set exception.
     /// </summary>
-    public bool ExceptionOccurred { get { return exception != null; } }
+    public static bool ExceptionOccurred { get { return exception != null; } }
 
     /// <summary>
     /// Resets the exception status
     /// </summary>
-    public void ClearException() {
+    public static void ClearException() {
       exception = null;
     }
 
-    public void SetExceptionString(
-        LispTypeObject exceptionType, string message, params object[] args) {
-      throw new NotImplementedException();
-      // TODO(zstewar1): Setting errors.
+    /// <summary>
+    /// Checks if the set exception is of the given type.
+    /// Explodes if there is no exception set.
+    /// May also explode if stuff is too messed up.
+    /// </summary>
+    public static bool CheckException(LispTypeObject type) {
+      if (exception == null)
+        throw new InvalidOperationException(
+          "Cannot check exception type -- no exception");
+      // Because setting an exception fails if there is already an exception, this call
+      // will just auto-explode if there is an error while type-checking. This may not be
+      // the desired final behavior, but for now it does mean we're pretty much guaranteed
+      // that instance != null.
+      var instance = TypeType.IsInstance(exception, type);
+      return instance.Value;
+    }
+
+    /// <summary>
+    /// Sets the exception to the given exception. Guaranteed to always set *an*
+    /// exception, though it can set a different exception if there is an error with
+    /// setting the given one.
+    /// </summary>
+    public static void SetException(LispObject exc) {
+      if (exception != null) {
+        throw new InvalidOperationException(
+            string.Format(
+              "Attempting to throw new exception:\n{0}\nbut the exception was already " +
+              "set to:\n{1}.", exc, exception));
+      }
+      var instance = TypeType.IsInstance(exc, ExceptionType.Exception);
+      // If there is no value, then just keep the exception set by isinstance.
+      if (instance.HasValue) {
+        if (instance.Value) {
+          exception = (ExceptionType)exc;
+        } else {
+          exception = ExceptionType.CreateTypeError(
+            "Exceptions must derive from Exception");
+        }
+      }
     }
   }
 }

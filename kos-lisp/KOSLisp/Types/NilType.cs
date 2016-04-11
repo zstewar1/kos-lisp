@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ZStewart.KOSLisp.Interpreter;
+
 namespace ZStewart.KOSLisp.Types {
   public sealed class NilType : SymbolType {
     private NilType () : base("nil") { }
@@ -32,8 +34,11 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject New (LispObject subtype, LispObject args) {
-      // TODO(zstewar1): Set error when creating a new Nil.
-      return null;
+      if (args != Nil) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(string.Format(
+          "{0} takes no arguments.", subtype)));
+      }
+      return Nil;
     }
     #endregion Static Type Setup
 

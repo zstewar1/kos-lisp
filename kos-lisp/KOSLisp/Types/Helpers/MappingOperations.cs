@@ -1,6 +1,8 @@
-﻿namespace ZStewart.KOSLisp.Types.Helpers {
+﻿using ZStewart.KOSLisp.Interpreter;
+
+namespace ZStewart.KOSLisp.Types.Helpers {
   public static class MappingOperations {
-    private static readonly LispObject getitemattr = StringType.Create("--getitem--");
+    private static readonly LispObject getitemattr = SymbolType.Create("--getitem--");
 
     public static LispObject GetItem(LispObject target, LispObject key) {
       foreach (var targetType in ListOperations.IterMro(target)) {
@@ -12,14 +14,17 @@
         } else {
           LispObject __getitem__ = GetItem(targetType.__dict__, getitemattr);
           if (__getitem__ == null) {
-            // TODO(zstewa1): Check the error. Continue for KeyError, abort for all else.
+            if (LispInterpreter.CheckException(ExceptionType.KeyError))
+              LispInterpreter.ClearException();
+            else return null;
           } else {
             return CallableOperations.Call(
               __getitem__, IConsType.ToLispTuple(target, key));
           }
         }
       }
-      // TODO(zstewar1): Set error for missing __getitem__
+      LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        "\"{0}\" object is not subscriptable", target.__class__));
       return null;
     }
 

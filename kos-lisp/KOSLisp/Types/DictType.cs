@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+
+using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
@@ -37,10 +39,13 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject GetItem(LispObject dict, LispObject key) {
+      LispInterpreter.SetException(ExceptionType.CreateKeyError(
+        "the key {0} was not found in the dictionary", key));
       return null;
     }
 
     private static LispObject SetItem(LispObject dict, LispObject key, LispObject value) {
+      LispInterpreter.SetException(ExceptionType.CreateNotImplemented(""));
       return null;
     }
     #endregion Static Type Setup

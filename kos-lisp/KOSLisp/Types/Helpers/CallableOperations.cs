@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ZStewart.KOSLisp.Interpreter;
+
 namespace ZStewart.KOSLisp.Types.Helpers {
   /// <summary>
   /// Helpers for working with callables.
   /// </summary>
   public static class CallableOperations {
-    private static readonly LispObject callattr = StringType.Create("--call--");
+    private static readonly LispObject callattr = SymbolType.Create("--call--");
 
     /// <summary>
     /// Call a Lisp object as a function.
@@ -29,13 +31,16 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           LispObject __call__ = MappingOperations.GetItem(
             targetType.__dict__, callattr);
           if (__call__ == null) {
-            // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
+            if (LispInterpreter.CheckException(ExceptionType.KeyError))
+              LispInterpreter.ClearException();
+            else return null;
           } else {
             return Call(__call__, IConsType.Create(callable, args));
           }
         }
       }
-      // TODO(zstewar1): __call__ not found error.
+      LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        "\"{0}\" object is not callable", callable.__class__));
       return null;
     }
   }

@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ZStewart.KOSLisp.Interpreter;
+
 namespace ZStewart.KOSLisp.Types.Helpers {
   public static class Arguments {
 
     /// <summary>
-    /// Reads an argument list and extracts a list of arguments and dict of keyword 
+    /// Reads an argument list and extracts a list of arguments and dict of keyword
     /// arguments.
     /// </summary>
     /// <param name="args">The lisp object to read arguments from. Must be a lsit.</param>
@@ -42,7 +44,10 @@ namespace ZStewart.KOSLisp.Types.Helpers {
               lastKeyword, "to-unprefixed", NilType.Nil);
             if (keywordSymbol == null) return;
             if (kwargs.ContainsKey(keywordSymbol)) {
-              // TODO(zstewar1): Error duplicate key.
+              LispInterpreter.SetException(ExceptionType.CreateTypeError(string.Format(
+                "got multiple values for keyword argument {0}", lastKeyword)));
+              // TODO(zstewar1): Find the current function name somehow, to insert it in
+              // the error message. Maybe read it from the call stack, once we have that.
               return;
             }
             kwargs.Add(keywordSymbol, arg);
@@ -54,8 +59,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
             if (kwdTypeCheck.Value) {
               lastKeyword = arg;
             } else {
-              // TODO(zstewar1): Set argument error for non-keyword argument after keyword
-              // argument.
+              // TODO(zstewar1): method name in exception.
+              LispInterpreter.SetException(ExceptionType.CreateTypeError(string.Format(
+                "positional argument follows keyword argument")));
               return;
             }
           }
@@ -74,7 +80,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         if (args == null) return;
       }
       if (lastKeyword != null) {
-        // TODO(zstewar1): Unmatched keyword exception.
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(string.Format(
+          "unmatched keyword argument {0}", lastKeyword)));
+        // TODO(zstewar1): Method name in exception.
         return;
       }
       positionalArgs = pargs;
@@ -87,14 +95,17 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       GetArguments(args, out pargs, out kwargs);
       if (pargs == null || kwargs == null) return null;
       if (kwargs.Count > 0) {
-        // TODO(zstewar1): Set Error "unexpected keyword arguments"
+        // TODO(zstewar1): Set method name in exception, and add ability name the
+        // unexpected argument values.
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(string.Format(
+          "unexpected keyword argument")));
         return null;
       }
       return pargs;
     }
 
     /// <summary>
-    /// Reads an argument list and extracts a list of arguments and dict of keyword 
+    /// Reads an argument list and extracts a list of arguments and dict of keyword
     /// arguments.
     /// </summary>
     /// <param name="args">The lisp object to read arguments from. Must be a lsit.</param>

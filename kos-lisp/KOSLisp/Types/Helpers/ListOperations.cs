@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+
+using ZStewart.KOSLisp.Interpreter;
 
 namespace ZStewart.KOSLisp.Types.Helpers {
   public static class ListOperations {
-    private static readonly LispObject getcarattr = StringType.Create("--getcar--");
-    private static readonly LispObject getcdrattr = StringType.Create("--getcdr--");
-    private static readonly LispObject setcarattr = StringType.Create("--setcar--");
-    private static readonly LispObject setcdrattr = StringType.Create("--setcdr--");
+    private static readonly LispObject getcarattr = SymbolType.Create("--getcar--");
+    private static readonly LispObject getcdrattr = SymbolType.Create("--getcdr--");
+    private static readonly LispObject setcarattr = SymbolType.Create("--setcar--");
+    private static readonly LispObject setcdrattr = SymbolType.Create("--setcdr--");
 
     public static LispObject GetCar(LispObject target) {
       LispTypeObject targetType = target.__class__;
@@ -20,7 +23,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         } else {
           LispObject __getcar__ = MappingOperations.GetItem(targetType.__dict__, getcarattr);
           if (__getcar__ == null) {
-            // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
+            if (LispInterpreter.CheckException(ExceptionType.KeyError))
+              LispInterpreter.ClearException();
+            else return null;
           } else {
             return CallableOperations.Call(__getcar__, IConsType.ToLispTuple(target));
           }
@@ -30,17 +35,16 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         __mro__ = GetCdr(__mro__);
         if (__mro__ == null) return null; // Propagate errors.
         if (__mro__ == NilType.Nil) {
-          // TODO(zstewar1): __getcar__ not found error.
+          LispInterpreter.SetException(ExceptionType.CreateTypeError(
+            "cannot get car of \"{0}\" object", target.__class__));
           return null;
         }
         LispObject nextType = GetCar(__mro__);
         if (nextType == null) return null; // Propagate errors.
-        targetType = nextType as LispTypeObject;
-        if (targetType == null) {
-          // TODO(zstewar1): set a type error: types must be type type. (This should be
-          // impossible anyway, since we should prevent setting arbitrary types).
-          return null;
-        }
+        // Just accept cast errors. It should be impossible for any object in the MRO to
+        // be assigned to a non-type and impossible for a type not to inheirt from
+        // LispTypeObject.
+        targetType = (LispTypeObject)nextType;
       }
     }
 
@@ -58,13 +62,16 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           LispObject __getcdr__ = MappingOperations.GetItem(
             targetType.__dict__, getcdrattr);
           if (__getcdr__ == null) {
-            // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
+            if (LispInterpreter.CheckException(ExceptionType.KeyError))
+              LispInterpreter.ClearException();
+            else return null;
           } else {
             return CallableOperations.Call(__getcdr__, IConsType.ToLispTuple(target));
           }
         }
       }
-      // TODO(zstewar1): No __getcdr__
+      LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        "cannot get cdr of \"{0}\" object", target.__class__));
       return null;
     }
 
@@ -78,14 +85,17 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         } else {
           LispObject __setcar__ = MappingOperations.GetItem(targetType.__dict__, setcarattr);
           if (__setcar__ == null) {
-            // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
+            if (LispInterpreter.CheckException(ExceptionType.KeyError))
+              LispInterpreter.ClearException();
+            else return null;
           } else {
             return CallableOperations.Call(
               __setcar__, IConsType.ToLispTuple(target, value));
           }
         }
       }
-      // TODO(zstewar1): No __setcar__
+      LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        "cannot set car of \"{0}\" object", target.__class__));
       return null;
     }
 
@@ -100,14 +110,17 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           LispObject __setcdr__ = MappingOperations.GetItem(
             targetType.__dict__, setcdrattr);
           if (__setcdr__ == null) {
-            // TODO(zstewar1): Check the error. Continue for KeyError, abort for all else.
+            if (LispInterpreter.CheckException(ExceptionType.KeyError))
+              LispInterpreter.ClearException();
+            else return null;
           } else {
             return CallableOperations.Call(
               __setcdr__, IConsType.ToLispTuple(target, value));
           }
         }
       }
-      // TODO(zstewar1): No __setcdr__
+      LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        "cannot set cdr of \"{0}\" object", target.__class__));
       return null;
     }
 
@@ -166,7 +179,10 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         if (next is T) {
           yield return next as T;
         } else {
-          // TODO(zstewar1): Set type error.
+          LispInterpreter.SetException(ExceptionType.CreateTypeError(string.Format(
+            "A builtin attempted to iterate the list {0} as C# type IEnumerable<{1}>, " +
+            "but there was an element of C# type {2}, which could not be cast to {1}",
+            list, typeof(T).Name, next.GetType().Name)));
           yield return null;
           yield break;
         }

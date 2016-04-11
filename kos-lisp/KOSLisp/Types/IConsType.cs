@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+
+using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
@@ -62,7 +64,8 @@ namespace ZStewart.KOSLisp.Types {
       if (instance is IConsType) {
         return (instance as IConsType).Car;
       } else {
-        // TODO(zstewar1): Set error.
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "instance must be of type {0}, was {1}", ICons, instance.__class__));
         return null;
       }
     }
@@ -71,7 +74,8 @@ namespace ZStewart.KOSLisp.Types {
       if (instance is IConsType) {
         return (instance as IConsType).Cdr;
       } else {
-        // TODO(zstewar1): Set Error.
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "instance must be of type {0}, was {1}", ICons, instance.__class__));
         return null;
       }
     }

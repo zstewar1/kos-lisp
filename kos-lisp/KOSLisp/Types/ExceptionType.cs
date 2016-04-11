@@ -58,7 +58,84 @@ namespace ZStewart.KOSLisp.Types {
         return _valueError;
       }
     }
+
+    private static LispTypeObject _keyError;
+    public static LispTypeObject KeyError {
+      get {
+        if (_keyError != null) return _keyError;
+
+        _keyError = new LispTypeObject {
+          __name__ = "KeyError",
+        };
+        _keyError.__class__ = TypeType.Type;
+        _keyError.__bases__ = IConsType.ToLispTuple(Exception);
+        _keyError.__mro__ = IConsType.ToLispTuple(
+          _keyError, Exception, ObjectType.Object);
+        _keyError = LispTypeObject.ConfigureType(_keyError);
+        if (_keyError == null) throw new InvalidOperationException();
+        return _keyError;
+      }
+    }
+
+    private static LispTypeObject _notImplemented;
+    public static LispTypeObject NotImplemented {
+      get {
+        if (_notImplemented != null) return _notImplemented;
+
+        _notImplemented = new LispTypeObject {
+          __name__ = "NotImplemented",
+        };
+        _notImplemented.__class__ = TypeType.Type;
+        _notImplemented.__bases__ = IConsType.ToLispTuple(Exception);
+        _notImplemented.__mro__ = IConsType.ToLispTuple(
+          _notImplemented, Exception, ObjectType.Object);
+        _notImplemented = LispTypeObject.ConfigureType(_notImplemented);
+        if (_notImplemented == null) throw new InvalidOperationException();
+        return _notImplemented;
+      }
+    }
     #endregion
+
+    #region Static Helper Methods
+    public static ExceptionType CreateException(string message, params object[] args) {
+      return new ExceptionType {
+        __class__ = Exception,
+        message = string.Format(message, args),
+      };
+    }
+
+    public static ExceptionType CreateTypeError(string message, params object[] args) {
+      return new ExceptionType {
+        __class__ = TypeError,
+        message = string.Format(message, args),
+      };
+    }
+
+    public static ExceptionType CreateValueError(string message, params object[] args) {
+      return new ExceptionType {
+        __class__ = ValueError,
+        message = string.Format(message, args),
+      };
+    }
+
+    public static ExceptionType CreateKeyError(string message, params object[] args) {
+      return new ExceptionType {
+        __class__ = KeyError,
+        message = string.Format(message, args),
+      };
+    }
+
+    public static ExceptionType CreateNotImplemented(
+        string message, params object[] args) {
+      return new ExceptionType {
+        __class__ = NotImplemented,
+        message = string.Format(message, args),
+      };
+    }
+    #endregion
+
+    public LispObject __cause__ { get; set; }
+    public LispObject __context__ { get; set; }
 
     private string message;
     public string Message { get { return message; } }
