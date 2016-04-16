@@ -1,8 +1,9 @@
 using System;
 using System.Reflection;
+using ZStewart.KOSLisp.Interpreter;
 
 namespace ZStewart.KOSLisp.Types {
-  public class BuiltinFunctionType {
+  public class BuiltinFunctionType : LispObject {
     #region Static Type Setup
     private static LispTypeObject _builtinFunction;
     public static LispTypeObject BuiltinFunction {
@@ -22,16 +23,46 @@ namespace ZStewart.KOSLisp.Types {
         return _builtinFunction;
       }
     }
+
+    private static LispObject Call (LispObject self, LispObject args) {
+      if (self is BuiltinFunctionType) {
+        return ((BuiltinFunctionType)self).Call(args);
+      } else {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "First argument must be a BuiltinFunction"));
+        return null;
+      }
+    }
     #endregion Static Type Setup
 
     #region Static Helpers
+    /// <summary>
+    /// Create a bound method for the specified methodinfo.
+    /// </summary>
+    /// <param name="boundMethod">
+    /// The method to be called by this builtin function. This must be static.
+    /// </param>
+    /// <returns>
+    /// A BuiltinFunction which calls the specified function.
+    /// </returns>
     public BuiltinFunctionType Create(MethodInfo boundMethod) {
-      return new BuiltinFunctionType {
-        boundMethod = boundMethod,
+      return new BuiltinFunctionType(boundMethod) {
+        __class__ = BuiltinFunction,
       };
     }
-    #endregion Static Helper
+    #endregion Static Helpers
+
+    protected BuiltinFunctionType(MethodInfo boundMethod) {
+      Preconditions.CheckArgument(
+        boundMethod.IsStatic, "Can only bind to static methods.");
+      this.boundMethod = boundMethod;
+    }
 
     private MethodInfo boundMethod;
+
+    private LispObject Call (LispObject args) {
+      LispInterpreter.SetException(ExceptionType.CreateNotImplemented(""));
+      return null;
+    }
   }
 }
