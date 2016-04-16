@@ -40,4 +40,10 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\kos-lisp\kos-lisp.csproj">
+      <Project>{BE92492D-605F-4527-830A-FC7269C61380}</Project>
+      <Name>kos-lisp</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
