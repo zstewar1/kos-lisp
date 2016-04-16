@@ -137,8 +137,7 @@ namespace ZStewart.KOSLisp.Parser {
           .AddMatcher("\"", RawToken.CreateTokenCreator(LispTokType.ENDSTRING))
           .AddMatcher(
             @".", GenericToken.CreateTokenCreator(LispTokType.CHARACTER, c => {
-              Preconditions.CheckArgument(
-                c.Length == 1, "Character match must be of length 1.");
+              if (!(c.Length == 1)) throw new ArgumentException();
               return c[0];
             }
           ))
@@ -178,10 +177,10 @@ namespace ZStewart.KOSLisp.Parser {
     #endregion Instance Properties
 
     private LispLexer (string fileName, TextReader source) {
-      this.source = Preconditions.CheckNotNull(source);
-      currentLoc = new SourceInformation(
-        Preconditions.CheckNotNullOrEmpty(fileName),
-        "", 0, 0);
+      if (!(!string.IsNullOrEmpty(fileName))) throw new ArgumentException();
+      if (!(source != null)) throw new ArgumentNullException();
+      this.source = source;
+      currentLoc = new SourceInformation(fileName, "", 0, 0);
     }
 
     public Token<LispTokType> Next (LispLexMode mode) {

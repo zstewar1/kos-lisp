@@ -53,8 +53,7 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Helpers
 
     protected BuiltinFunctionType(MethodInfo boundMethod) {
-      Preconditions.CheckArgument(
-        boundMethod.IsStatic, "Can only bind to static methods.");
+      if (!(boundMethod.IsStatic)) throw new ArgumentException();
       this.boundMethod = boundMethod;
     }
 

@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
+
 using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Types.Helpers;
 
@@ -82,7 +84,8 @@ namespace ZStewart.KOSLisp.Parser {
     /// </summary>
     /// <returns>A list of tokens.</returns>
     private LispObject ParseList () {
-      Preconditions.CheckState(tok.TokenType == LispTokType.OPEN_PAREN);
+      if (!(tok.TokenType == LispTokType.OPEN_PAREN))
+        throw new InvalidOperationException();
       var start = tok;
       LispObject list = NilType.Nil;
       LispObject end = list;
@@ -138,7 +141,8 @@ namespace ZStewart.KOSLisp.Parser {
     }
 
     LispObject ParseString() {
-      Preconditions.CheckState(tok.TokenType == LispTokType.STARTSTRING);
+      if (!(tok.TokenType == LispTokType.STARTSTRING))
+        throw new InvalidOperationException();
       var start = tok;
       var builder = new StringBuilder();
       while (true) {
@@ -160,7 +164,7 @@ namespace ZStewart.KOSLisp.Parser {
     }
 
     LispObject ParseQuoted() {
-      Preconditions.CheckState(tok.TokenType == LispTokType.QUOTE);
+      if (!(tok.TokenType == LispTokType.QUOTE)) throw new InvalidOperationException();
       return ParseWrappingExpression("quote", "quoted");
     }
 
@@ -184,8 +188,9 @@ namespace ZStewart.KOSLisp.Parser {
     }
 
     private LispObject ParseBackquote () {
-      Preconditions.CheckState(tok.TokenType == LispTokType.BACKQUOTE);
-      Preconditions.CheckState(backquoteDepth >= unquoteDepth);
+      if (!(tok.TokenType == LispTokType.BACKQUOTE))
+        throw new InvalidOperationException();
+      if (!(backquoteDepth >= unquoteDepth)) throw new InvalidOperationException();
       var originalBackquoteDepth = backquoteDepth;
       try {
         backquoteDepth++;
@@ -196,8 +201,8 @@ namespace ZStewart.KOSLisp.Parser {
     }
 
     private LispObject ParseUnquote () {
-      Preconditions.CheckState(tok.TokenType == LispTokType.UNQUOTE);
-      Preconditions.CheckState(backquoteDepth >= unquoteDepth);
+      if (!(tok.TokenType == LispTokType.UNQUOTE)) throw new InvalidOperationException();
+      if (!(backquoteDepth >= unquoteDepth)) throw new InvalidOperationException();
       if (backquoteDepth == 0)
         throw new IllegalUnquote(
           "Unquote is only allowed inside of backquote.", tok.SourceInformation);
@@ -214,8 +219,8 @@ namespace ZStewart.KOSLisp.Parser {
     }
 
     private LispObject ParseSplice () {
-      Preconditions.CheckState(tok.TokenType == LispTokType.SPLICE);
-      Preconditions.CheckState(backquoteDepth >= unquoteDepth);
+      if (!(tok.TokenType == LispTokType.SPLICE)) throw new InvalidOperationException();
+      if (!(backquoteDepth >= unquoteDepth)) throw new InvalidOperationException();
       if (backquoteDepth == 0)
         throw new IllegalUnquote(
           "Splice is only allowed inside of backquote", tok.SourceInformation);
