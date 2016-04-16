@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 
-namespace KOSLispTest {
+namespace ZStewart.KOSLisp.Types {
   [TestFixture()]
   public class Test {
     [Test()]

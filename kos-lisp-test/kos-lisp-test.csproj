@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{023D9138-02A4-4C96-B624-87D3C755EB4E}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>KOSLispTest</RootNamespace>
+    <RootNamespace>ZStewart.KOSLisp</RootNamespace>
     <AssemblyName>kos-lisp-test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
@@ -34,7 +34,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Test.cs" />
+    <Compile Include="Types/Test.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
