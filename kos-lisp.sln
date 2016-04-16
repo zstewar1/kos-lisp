@@ -3,12 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kos-lisp", "kos-lisp\kos-lisp.csproj", "{BE92492D-605F-4527-830A-FC7269C61380}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kos-lisp-test", "kos-lisp-test\kos-lisp-test.csproj", "{023D9138-02A4-4C96-B624-87D3C755EB4E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{023D9138-02A4-4C96-B624-87D3C755EB4E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{023D9138-02A4-4C96-B624-87D3C755EB4E}.Debug|x86.Build.0 = Debug|Any CPU
+		{023D9138-02A4-4C96-B624-87D3C755EB4E}.Release|x86.ActiveCfg = Release|Any CPU
+		{023D9138-02A4-4C96-B624-87D3C755EB4E}.Release|x86.Build.0 = Release|Any CPU
 		{BE92492D-605F-4527-830A-FC7269C61380}.Debug|x86.ActiveCfg = Debug|x86
 		{BE92492D-605F-4527-830A-FC7269C61380}.Debug|x86.Build.0 = Debug|x86
 		{BE92492D-605F-4527-830A-FC7269C61380}.Release|x86.ActiveCfg = Release|x86

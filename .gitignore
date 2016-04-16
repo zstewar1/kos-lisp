@@ -1,5 +1,7 @@
 # System-local run script
 run.bash
+test.bash
+
 
 #Autosave files
 *~
