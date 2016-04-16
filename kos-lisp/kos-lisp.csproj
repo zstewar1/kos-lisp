@@ -58,6 +58,7 @@
     <Compile Include="KOSLisp\Types\Attributes\PositionalArgument.cs" />
     <Compile Include="KOSLisp\Types\Attributes\RestArgument.cs" />
     <Compile Include="KOSLisp\Types\Attributes\RestKeywordArgument.cs" />
+    <Compile Include="KOSLisp\Types\CallMagic.cs" />
     <Compile Include="KOSLisp\Types\DictType.cs" />
     <Compile Include="KOSLisp\Types\Helpers\Arguments.cs" />
     <Compile Include="KOSLisp\Types\Helpers\CallableOperations.cs" />
