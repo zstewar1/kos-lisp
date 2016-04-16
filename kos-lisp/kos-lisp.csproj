@@ -8,6 +8,7 @@
     <RootNamespace>ZStewart</RootNamespace>
     <AssemblyName>kos-lisp</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -20,7 +21,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -54,6 +54,10 @@
   <ItemGroup>
     <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
     <Compile Include="KOSLisp\Interpreter\Errors.cs" />
+    <Compile Include="KOSLisp\Types\Attributes\KeywordArgument.cs" />
+    <Compile Include="KOSLisp\Types\Attributes\PositionalArgument.cs" />
+    <Compile Include="KOSLisp\Types\Attributes\RestArgument.cs" />
+    <Compile Include="KOSLisp\Types\Attributes\RestKeywordArgument.cs" />
     <Compile Include="KOSLisp\Types\DictType.cs" />
     <Compile Include="KOSLisp\Types\Helpers\Arguments.cs" />
     <Compile Include="KOSLisp\Types\Helpers\CallableOperations.cs" />

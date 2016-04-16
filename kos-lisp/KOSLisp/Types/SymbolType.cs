@@ -29,9 +29,24 @@ namespace ZStewart.KOSLisp.Types {
     #endregion
 
     #region Static Helpers
+    /// <summary>
+    /// String Comparer used for comparing symbols.
+    /// </summary>
+    public static StringComparer SymbolComparer {
+      get { return StringComparer.InvariantCultureIgnoreCase; }
+    }
+
+    /// <summary>
+    /// Shortcut function for doing symbol comparison of arbitrary strings. This compares
+    /// the strings using the SymbolComparer.
+    /// </summary>
+    public static int Compare(string s1, string s2) {
+      return SymbolComparer.Compare(s1, s2);
+    }
+
     public static LispObject Create(string identifier) {
       SymbolType val;
-      if (UniqueSymbolDictionary.TryGetValue(identifier.ToUpperInvariant(), out val))
+      if (UniqueSymbolDictionary.TryGetValue(identifier, out val))
         return val;
       val = new SymbolType(identifier);
       val.__class__ = Symbol;
@@ -40,9 +55,11 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Helpers
 
     private static readonly Dictionary<string, SymbolType> UniqueSymbolDictionary =
-      new Dictionary<string, SymbolType>();
+      new Dictionary<string, SymbolType>(SymbolComparer);
 
     protected SymbolType (string identifier) {
+      // We don't need to do this for unique dictionary comparisons, but we do it so that
+      // we get uniform output from read out symbols.
       Identifier = identifier.ToUpperInvariant();
       if (UniqueSymbolDictionary.ContainsKey(Identifier)) {
         throw new InvalidOperationException(

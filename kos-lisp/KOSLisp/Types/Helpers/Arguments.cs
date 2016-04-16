@@ -23,10 +23,10 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     public static void GetArguments (
         LispObject args,
         out List<LispObject> positionalArgs,
-        out Dictionary<LispObject, LispObject> keywordArgs) {
+        out Dictionary<string, LispObject> keywordArgs) {
       // Change null to an empty set for convenience.
       var pargs = new List<LispObject>();
-      var kwargs = new Dictionary<LispObject, LispObject>();
+      var kwargs = new Dictionary<string, LispObject>(SymbolType.SymbolComparer);
 
       // Setup "on error" values, so we can just return if there's an error.
       positionalArgs = null;
@@ -40,17 +40,16 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         if (arg == null) return;
         if (startedKeywords) {
           if (lastKeyword != null) {
-            var keywordSymbol = ObjectType.Call(
-              lastKeyword, "to-unprefixed", NilType.Nil);
-            if (keywordSymbol == null) return;
-            if (kwargs.ContainsKey(keywordSymbol)) {
+            // TODO(zstewar1): Change when actual keywords exist.
+            var keyword = (lastKeyword as SymbolType).Identifier;
+            if (kwargs.ContainsKey(keyword)) {
               LispInterpreter.SetException(ExceptionType.CreateTypeError(string.Format(
                 "got multiple values for keyword argument {0}", lastKeyword)));
               // TODO(zstewar1): Find the current function name somehow, to insert it in
               // the error message. Maybe read it from the call stack, once we have that.
               return;
             }
-            kwargs.Add(keywordSymbol, arg);
+            kwargs.Add(keyword, arg);
             lastKeyword = null;
           } else {
             // TODO(zstewar1): Change to the keyword symbol subclass once implemented.
@@ -91,7 +90,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
 
     public static List<LispObject> GetPositionalArguments(LispObject args) {
       List<LispObject> pargs;
-      Dictionary<LispObject, LispObject> kwargs;
+      Dictionary<string, LispObject> kwargs;
       GetArguments(args, out pargs, out kwargs);
       if (pargs == null || kwargs == null) return null;
       if (kwargs.Count > 0) {
@@ -124,7 +123,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       keywordArgs = null;
 
       List<LispObject> pargs;
-      Dictionary<LispObject, LispObject> kwargs;
+      Dictionary<string, LispObject> kwargs;
       GetArguments(args, out pargs, out kwargs);
       if (pargs == null || kwargs == null) return;
 
@@ -133,6 +132,63 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       // TODO(zstewar1): Convert kwargs, check its value.
       positionalArgs = convertedPargs;
       keywordArgs = null;
+    }
+
+    /// <summary>
+    /// Converts the given lisp object to the destination type.
+    /// </summary>
+    /// <param name="destType">The type of object to convert to.</param>
+    /// <param name="source">The lisp object to convert.</param>
+    /// <param name="marshaled">Output parameter for the marshaled object.</param>
+    /// <returns>True if the conversion succeeded, false if an error was set.</returns>
+    public static bool Marshal(Type destType, LispObject source, out object marshaled) {
+      // Marshal any parameter which is a plain object or lisp object (or of a type 
+      // appropriate to recieve such) to the raw lisp object.
+      if (destType.IsAssignableFrom(source.GetType())) {
+        marshaled = source;
+        return true;
+      } 
+      // Marshal any nullable which received Nil as null (unless it was captured as a
+      // lisp object, in which case it would be captured as itself.
+      if (destType.IsClass || destType.IsInterface 
+          || (destType.IsGenericType 
+              && destType.GetGenericTypeDefinition() == typeof(Nullable<>))
+          && source == NilType.Nil) {
+        marshaled = null;
+        return true;
+      } 
+
+      // Explicitly check convertable types.
+      if (destType == typeof(double)) {
+        // TODO(zstewar1): Call number on the type to convert it.
+      }
+
+      // TODO(zstewar1): etc. for string and any other type which are reasonable to 
+      // convert.
+
+      marshaled = null;
+      LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        "Cannot marshal {0} (type {1}) as C# type {2}", source, source.__class__, 
+        destType));
+      return false;
+    }
+
+    /// <summary>
+    /// Converts the given lisp object to the destination type.
+    /// </summary>
+    /// <typeparam name="T">The type of object to convert to.</typeparam>
+    /// <param name="source">The lisp object to convert.</param>
+    /// <param name="marshaled">Output parameter for the marshaled object.</param>
+    /// <returns>True if the conversion succeeded, false if an error was set.</returns>
+    public static bool Marshal<T>(LispObject source, out T marshaled) {
+      object m;
+      if (!Marshal(typeof(T), source, out m)) {
+        marshaled = default(T);
+        return false;
+      } else {
+        marshaled = (T)m;
+        return true;
+      }
     }
   }
 }

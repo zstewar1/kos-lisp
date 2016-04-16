@@ -199,21 +199,13 @@ namespace ZStewart.KOSLisp.Types {
         if (!instance.HasValue) return null;
         if (instance.Value) {
           var symb = (SymbolType)Car;
-          if (string.Compare(
-              symb.Identifier, "quote",
-              StringComparison.InvariantCultureIgnoreCase) == 0) {
+          if (SymbolType.Compare(symb.Identifier, "quote") == 0) {
             return "'" + ListOperations.GetCar(Cdr).ToString();
-          } else if (string.Compare(
-              symb.Identifier, "--backquote--",
-              StringComparison.InvariantCultureIgnoreCase) == 0) {
+          } else if (SymbolType.Compare(symb.Identifier, "--backquote--") == 0) {
             return "`" + ListOperations.GetCar(Cdr).ToString();
-          } else if (string.Compare(
-              symb.Identifier, "--unquote--",
-              StringComparison.InvariantCultureIgnoreCase) == 0) {
+          } else if (SymbolType.Compare(symb.Identifier, "--unquote--") == 0) {
             return "," + ListOperations.GetCar(Cdr).ToString();
-          } else if (string.Compare(
-              symb.Identifier, "--splice--",
-              StringComparison.InvariantCultureIgnoreCase) == 0) {
+          } else if (SymbolType.Compare(symb.Identifier, "--splice--") == 0) {
             return ",@" + ListOperations.GetCar(Cdr).ToString();
           }
         }
