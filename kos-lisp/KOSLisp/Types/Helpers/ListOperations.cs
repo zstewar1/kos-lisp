@@ -52,81 +52,35 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     public static LispObject GetCdr([PositionalArgument] LispObject target) {
       // It should be possible to iterate over the MRO of the target this way because
       // GetCdr is not called inside of the iterator until MoveNext is called for the
-      // first time.
-      foreach (var targetType in IterMro(target)) {
-        // Propagate errors.
-        if (targetType == null) return null;
-        if (targetType._list_methods != null
-            && targetType._list_methods.__getcdr__ != null) {
-          return targetType._list_methods.__getcdr__(target);
-        } else {
-          LispObject __getcdr__ = MappingOperations.GetItem(
-            targetType.__dict__, getcdrattr);
-          if (__getcdr__ == null) {
-            if (LispInterpreter.CheckException(ExceptionType.KeyError))
-              LispInterpreter.ClearException();
-            else return null;
-          } else {
-            return CallableOperations.Call(__getcdr__, IConsType.ToLispTuple(target));
-          }
-        }
-      }
-      LispInterpreter.SetException(ExceptionType.CreateTypeError(
-        "cannot get cdr of \"{0}\" object", target.__class__));
-      return null;
+      // first time, so this method shouldn't produce an infinite recursion.
+      return LookupHelpers.Lookup(
+        target,
+        t => t._list_methods != null && t._list_methods.__getcdr__ != null,
+        t => t._list_methods.__getcdr__,
+        getcdrattr,
+        () => string.Format("cannot get cdr of \"{0}\" object", target.__class__));
     }
 
     public static LispObject SetCar(
-        [PositionalArgument] LispObject target, 
+        [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject value) {
-      foreach (var targetType in IterMro(target)) {
-        // Propagate errors.
-        if (targetType == null) return null;
-        if (targetType._list_methods != null
-            && targetType._list_methods.__setcar__ != null) {
-          return targetType._list_methods.__setcar__(target, value);
-        } else {
-          LispObject __setcar__ = MappingOperations.GetItem(targetType.__dict__, setcarattr);
-          if (__setcar__ == null) {
-            if (LispInterpreter.CheckException(ExceptionType.KeyError))
-              LispInterpreter.ClearException();
-            else return null;
-          } else {
-            return CallableOperations.Call(
-              __setcar__, IConsType.ToLispTuple(target, value));
-          }
-        }
-      }
-      LispInterpreter.SetException(ExceptionType.CreateTypeError(
-        "cannot set car of \"{0}\" object", target.__class__));
-      return null;
+      return LookupHelpers.Lookup(
+        target, value,
+        t => t._list_methods != null && t._list_methods.__setcar__ != null,
+        t => t._list_methods.__setcar__,
+        setcarattr,
+        () => string.Format("cannot set car of \"{0}\" object", target.__class__));
     }
 
     public static LispObject SetCdr(
         [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject value) {
-      foreach (var targetType in IterMro(target)) {
-        // Propagate errors.
-        if (targetType == null) return null;
-        if (targetType._list_methods != null
-            && targetType._list_methods.__setcdr__ != null) {
-          return targetType._list_methods.__setcdr__(target, value);
-        } else {
-          LispObject __setcdr__ = MappingOperations.GetItem(
-            targetType.__dict__, setcdrattr);
-          if (__setcdr__ == null) {
-            if (LispInterpreter.CheckException(ExceptionType.KeyError))
-              LispInterpreter.ClearException();
-            else return null;
-          } else {
-            return CallableOperations.Call(
-              __setcdr__, IConsType.ToLispTuple(target, value));
-          }
-        }
-      }
-      LispInterpreter.SetException(ExceptionType.CreateTypeError(
-        "cannot set cdr of \"{0}\" object", target.__class__));
-      return null;
+      return LookupHelpers.Lookup(
+        target, value,
+        t => t._list_methods != null && t._list_methods.__setcdr__ != null,
+        t => t._list_methods.__setcdr__,
+        setcdrattr,
+        () => string.Format("cannot set cdr of \"{0}\" object", target.__class__));
     }
 
     /// <summary>

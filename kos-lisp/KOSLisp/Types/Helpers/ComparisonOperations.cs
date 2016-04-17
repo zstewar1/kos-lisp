@@ -16,28 +16,86 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F/null</returns>
     public static LispObject Eq(
-        [PositionalArgument] LispObject target, 
+        [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject other) {
-      foreach (var targetType in ListOperations.IterMro(target)) {
-        if (targetType == null) return null;
-        if (targetType._comparison_methods != null
-            && targetType._comparison_methods.__eq__ != null) {
-          return targetType._comparison_methods.__eq__(target, other);
-        } else {
-          LispObject __eq__ = MappingOperations.GetItem(targetType.__dict__, eqattr);
-          if (__eq__ == null) {
-            if (LispInterpreter.CheckException(ExceptionType.KeyError))
-              LispInterpreter.ClearException();
-            else return null;
-          } else {
-            return CallableOperations.Call(
-              __eq__, IConsType.ToLispTuple(target, other));
-          }
-        }
-      }
-      LispInterpreter.SetException(ExceptionType.CreateTypeError(
-        "\"{0}\" object is not comparable", target.__class__));
-      return null;
+      return LookupHelpers.Lookup(
+        target, other,
+        t => t._comparison_methods != null && t._comparison_methods.__eq__ != null,
+        t => t._comparison_methods.__eq__,
+        eqattr,
+        () => string.Format("\"{0}\" object is not comparable", target.__class__));
+    }
+
+    /// <summary>
+    /// Returns true if the first object is less than or equal to the second. False
+    /// otherwise. Null on error.
+    /// </summary>
+    /// <param name="target">First object to compare.</param>
+    /// <param name="other">Second object to compare.</param>
+    /// <returns>T/F/null</returns>
+    public static LispObject Le(
+        [PositionalArgument] LispObject target,
+        [PositionalArgument] LispObject other) {
+      return LookupHelpers.Lookup(
+        target, other,
+        t => t._comparison_methods != null && t._comparison_methods.__le__ != null,
+        t => t._comparison_methods.__le__,
+        leattr,
+        () => string.Format("\"{0}\" object is not comparable", target.__class__));
+    }
+
+    /// <summary>
+    /// Returns true if the first object is less than the second. False otherwise. Null on
+    /// error.
+    /// </summary>
+    /// <param name="target">First object to compare.</param>
+    /// <param name="other">Second object to compare.</param>
+    /// <returns>T/F/null</returns>
+    public static LispObject Lt(
+        [PositionalArgument] LispObject target,
+        [PositionalArgument] LispObject other) {
+      return LookupHelpers.Lookup(
+        target, other,
+        t => t._comparison_methods != null && t._comparison_methods.__lt__ != null,
+        t => t._comparison_methods.__lt__,
+        ltattr,
+        () => string.Format("\"{0}\" object is not comparable", target.__class__));
+    }
+
+    /// <summary>
+    /// Returns true if the first object is greater than the second. False otherwise. Null
+    /// on error.
+    /// </summary>
+    /// <param name="target">First object to compare.</param>
+    /// <param name="other">Second object to compare.</param>
+    /// <returns>T/F/null</returns>
+    public static LispObject Gt(
+        [PositionalArgument] LispObject target,
+        [PositionalArgument] LispObject other) {
+      return LookupHelpers.Lookup(
+        target, other,
+        t => t._comparison_methods != null && t._comparison_methods.__gt__ != null,
+        t => t._comparison_methods.__gt__,
+        gtattr,
+        () => string.Format("\"{0}\" object is not comparable", target.__class__));
+    }
+
+    /// <summary>
+    /// Returns true if the first object is greater than or equal to the second. False
+    /// otherwise. Null on error.
+    /// </summary>
+    /// <param name="target">First object to compare.</param>
+    /// <param name="other">Second object to compare.</param>
+    /// <returns>T/F/null</returns>
+    public static LispObject Ge(
+        [PositionalArgument] LispObject target,
+        [PositionalArgument] LispObject other) {
+      return LookupHelpers.Lookup(
+        target, other,
+        t => t._comparison_methods != null && t._comparison_methods.__ge__ != null,
+        t => t._comparison_methods.__ge__,
+        geattr,
+        () => string.Format("\"{0}\" object is not comparable", target.__class__));
     }
 
     // TODO(zstewar1): The rest of the comparison operations. (le,lt,gt,ge,hash,is)
