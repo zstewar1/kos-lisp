@@ -167,6 +167,38 @@ namespace ZStewart.KOSLisp.Types {
       LispObject converted = IConsType.ToLispTuple();
       Assert.AreSame(NilType.Nil, converted);
     }
+
+    [Test]
+    public void TestSetCar () {
+      var n1 = NumberType.Create(0);
+      var n2 = NumberType.Create(1);
+      var n3 = NumberType.Create(2);
+
+      IConsType cons = IConsType.Create(n1, n2);
+
+      var result = ListOperations.SetCar(cons, n3);
+
+      Assert.Null(result);
+      Assert.True(LispInterpreter.CheckException(ExceptionType.TypeError));
+      Assert.AreSame(n1, cons.Car);
+      Assert.AreSame(n2, cons.Cdr);
+    }
+
+    [Test]
+    public void TestSetCdr () {
+      var n1 = NumberType.Create(0);
+      var n2 = NumberType.Create(1);
+      var n3 = NumberType.Create(2);
+
+      IConsType cons = IConsType.Create(n1, n2);
+
+      var result = ListOperations.SetCdr(cons, n3);
+
+      Assert.Null(result);
+      Assert.True(LispInterpreter.CheckException(ExceptionType.TypeError));
+      Assert.AreSame(n1, cons.Car);
+      Assert.AreSame(n2, cons.Cdr);
+    }
   }
 }
 
