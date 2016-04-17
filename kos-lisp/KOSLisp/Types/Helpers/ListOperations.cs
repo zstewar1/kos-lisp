@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using ZStewart.KOSLisp.Interpreter;
+using ZStewart.KOSLisp.Types.Attributes;
 
 namespace ZStewart.KOSLisp.Types.Helpers {
   public static class ListOperations {
@@ -10,7 +11,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     private static readonly LispObject setcarattr = SymbolType.Create("--setcar--");
     private static readonly LispObject setcdrattr = SymbolType.Create("--setcdr--");
 
-    public static LispObject GetCar(LispObject target) {
+    public static LispObject GetCar([PositionalArgument] LispObject target) {
       LispTypeObject targetType = target.__class__;
       // __class__ should be the first element of __mro__, but we can't use IterMro in
       // this method, because IterMro depends on being able to call GetCar, so trying to
@@ -48,7 +49,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       }
     }
 
-    public static LispObject GetCdr(LispObject target) {
+    public static LispObject GetCdr([PositionalArgument] LispObject target) {
       // It should be possible to iterate over the MRO of the target this way because
       // GetCdr is not called inside of the iterator until MoveNext is called for the
       // first time.
@@ -75,7 +76,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       return null;
     }
 
-    public static LispObject SetCar(LispObject target, LispObject value) {
+    public static LispObject SetCar(
+        [PositionalArgument] LispObject target, 
+        [PositionalArgument] LispObject value) {
       foreach (var targetType in IterMro(target)) {
         // Propagate errors.
         if (targetType == null) return null;
@@ -99,7 +102,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       return null;
     }
 
-    public static LispObject SetCdr(LispObject target, LispObject value) {
+    public static LispObject SetCdr(
+        [PositionalArgument] LispObject target,
+        [PositionalArgument] LispObject value) {
       foreach (var targetType in IterMro(target)) {
         // Propagate errors.
         if (targetType == null) return null;
@@ -147,6 +152,15 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         }
       }
       return cnt;
+    }
+
+    /// <summary>
+    /// Lisp-enabled version of Count.
+    /// </summary>
+    public static LispObject LispCount([PositionalArgument] LispObject list) {
+      var cnt = Count(list);
+      if (!cnt.HasValue) return null;
+      return NumberType.Create(cnt.Value);
     }
 
     /// <summary>

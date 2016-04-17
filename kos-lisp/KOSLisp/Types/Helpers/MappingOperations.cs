@@ -1,10 +1,13 @@
 ﻿using ZStewart.KOSLisp.Interpreter;
+using ZStewart.KOSLisp.Types.Attributes;
 
 namespace ZStewart.KOSLisp.Types.Helpers {
   public static class MappingOperations {
     private static readonly LispObject getitemattr = SymbolType.Create("--getitem--");
 
-    public static LispObject GetItem(LispObject target, LispObject key) {
+    public static LispObject GetItem(
+        [PositionalArgument] LispObject target, 
+        [PositionalArgument] LispObject key) {
       foreach (var targetType in ListOperations.IterMro(target)) {
         // Propagate Errors.
         if (targetType == null) return null;
