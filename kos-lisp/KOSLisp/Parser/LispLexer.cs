@@ -59,7 +59,7 @@ namespace ZStewart.KOSLisp.Parser {
     #endregion Configuration Classes
 
     #region Static Properties
-    private const string SUBSYMBOL_REGEX = @"[\p{L}@<>=_+*^/\-\.\d]";
+    private const string SUBSYMBOL_REGEX = @"[\p{L}@<>=_+!~*^/\-\.\d]";
     private const string SYMBOL_REGEX = @"([&:]|" + SUBSYMBOL_REGEX + ")" + SUBSYMBOL_REGEX + "*";
 
     /// <summary>
