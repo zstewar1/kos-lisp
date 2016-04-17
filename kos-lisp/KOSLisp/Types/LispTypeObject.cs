@@ -40,6 +40,11 @@ namespace ZStewart.KOSLisp.Types {
     public LispObject __mro__;
 
     /// <summary>
+    /// Methods used to implement comparison for this type.
+    /// </summary>
+    public ComparisonMethods _comparison_methods;
+
+    /// <summary>
     /// Methods used to implent the Cons-List protocol.
     /// </summary>
     public ListMethods _list_methods;

@@ -62,6 +62,7 @@
     <Compile Include="KOSLisp\Types\DictType.cs" />
     <Compile Include="KOSLisp\Types\Helpers\Arguments.cs" />
     <Compile Include="KOSLisp\Types\Helpers\CallableOperations.cs" />
+    <Compile Include="KOSLisp\Types\Helpers\ComparisonOperations.cs" />
     <Compile Include="KOSLisp\Types\Helpers\MappingOperations.cs" />
     <Compile Include="KOSLisp\Parser\Errors.cs" />
     <Compile Include="KOSLisp\Types\ConsType.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="KOSLisp\Types\ObjectType.cs" />
     <Compile Include="KOSLisp\Types\StringType.cs" />
     <Compile Include="KOSLisp\Types\SymbolType.cs" />
+    <Compile Include="KOSLisp\Types\TypeCategories\ComparisonMethods.cs" />
     <Compile Include="KOSLisp\Types\TypeCategories\MappingMethods.cs" />
     <Compile Include="KOSLisp\Types\TypeCategories\ListMethods.cs" />
     <Compile Include="KOSLisp\Types\TypeCategories\NumberMethods.cs" />
