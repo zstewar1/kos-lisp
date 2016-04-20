@@ -76,6 +76,7 @@
     <Compile Include="KOSLisp\Parser\SourceInformation.cs" />
     <Compile Include="KOSLisp\Types\LispTypeObject.cs" />
     <Compile Include="KOSLisp\Types\NilType.cs" />
+    <Compile Include="KOSLisp\Types\BoolType.cs" />
     <Compile Include="KOSLisp\Types\ExceptionType.cs" />
     <Compile Include="KOSLisp\Types\NumberType.cs" />
     <Compile Include="KOSLisp\Types\BuiltinFunctionType.cs" />

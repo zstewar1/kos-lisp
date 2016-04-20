@@ -48,6 +48,16 @@ namespace ZStewart.KOSLisp.Types {
       SymbolType val;
       if (UniqueSymbolDictionary.TryGetValue(identifier, out val))
         return val;
+
+      // Ensure that special symbol subtypes always construct the correct instance.
+      if (Compare("nil", identifier) == 0) return NilType.Nil;
+      if (Compare("t", identifier) == 0) return BoolType.T;
+      if (Compare("f", identifier) == 0) return BoolType.F;
+
+      // TODO(zstewar1): Other special symbol subtype cases here. (Initial setup can be
+      // here. If it leads to duplicated logic when __new__ is implemented, we may be able
+      // to simplify and just __call__ the type.
+
       val = new SymbolType(identifier);
       val.__class__ = Symbol;
       return val;
