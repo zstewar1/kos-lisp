@@ -37,12 +37,27 @@ namespace ZStewart.KOSLisp.Types {
       // TODO(zstewar1): Allow a single argument, and check if it can be interpreted as a
       // boolean and return either T or F appropriately.
       if (args != NilType.Nil) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(string.Format(
-          "{0} takes no arguments.", subtype)));
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "{0} takes no arguments.", subtype));
       }
       return F;
     }
     #endregion Static Type Setup
+
+    #region Static Helper Methods
+    /// <summary>Convert an arbitrary lisp object to a boolean.</summary>
+    /// <param name="obj">The object to convert.</param>
+    /// <returns>True if the object's __bool__ is true, false if it is false
+    public static BoolType From(LispObject obj) {
+      var b = ObjectType.Call(obj, "--bool--", NilType.Nil);
+      if (b == null) return null;
+      if (b == T) return T;
+      if (b == F) return F;
+      LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        "unable to convert {0} object to bool.", obj.__class__));
+      return null;
+    }
+    #endregion
 
     private static BoolType _f;
     public static BoolType F {
