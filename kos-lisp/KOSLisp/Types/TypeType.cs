@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Types {
@@ -40,6 +42,7 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject Call(LispObject receiver, LispObject args) {
+
       // TODO(zstewar1): Calling a type calls new then maybe init.
       return null;
     }
@@ -55,9 +58,42 @@ namespace ZStewart.KOSLisp.Types {
     /// True if instance is of type type, false if it is not, and null on error.
     /// </returns>
     public static bool? IsInstance(LispObject instance, LispObject type) {
+      if (!(type is LispTypeObject)) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "Second argument must be a type, got {0}", type));
+        return null;
+      }
       foreach (var t in ListOperations.IterMro(instance)) {
         if (t == null) return null;
         if (t == type) return true;
+      }
+      return false;
+    }
+
+    /// <summary>
+    /// Determines if one type is a subtype of another.
+    /// </summary>
+    /// <param name="subtype">The type to test if it is a subtype.</param>
+    /// <param name="type">The parent type to test subtype against.</param>
+    /// <returns>
+    /// True if subtype is a subtype of parentType, false if it is not and null on error.
+    /// </returns>
+    public static bool? IsSubtype(LispObject subtype, LispObject parentType) {
+      if (!(subtype is LispTypeObject)) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "First argument must be a type, got {0}", subtype));
+        return null;
+      }
+      if (!(parentType is LispTypeObject)) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "Second argument must be a type, got {0}", parentType));
+        return null;
+      }
+      foreach (
+          var t in ListOperations.IterList<LispTypeObject>(
+            ((LispTypeObject)subtype).__mro__)) {
+        if (t == null) return null;
+        if (t ==  parentType) return true;
       }
       return false;
     }
