@@ -10,7 +10,7 @@ using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Types {
   /// <summary>
-  /// A class that magically calls a C# (static) function with lisp arguments including 
+  /// A class that magically calls a C# (static) function with lisp arguments including
   /// type conversion and other magic.
   /// </summary>
   public class CallMagic {
@@ -23,7 +23,7 @@ namespace ZStewart.KOSLisp.Types {
 
       paraminfos = ImmutableArray.CreateRange(boundMethod.GetParameters());
       int index = 0;
-      // Read the paraminfos until expended. First postional arguments, then Rest 
+      // Read the paraminfos until expended. First postional arguments, then Rest
       // arguments, followed by named keywords, followed by kwargs.
 
       var pargs = ImmutableList.CreateBuilder<Type>();
@@ -51,17 +51,17 @@ namespace ZStewart.KOSLisp.Types {
         }
       }
 
-      var kwargs = ImmutableList.CreateBuilder<Tuple<string, Type>>();
+      var kwargs = ImmutableList.CreateBuilder<Tuple<SymbolType, Type>>();
       for (; index < paraminfos.Length; index++) {
         var p = paraminfos[index];
         var pattr = p.GetCustomAttribute<KeywordArgument>();
         if (p.GetCustomAttribute<KeywordArgument>() != null) {
           // Coalesce name from the argument name on the attribute and the name of the
           // parameter.
-          var name = pattr.ArgumentName ?? p.Name;
-          if (kwargs.Select(t => t.Item1).Contains(name, SymbolType.SymbolComparer))
-            throw new ArgumentException(
-              "Found duplicate keyword argument {0}", name);
+          var name = SymbolType.Create(pattr.ArgumentName ?? p.Name);
+          if (kwargs.Select(t => t.Item1).Contains(name))
+            throw new ArgumentException(string.Format(
+              "Found duplicate keyword argument {0}", name));
           kwargs.Add(Tuple.Create(name, p.ParameterType));
         } else {
           index--;
@@ -91,7 +91,7 @@ namespace ZStewart.KOSLisp.Types {
     private readonly ImmutableArray<ParameterInfo> paraminfos;
     private readonly ImmutableList<Type> positionalArguments;
     private readonly bool rest;
-    private readonly ImmutableList<Tuple<string, Type>> keywordArguments;
+    private readonly ImmutableList<Tuple<SymbolType, Type>> keywordArguments;
     private readonly bool restKwargs;
 
     /// <summary>
@@ -103,7 +103,7 @@ namespace ZStewart.KOSLisp.Types {
     /// </returns>
     public LispObject Call (LispObject args) {
       List<LispObject> pargs;
-      Dictionary<string, LispObject> kwargs;
+      Dictionary<SymbolType, LispObject> kwargs;
       Arguments.GetArguments(args, out pargs, out kwargs);
       if (pargs == null || kwargs == null) return null;
 
@@ -122,8 +122,8 @@ namespace ZStewart.KOSLisp.Types {
 
       if (!restKwargs) {
         // Later we may want to optimize the lookup of known keywords -- if necessary.
-        var extraKwargs = kwargs.Keys.Where(k => !keywordArguments.Select(
-          t => t.Item1).Contains(k, SymbolType.SymbolComparer)).ToList();
+        var extraKwargs = kwargs.Keys.Where(
+          k => !keywordArguments.Select(t => t.Item1).Contains(k)).ToList();
         if (extraKwargs.Count > 0) {
           LispInterpreter.SetException(ExceptionType.CreateTypeError(
             "got unexpected keyword arguments: ({0})", string.Join(" ", extraKwargs)));

@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
+    <Compile Include="KOSLisp\Interpreter\Compiler.cs" />
     <Compile Include="KOSLisp\Interpreter\Errors.cs" />
     <Compile Include="KOSLisp\Types\Attributes\KeywordArgument.cs" />
     <Compile Include="KOSLisp\Types\Attributes\PositionalArgument.cs" />

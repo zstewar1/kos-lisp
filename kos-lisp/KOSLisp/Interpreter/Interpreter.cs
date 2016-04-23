@@ -11,7 +11,7 @@ namespace ZStewart.KOSLisp.Interpreter {
   ///
   /// This is a singleton currently.
   /// </summary>
-  public sealed class LispInterpreter {
+  public static class LispInterpreter {
     /// <summary>
     /// The currently set exception.
     /// </summary>
@@ -73,6 +73,17 @@ namespace ZStewart.KOSLisp.Interpreter {
             "Exceptions must derive from Exception");
         }
       }
+    }
+
+    /// <summary>
+    /// Retrieve and clear the exception. Raises an error if no exception is set.
+    /// </summary>
+    public static ExceptionType SaveException() {
+      if (exception == null)
+        throw new InvalidOperationException("Cannot save exception -- no exception");
+      var exc = exception;
+      exception = null;
+      return exc;
     }
   }
 }

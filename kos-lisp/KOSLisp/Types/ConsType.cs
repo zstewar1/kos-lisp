@@ -198,14 +198,13 @@ namespace ZStewart.KOSLisp.Types {
         var instance = TypeType.IsInstance(Car, SymbolType.Symbol);
         if (!instance.HasValue) return null;
         if (instance.Value) {
-          var symb = (SymbolType)Car;
-          if (SymbolType.Compare(symb.Identifier, "quote") == 0) {
+          if (Car == SymbolType.Create("quote")) {
             return "'" + ListOperations.GetCar(Cdr).ToString();
-          } else if (SymbolType.Compare(symb.Identifier, "--backquote--") == 0) {
+          } else if (Car == SymbolType.Create("--backquote--")) {
             return "`" + ListOperations.GetCar(Cdr).ToString();
-          } else if (SymbolType.Compare(symb.Identifier, "--unquote--") == 0) {
+          } else if (Car == SymbolType.Create("--unquote--")) {
             return "," + ListOperations.GetCar(Cdr).ToString();
-          } else if (SymbolType.Compare(symb.Identifier, "--splice--") == 0) {
+          } else if (Car == SymbolType.Create("--splice--")) {
             return ",@" + ListOperations.GetCar(Cdr).ToString();
           }
         }

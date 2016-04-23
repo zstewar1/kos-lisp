@@ -32,27 +32,19 @@ namespace ZStewart.KOSLisp.Types {
     /// <summary>
     /// String Comparer used for comparing symbols.
     /// </summary>
-    public static StringComparer SymbolComparer {
+    private static StringComparer comparer {
       get { return StringComparer.InvariantCultureIgnoreCase; }
     }
 
-    /// <summary>
-    /// Shortcut function for doing symbol comparison of arbitrary strings. This compares
-    /// the strings using the SymbolComparer.
-    /// </summary>
-    public static int Compare(string s1, string s2) {
-      return SymbolComparer.Compare(s1, s2);
-    }
-
-    public static LispObject Create(string identifier) {
+    public static SymbolType Create(string identifier) {
       SymbolType val;
       if (UniqueSymbolDictionary.TryGetValue(identifier, out val))
         return val;
 
       // Ensure that special symbol subtypes always construct the correct instance.
-      if (Compare("nil", identifier) == 0) return NilType.Nil;
-      if (Compare("t", identifier) == 0) return BoolType.T;
-      if (Compare("f", identifier) == 0) return BoolType.F;
+      if (comparer.Compare("nil", identifier) == 0) return NilType.Nil;
+      if (comparer.Compare("t", identifier) == 0) return BoolType.T;
+      if (comparer.Compare("f", identifier) == 0) return BoolType.F;
 
       // TODO(zstewar1): Other special symbol subtype cases here. (Initial setup can be
       // here. If it leads to duplicated logic when __new__ is implemented, we may be able
@@ -65,7 +57,7 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Helpers
 
     private static readonly Dictionary<string, SymbolType> UniqueSymbolDictionary =
-      new Dictionary<string, SymbolType>(SymbolComparer);
+      new Dictionary<string, SymbolType>(comparer);
 
     protected SymbolType (string identifier) {
       // We don't need to do this for unique dictionary comparisons, but we do it so that
