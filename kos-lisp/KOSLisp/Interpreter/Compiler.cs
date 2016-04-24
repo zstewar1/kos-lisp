@@ -313,14 +313,14 @@ namespace ZStewart.KOSLisp.Interpreter {
 
     public override void AppendAstStringIndented(StringBuilder sb, int baseIndent) {
       if (Args.Count == 0 && Forms.Count == 0) {
-        sb.Append("[AST-Lambda");
+        sb.Append("[AST-Lambda]");
       } else {
         sb.AppendLine("[AST-Lambda:");
+        AppendArgs(sb, baseIndent);
+        AppendForms(sb, baseIndent);
+        sb.Append(' ', baseIndent);
+        sb.Append("]");
       }
-      AppendArgs(sb, baseIndent);
-      AppendForms(sb, baseIndent);
-      sb.Append(' ', baseIndent);
-      sb.Append("]");
     }
 
     protected virtual void AppendArgs(StringBuilder sb, int baseIndent) {
