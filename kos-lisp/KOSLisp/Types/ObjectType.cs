@@ -79,7 +79,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="args">The arguments to the method.</param>
     /// <returns>The result of calling method method of object</returns>
     public static LispObject Call(LispObject obj, string method, LispObject args) {
-      var m = GetAttribute(obj, StringType.Create(method));
+      var m = GetAttribute(obj, SymbolType.Create(method));
       if (m == null) return null;
       return CallableOperations.Call(m, args);
     }
