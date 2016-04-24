@@ -205,9 +205,14 @@ namespace ZStewart.KOSLisp.Parser {
         return val;
       }
       var loc = currentLoc;
-      AdvanceNextLine(lexConf);
+      // On unrecognized input, advance to the end of the line to ensure that the next
+      // read will try to fetch a new line from the input file. In non-interactive mode,
+      // this shouldn't matter because non-interactive files shouldn't be retried. In
+      // interactive mode, this ensures that we get a new line when the user typed
+      // something invalid.
+      ColumnIndex = Line.Length;
       throw new UnexpectedInput(
-        string.Format("Unrecognized input"), loc);
+        string.Format("Unrecognized input"), currentLoc);
     }
 
     private bool AdvanceNextLine(LexerModeConfig lexConf) {

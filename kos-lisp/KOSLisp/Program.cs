@@ -60,11 +60,12 @@ namespace ZStewart.KOSLisp {
           TEMPRun(extra[0], file);
         }
       } else {
-        TEMPRun("<stdin>", Console.In);
+        TEMPRun("<stdin>", Console.In, true);
       }
     }
 
-    private static void TEMPRun(string name, TextReader reader) {
+    private static void TEMPRun(
+        string name, TextReader reader, bool interactive = false) {
       LispLexer lexer = LispLexer.Lex(name, reader);
       LispParser parser = new LispParser(lexer);
 
@@ -75,12 +76,14 @@ namespace ZStewart.KOSLisp {
           if (parsed == null) break;
           var ast = Compiler.ExpressionToIntermediate(parsed, context);
           Console.WriteLine(ast);
-        } catch (LispCompileException e) {
+        } catch (ParserError e) {
           Console.WriteLine("Exception while Parsing:");
           Console.WriteLine(e);
+          if (!interactive) break;
         } catch (CompilerError e) {
           Console.WriteLine("Exception while compiling:");
           Console.WriteLine(e);
+          if (!interactive) break;
         }
       }
     }

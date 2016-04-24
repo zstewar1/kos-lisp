@@ -1,14 +1,14 @@
 ﻿using System;
 
 namespace ZStewart.KOSLisp.Parser {
-  class LispCompileException : Exception {
+  class ParserError : Exception {
 
     /// <summary>
     /// Information about the location in the source file where this exception originates.
     /// </summary>
     SourceInformation SourceInformation { get; }
 
-    public LispCompileException (
+    public ParserError (
         string message, SourceInformation sourceInformation)
         : base(message) {
       SourceInformation = sourceInformation;
@@ -21,42 +21,42 @@ namespace ZStewart.KOSLisp.Parser {
     }
   }
 
-  class UnexpectedEOLException : LispCompileException {
+  class UnexpectedEOLException : ParserError {
     public UnexpectedEOLException (
         string message, SourceInformation sourceInformation)
         : base(message, sourceInformation) { }
   }
 
-  class InvalidIdentifier : LispCompileException {
+  class InvalidIdentifier : ParserError {
     public InvalidIdentifier (
         string message, SourceInformation sourceInformation)
         : base(message, sourceInformation) { }
   }
 
-  class UnexpectedInput : LispCompileException {
+  class UnexpectedInput : ParserError {
     public UnexpectedInput (
         string message, SourceInformation sourceInformation)
         : base(message, sourceInformation) { }
   }
 
-  class UnexpectedToken : LispCompileException {
+  class UnexpectedToken : ParserError {
     public UnexpectedToken (
         string message, SourceInformation sourceInformation)
         : base(message, sourceInformation) { }
   }
 
-  class UnexpectedEndOfInput : LispCompileException {
+  class UnexpectedEndOfInput : ParserError {
     public UnexpectedEndOfInput (
         string message, SourceInformation sourceInformation)
         : base(message, sourceInformation) { }  }
 
-  class IllegalDottedList : LispCompileException {
+  class IllegalDottedList : ParserError {
     public IllegalDottedList (
         string message, SourceInformation sourceInformation)
         : base(message, sourceInformation) { }
   }
 
-  class IllegalUnquote : LispCompileException {
+  class IllegalUnquote : ParserError {
     public IllegalUnquote (
         string message, SourceInformation sourceInformation)
         : base(message, sourceInformation) { }
