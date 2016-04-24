@@ -29,6 +29,12 @@ namespace ZStewart.KOSLisp.Interpreter {
     /// in this context.
     /// </summary>
     Binding GetBinding(SymbolType symbol);
+
+    /// <summary>
+    /// Add a binding after the Context has been created. This will affect lookups that
+    /// occur in expression evaluated after the symbol has been added, but not before.
+    /// </summary>
+    void AddBinding(SymbolType symbol);
   }
 
   /// <summary>
@@ -42,6 +48,8 @@ namespace ZStewart.KOSLisp.Interpreter {
     public virtual Binding GetBinding(SymbolType symbol) {
       return new AstGlobalBinding(symbol, module);
     }
+    // Global lookups always succeed, so we don't need to rebind.
+    public void AddBinding(SymbolType symbol) {}
 
     private class AstGlobalBinding : AstOpBase, Binding {
       public SymbolType BoundSymbol { get; }
@@ -69,20 +77,19 @@ namespace ZStewart.KOSLisp.Interpreter {
 
   public class ScopedContext : Context {
     private readonly Context parentScope;
-    protected readonly ImmutableDictionary<SymbolType, Binding> bindings;
+    protected readonly Dictionary<SymbolType, Binding> bindings =
+      new Dictionary<SymbolType, Binding>();
 
     public ScopedContext(Context parentScope, IEnumerable<SymbolType> newBindings) {
       this.parentScope = parentScope;
 
-      var db = ImmutableDictionary.CreateBuilder<SymbolType, Binding>();
-      foreach (var binding in newBindings) {
-        if (db.ContainsKey(binding)) {
+      foreach (var symbol in newBindings) {
+        if (bindings.ContainsKey(symbol)) {
           // TODO(zstewar1): Better error messages
           throw new CompilerError();
         }
-        db.Add(binding, new AstLocalBinding(binding));
+        bindings.Add(symbol, new AstLocalBinding(symbol));
       }
-      this.bindings = db.ToImmutable();
     }
 
     public ScopedContext(Context parentScope, params SymbolType[] newBindings)
@@ -92,6 +99,10 @@ namespace ZStewart.KOSLisp.Interpreter {
       var local = GetLocalBinding(symbol);
       if (local == null) return GetParentBinding(symbol);
       return local;
+    }
+
+    public virtual void AddBinding(SymbolType symbol) {
+      bindings.Add(symbol, new AstLocalBinding(symbol));
     }
 
     protected virtual Binding GetLocalBinding(SymbolType symbol) {
@@ -163,6 +174,79 @@ namespace ZStewart.KOSLisp.Interpreter {
     }
   }
 
+  public class LambdaSpecialForm : SpecialForm {
+    public virtual AstOp ExpressionToIntermediate(
+        LispObject expression, Context context) {
+      List<SymbolType> args;
+      List<AstOp> forms;
+      ParseArgsAndForms(expression, context, out args, out forms);
+      return new AstLambda(args, forms);
+    }
+
+    protected void ParseArgsAndForms(
+        LispObject expression, Context context,
+        out List<SymbolType> args, out List<AstOp> forms) {
+      var len = ListOperations.Count(expression);
+      if (!len.HasValue) throw new LispException();
+      if (len.Value < 1) throw new CompilerError();
+      var arglist = ListOperations.GetCar(expression);
+      if (arglist == null) throw new LispException();
+      var rest = ListOperations.GetCdr(expression);
+      if (rest == null) throw new LispException();
+
+      args = ParseArgumentList(arglist);
+      forms = ParseForms(rest, new ClosuredScopedContext(context, args));
+    }
+
+    protected List<SymbolType> ParseArgumentList(LispObject arglist) {
+      // TODO(zstewar1): We'll require a more advanced notation (for both definition and
+      // calling) once we start supporting keyword arguments.
+      var ok = ListOperations.Proper(arglist);
+      if (!ok.HasValue) throw new LispException();
+      if (!ok.Value) throw new CompilerError();
+      return ListOperations.IterList<SymbolType>(arglist)
+        .Select(arg => {
+          if (arg == null) throw new LispException();
+          return arg;
+        }).ToList();
+    }
+
+    protected List<AstOp> ParseForms(LispObject forms, Context context) {
+      var ok = ListOperations.Proper(forms);
+      if (!ok.HasValue) throw new LispException();
+      if (!ok.Value) throw new CompilerError();
+      return ListOperations.IterList(forms)
+        .Select(form => {
+          if (form == null) throw new LispException();
+          return Compiler.ExpressionToIntermediate(form, context);
+        }).ToList();
+    }
+  }
+
+  public class DefunSpecialForm : LambdaSpecialForm {
+    public override AstOp ExpressionToIntermediate(
+        LispObject expression, Context context) {
+      var len = ListOperations.Count(expression);
+      if (!len.HasValue) throw new LispException();
+      if (len.Value < 2) throw new CompilerError();
+
+      var nameObj = ListOperations.GetCar(expression);
+      if (nameObj == null) throw new LispException();
+      if (!(nameObj is SymbolType)) throw new CompilerError();
+      var name = (SymbolType)nameObj;
+
+      var rest = ListOperations.GetCdr(expression);
+      if (rest == null) throw new LispException();
+
+      context.AddBinding(name);
+
+      List<SymbolType> args;
+      List<AstOp> forms;
+      ParseArgsAndForms(rest, context, out args, out forms);
+      return new AstDefun(name, args, forms);
+    }
+  }
+
   public interface AstOp {
     /// <summary>
     /// Append the string representation of this AST element with any trailing lines
@@ -219,6 +303,63 @@ namespace ZStewart.KOSLisp.Interpreter {
     }
   }
 
+  public class AstLambda : AstOpBase {
+    public IList<SymbolType> Args { get; }
+    public IList<AstOp> Forms { get; }
+    public AstLambda(IList<SymbolType> args, IList<AstOp> forms) {
+      Args = args;
+      Forms = forms;
+    }
+
+    public override void AppendAstStringIndented(StringBuilder sb, int baseIndent) {
+      if (Args.Count == 0 && Forms.Count == 0) {
+        sb.Append("[AST-Lambda");
+      } else {
+        sb.AppendLine("[AST-Lambda:");
+      }
+      AppendArgs(sb, baseIndent);
+      AppendForms(sb, baseIndent);
+      sb.Append(' ', baseIndent);
+      sb.Append("]");
+    }
+
+    protected virtual void AppendArgs(StringBuilder sb, int baseIndent) {
+      for (int i = 0; i < Args.Count; i++) {
+        sb.Append(' ', baseIndent + 2);
+        sb.AppendFormat("Arg {0}: {1}", i, Args[i]);
+        sb.AppendLine();
+      }
+    }
+
+    protected virtual void AppendForms(StringBuilder sb, int baseIndent) {
+      for (int i = 0; i < Forms.Count; i++) {
+        sb.Append(' ', baseIndent + 2);
+        sb.AppendFormat("Form {0}: ", i);
+        Forms[i].AppendAstStringIndented(sb, baseIndent + 2);
+        sb.AppendLine();
+      }
+    }
+  }
+
+  public class AstDefun : AstLambda {
+    public SymbolType Name { get; }
+    public AstDefun(SymbolType name, IList<SymbolType> args, IList<AstOp> forms)
+        : base(args, forms) {
+      Name = name;
+    }
+
+    public override void AppendAstStringIndented(StringBuilder sb, int baseIndent) {
+      sb.AppendLine("[AST-Defun:");
+      sb.Append(' ', baseIndent + 2);
+      sb.AppendFormat("Name: {0}", Name);
+      sb.AppendLine();
+      AppendArgs(sb, baseIndent);
+      AppendForms(sb, baseIndent);
+      sb.Append(' ', baseIndent);
+      sb.Append("]");
+    }
+  }
+
   public static class Compiler {
 
     private static readonly ImmutableDictionary<SymbolType, SpecialForm> specialForms;
@@ -259,6 +400,8 @@ namespace ZStewart.KOSLisp.Interpreter {
         if (val == null) throw new LispException();
         return new AstConst(val);
       }));
+      db.Add(SymbolType.Create("lambda"), new LambdaSpecialForm());
+      db.Add(SymbolType.Create("defun"), new DefunSpecialForm());
       specialForms = db.ToImmutable();
     }
 
