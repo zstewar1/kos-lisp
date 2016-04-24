@@ -39,14 +39,21 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject GetItem(LispObject dict, LispObject key) {
-      LispInterpreter.SetException(ExceptionType.CreateKeyError(
-        "the key {0} was not found in the dictionary", key));
-      return null;
+      if (!(dict is DictType)) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "dict must be a dictionary or dictionary subtype, was {0}", dict.__class__));
+        return null;
+      }
+      return ((DictType)dict).GetItem(key);
     }
 
     private static LispObject SetItem(LispObject dict, LispObject key, LispObject value) {
-      LispInterpreter.SetException(ExceptionType.CreateNotImplemented(""));
-      return null;
+      if (!(dict is DictType)) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "dict must be a dictionary or dictionary subtype, was {0}", dict.__class__));
+        return null;
+      }
+      return ((DictType)dict).SetItem(key, value);
     }
     #endregion Static Type Setup
 
@@ -70,5 +77,23 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Helper Methods
 
     private Dictionary<LispObject, LispObject> storage;
+
+    protected LispObject GetItem(LispObject key) {
+      LispObject value;
+      if (storage.TryGetValue(key, out value))
+        return value;
+      LispInterpreter.SetException(ExceptionType.CreateKeyError(
+        "the key {0} was not found in the dictionary", key));
+      return null;
+    }
+
+    protected LispObject SetItem(LispObject key, LispObject value) {
+      if (value == null) {
+        storage.Remove(key);
+      } else {
+        storage[key] = value;
+      }
+      return NilType.Nil;
+    }
   }
 }
