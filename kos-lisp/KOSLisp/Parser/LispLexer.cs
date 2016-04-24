@@ -83,7 +83,7 @@ namespace ZStewart.KOSLisp.Parser {
         new LexerModeConfig.Builder()
           .SetAllowLineBreaks(true)
           .AddMatcher(
-            @"[+-]?[0-9]*\.?[0-9]+(e[+-]?[0-9]+)?",
+            @"[+-]?[0-9]*\.?[0-9]+(e[+-]?[0-9]+)?(?!" + SYMBOL_REGEX + ")",
             GenericToken.CreateTokenCreator(LispTokType.NUMBER, double.Parse))
           .AddMatcher(SYMBOL_REGEX, (rv, s) => {
             // We have to combine the rules for things that *could* be identifiers to
