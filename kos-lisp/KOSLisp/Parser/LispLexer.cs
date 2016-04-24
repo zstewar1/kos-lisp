@@ -52,7 +52,8 @@ namespace ZStewart.KOSLisp.Parser {
           return this;
         }
         public LexerModeConfig Build() {
-          return new LexerModeConfig(ImmutableList.CreateRange(matchers), allowLineBreaks);
+          return new LexerModeConfig(
+            ImmutableList.CreateRange(matchers), allowLineBreaks);
         }
       }
     }
@@ -60,17 +61,21 @@ namespace ZStewart.KOSLisp.Parser {
 
     #region Static Properties
     private const string SUBSYMBOL_REGEX = @"[\p{L}@<>=_+!~*^/\-\.\d]";
-    private const string SYMBOL_REGEX = @"([&:]|" + SUBSYMBOL_REGEX + ")" + SUBSYMBOL_REGEX + "*";
+    private const string SYMBOL_REGEX =
+      @"([&:]|" + SUBSYMBOL_REGEX + ")" + SUBSYMBOL_REGEX + "*";
 
     /// <summary>
-    /// The configuration of the Lexer -- this is the set of modes and regexes used for parsing.
+    /// The configuration of the Lexer -- this is the set of modes and regexes used for
+    /// parsing.
     /// </summary>
-    private static readonly ImmutableDictionary<LispLexMode, LexerModeConfig> tokenizerConf;
+    private static readonly ImmutableDictionary<LispLexMode, LexerModeConfig>
+      tokenizerConf;
 
     /// <summary>
     /// Regex mode options to be used in the lexer.
     /// </summary>
-    private static readonly RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase;
+    private static readonly RegexOptions regexOptions =
+      RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase;
     #endregion Static Properties
 
     #region Static Setup
@@ -187,6 +192,25 @@ namespace ZStewart.KOSLisp.Parser {
       var lexConf = tokenizerConf[mode];
 
       retry_match:
+      if (AdvanceNextLine(lexConf)) return null;
+      foreach (var matcher in lexConf.Matchers) {
+        Match match = matcher.Item1.Match(Line.Substring(ColumnIndex));
+        // Try the next matcher if this one fails.
+        if (!match.Success) continue;
+        ColumnIndex += match.Value.Length;
+        var val = matcher.Item2(match.Value, currentLoc);
+        if (val == null) {
+          goto retry_match;
+        }
+        return val;
+      }
+      var loc = currentLoc;
+      AdvanceNextLine(lexConf);
+      throw new UnexpectedInput(
+        string.Format("Unrecognized input"), loc);
+    }
+
+    private bool AdvanceNextLine(LexerModeConfig lexConf) {
       while (ColumnIndex >= Line.Length) {
         if (!lexConf.AllowLineBreaks)
           // TODO(zstewar1): Better error messaging for this, maybe based on mode?
@@ -196,22 +220,10 @@ namespace ZStewart.KOSLisp.Parser {
         ColumnIndex = 0;
         Line = source.ReadLine();
         if (Line == null) {
-          return null;
+          return true;
         }
       }
-      foreach (var matcher in lexConf.Matchers) {
-        Match match = matcher.Item1.Match(Line.Substring(ColumnIndex));
-        // Try the next matcher if this one fails.
-        if (!match.Success) continue;
-        ColumnIndex += match.Length;
-        var val = matcher.Item2(match.Value, currentLoc);
-        if (val == null) {
-          goto retry_match;
-        }
-        return val;
-      }
-      throw new UnexpectedInput(
-        string.Format("Unrecognized input"), currentLoc);
+      return false;
     }
   }
 }
