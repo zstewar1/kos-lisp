@@ -54,6 +54,12 @@ namespace ZStewart.KOSLisp.Types {
       val.__class__ = Symbol;
       return val;
     }
+
+    public static bool IsSelfEvaluating(SymbolType symbol) {
+      if (symbol == NilType.Nil || symbol == BoolType.T || symbol == BoolType.F)
+        return true;
+      return false;
+    }
     #endregion Static Helpers
 
     private static readonly Dictionary<string, SymbolType> UniqueSymbolDictionary =

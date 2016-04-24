@@ -95,8 +95,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         list = GetCdr(list);
         if (list == null) {
           if (LispInterpreter.CheckException(ExceptionType.TypeError)) {
-            var cause = LispInterpreter.Exception;
-            LispInterpreter.ClearException();
+            var cause = LispInterpreter.SaveException();
             var extended = ExceptionType.CreateTypeError(
               "Count list failed: not a proper list.");
             extended.__cause__ = cause;
@@ -106,6 +105,21 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         }
       }
       return cnt;
+    }
+
+    /// <summary>
+    /// Checks if a lisp list is a proper list (i.e. not dotted)
+    /// </summary>
+    public static bool? Proper(LispObject list) {
+      var cnt = Count(list);
+      if (!cnt.HasValue) {
+        if (LispInterpreter.CheckException(ExceptionType.TypeError)) {
+          LispInterpreter.ClearException();
+          return false;
+        }
+        return null;
+      }
+      return true;
     }
 
     /// <summary>

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Parser;
 
@@ -66,9 +67,21 @@ namespace ZStewart.KOSLisp {
     private static void TEMPRun(string name, TextReader reader) {
       LispLexer lexer = LispLexer.Lex(name, reader);
       LispParser parser = new LispParser(lexer);
-      LispObject parsed;
-      while ((parsed = parser.Parse()) != null) {
-        Console.WriteLine(parsed);
+
+      Context context = new GlobalContext(SymbolType.Create(name));
+      for(;;) {
+        try {
+          var parsed = parser.Parse();
+          if (parsed == null) break;
+          var ast = Compiler.ExpressionToIntermediate(parsed, context);
+          Console.WriteLine(ast);
+        } catch (LispCompileException e) {
+          Console.WriteLine("Exception while Parsing:");
+          Console.WriteLine(e);
+        } catch (CompilerError e) {
+          Console.WriteLine("Exception while compiling:");
+          Console.WriteLine(e);
+        }
       }
     }
   }
