@@ -15,6 +15,15 @@ namespace ZStewart.KOSLisp.Interpreter {
     public LispException () {
       Exception = LispInterpreter.SaveException();
     }
+
+    public override string ToString() {
+      return new StringBuilder("Compiler Error due to lisp exception.")
+        .AppendLine()
+        .Append(Exception)
+        .AppendLine()
+        .Append(base.ToString())
+        .ToString();
+    }
   }
 
   public interface Binding : AstOp {
