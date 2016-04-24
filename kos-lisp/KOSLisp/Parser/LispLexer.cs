@@ -214,7 +214,7 @@ namespace ZStewart.KOSLisp.Parser {
       // something invalid.
       ColumnIndex = Line.Length;
       throw new UnexpectedInput(
-        string.Format("Unrecognized input"), currentLoc);
+        string.Format("Unrecognized input"), loc);
     }
 
     private bool AdvanceNextLine(LexerModeConfig lexConf) {
