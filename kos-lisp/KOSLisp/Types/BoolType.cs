@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 
 using ZStewart.KOSLisp.Interpreter;
+using ZStewart.KOSLisp.Types.Helpers;
+using ZStewart.KOSLisp.Types.Attributes;
 
 namespace ZStewart.KOSLisp.Types {
   public sealed class BoolType : SymbolType {
@@ -29,6 +30,15 @@ namespace ZStewart.KOSLisp.Types {
         _bool = LispTypeObject.ConfigureType(_bool);
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_bool == null) throw new InvalidOperationException();
+
+        MappingOperations.SetItem(
+          _bool.__dict__,
+          SymbolType.Create("--bool--"),
+          BuiltinFunctionType.Create(
+            typeof(BoolType).GetMethod(
+              "ToBool",
+              BindingFlags.NonPublic | BindingFlags.Static)));
+
         return _bool;
       }
     }
@@ -39,8 +49,18 @@ namespace ZStewart.KOSLisp.Types {
       if (args != NilType.Nil) {
         LispInterpreter.SetException(ExceptionType.CreateTypeError(
           "{0} takes no arguments.", subtype));
+        return null;
       }
       return F;
+    }
+
+    private static LispObject ToBool([PositionalArgument] LispObject obj) {
+      if (!(obj is BoolType)) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "Argument must be a bool, was {0}.", obj.__class__));
+        return null;
+      }
+      return obj;
     }
     #endregion Static Type Setup
 

@@ -50,7 +50,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>
     /// A BuiltinFunction which calls the specified function.
     /// </returns>
-    public BuiltinFunctionType Create(MethodInfo boundMethod) {
+    public static BuiltinFunctionType Create(MethodInfo boundMethod) {
       return new BuiltinFunctionType(boundMethod) {
         __class__ = BuiltinFunction,
       };
