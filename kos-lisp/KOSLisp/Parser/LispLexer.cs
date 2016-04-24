@@ -62,7 +62,9 @@ namespace ZStewart.KOSLisp.Parser {
     #region Static Properties
     private const string SUBSYMBOL_REGEX = @"[\p{L}@<>=_+!~*^/\-\.\d]";
     private const string SYMBOL_REGEX =
-      @"([&:]|" + SUBSYMBOL_REGEX + ")" + SUBSYMBOL_REGEX + "*";
+      @"([&:]|" + SUBSYMBOL_REGEX + ")" + SUBSYMBOL_REGEX + "*" +
+      // Assertion to ensure that a:b is illegal instead of Sym(a) Sym(:b)
+      @"(?!([&:]|" + SUBSYMBOL_REGEX + ")" + SUBSYMBOL_REGEX + "*)";
 
     /// <summary>
     /// The configuration of the Lexer -- this is the set of modes and regexes used for
