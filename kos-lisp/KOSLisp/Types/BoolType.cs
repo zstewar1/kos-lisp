@@ -21,7 +21,7 @@ namespace ZStewart.KOSLisp.Types {
         if (_bool != null) return _bool;
 
         _bool = new LispTypeObject {
-          __name__ = "Bool",
+          __name__ = "bool",
           __new__ = New,
         };
         _bool.__class__ = TypeType.Type;
