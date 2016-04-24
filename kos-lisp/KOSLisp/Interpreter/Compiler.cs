@@ -203,8 +203,18 @@ namespace ZStewart.KOSLisp.Interpreter {
         if (expression == null) throw new LispException();
       }
 
+      var astcond = Compiler.ExpressionToIntermediate(cond, context);
+      if (astcond is AstConst) {
+        var b = BoolType.From(((AstConst)astcond).Value);
+        if (b == BoolType.T) return Compiler.ExpressionToIntermediate(ifTrue, context);
+        if (b == BoolType.F) return Compiler.ExpressionToIntermediate(expression, context);
+        if (b == null) {
+          LispInterpreter.ClearException();
+        }
+      }
+
       return new AstIf(
-          Compiler.ExpressionToIntermediate(cond, context),
+          astcond,
           Compiler.ExpressionToIntermediate(ifTrue, context),
           Compiler.ExpressionToIntermediate(expression, context));
     }
