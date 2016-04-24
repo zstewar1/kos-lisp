@@ -2,6 +2,9 @@
 run.bash
 test.bash
 
+# Vim Swapfiles
+.*.swp
+
 
 #Autosave files
 *~
