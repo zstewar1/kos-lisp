@@ -180,6 +180,36 @@ namespace ZStewart.KOSLisp.Interpreter {
     }
   }
 
+  public class IfSpecialForm : SpecialForm {
+    public virtual AstOp ExpressionToIntermediate(
+        LispObject expression, Context context) {
+      var len = ListOperations.Count(expression);
+      if (!len.HasValue) throw new LispException();
+      if (len < 2) throw new CompilerError();
+      if (len > 3) throw new CompilerError();
+
+      var cond = ListOperations.GetCar(expression);
+      if (cond == null) throw new LispException();
+      expression = ListOperations.GetCdr(expression);
+      if (expression == null) throw new LispException();
+      var ifTrue = ListOperations.GetCar(expression);
+      if (ifTrue == null) throw new LispException();
+      expression = ListOperations.GetCdr(expression);
+      if (expression == null) throw new LispException();
+      if (len == 3) {
+        // Expression will be used for value-if-false. If the list was < 3, this is Nil.
+        // If it is 3, we take it from the car of the third cons.
+        expression = ListOperations.GetCar(expression);
+        if (expression == null) throw new LispException();
+      }
+
+      return new AstIf(
+          Compiler.ExpressionToIntermediate(cond, context),
+          Compiler.ExpressionToIntermediate(ifTrue, context),
+          Compiler.ExpressionToIntermediate(expression, context));
+    }
+  }
+
   public class PrognSpecialForm : SpecialForm {
 
     public virtual AstOp ExpressionToIntermediate(
@@ -222,7 +252,8 @@ namespace ZStewart.KOSLisp.Interpreter {
       bindings = new List<Tuple<Binding, AstOp>>();
       Context context = new ScopedContext(outerContext);
       foreach (var newbind in ListOperations.IterList(bindinglist)) {
-        if (newbind is SymbolType && !SymbolType.IsSelfEvaluating((SymbolType)newbind)) {
+        if ((newbind is SymbolType)
+            && !SymbolType.IsSelfEvaluating((SymbolType)newbind)) {
           var binding = context.AddBinding((SymbolType)newbind);
           bindings.Add(Tuple.Create<Binding, AstOp>(binding, new AstConst(NilType.Nil)));
         } else {
@@ -232,11 +263,13 @@ namespace ZStewart.KOSLisp.Interpreter {
           if (len.Value > 2) throw new CompilerError();
           var symb = ListOperations.GetCar(newbind);
           if (symb == null) throw new LispException();
-          if (!(symb is SymbolType) || SymbolType.IsSelfEvaluating((SymbolType)newbind))
+          if (!(symb is SymbolType) || SymbolType.IsSelfEvaluating((SymbolType)symb))
             throw new CompilerError();
           LispObject value = NilType.Nil;
           if (len.Value == 2) {
             value = ListOperations.GetCdr(newbind);
+            if (value == null) throw new LispException();
+            value = ListOperations.GetCar(newbind);
             if (value == null) throw new LispException();
           }
           var binding = context.AddBinding((SymbolType)symb);
@@ -361,6 +394,36 @@ namespace ZStewart.KOSLisp.Interpreter {
         Arguments[i].AppendAstStringIndented(sb, baseIndent + 2);
         sb.AppendLine();
       }
+      sb.Append(' ', baseIndent);
+      sb.Append("]");
+    }
+  }
+
+  public class AstIf : AstOpBase {
+    public AstOp Condition { get; }
+    public AstOp ValueIfTrue { get; }
+    public AstOp ValueIfFalse { get; }
+
+    public AstIf(AstOp condition, AstOp valueIfTrue, AstOp valueIfFalse) {
+      Condition = condition;
+      ValueIfTrue = valueIfTrue;
+      ValueIfFalse = valueIfFalse;
+    }
+
+    public override void AppendAstStringIndented(StringBuilder sb, int baseIndent) {
+      sb.AppendLine("[AST-If:");
+      sb.Append(' ', baseIndent + 2);
+      sb.Append("Condition: ");
+      Condition.AppendAstStringIndented(sb, baseIndent + 2);
+      sb.AppendLine();
+      sb.Append(' ', baseIndent + 2);
+      sb.Append("Value If True: ");
+      ValueIfTrue.AppendAstStringIndented(sb, baseIndent + 2);
+      sb.AppendLine();
+      sb.Append(' ', baseIndent + 2);
+      sb.Append("Value If False: ");
+      ValueIfFalse.AppendAstStringIndented(sb, baseIndent + 2);
+      sb.AppendLine();
       sb.Append(' ', baseIndent);
       sb.Append("]");
     }
@@ -519,6 +582,7 @@ namespace ZStewart.KOSLisp.Interpreter {
       db.Add(SymbolType.Create("defun"), new DefunSpecialForm());
       db.Add(SymbolType.Create("let"), new LetSpecialForm());
       db.Add(SymbolType.Create("progn"), new PrognSpecialForm());
+      db.Add(SymbolType.Create("if"), new IfSpecialForm());
       specialForms = db.ToImmutable();
     }
 
