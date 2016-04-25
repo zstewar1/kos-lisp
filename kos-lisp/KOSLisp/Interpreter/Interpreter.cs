@@ -39,15 +39,18 @@ namespace ZStewart.KOSLisp.Interpreter {
     /// Explodes if there is no exception set.
     /// May also explode if stuff is too messed up.
     /// </summary>
-    public static bool CheckException(LispTypeObject type) {
+    public static bool CheckException(LispType type) {
       if (exception == null)
         throw new InvalidOperationException(
           "Cannot check exception type -- no exception");
+      // TODO(zstewar1): Save the exception and throw a new exception if there's an
+      // exception while exception handling.
+
       // Because setting an exception fails if there is already an exception, this call
       // will just auto-explode if there is an error while type-checking. This may not be
       // the desired final behavior, but for now it does mean we're pretty much guaranteed
       // that instance != null.
-      var instance = TypeType.IsInstance(exception, type);
+      var instance = LispType.IsInstance(exception, type);
       return instance.Value;
     }
 
@@ -63,7 +66,7 @@ namespace ZStewart.KOSLisp.Interpreter {
               "Attempting to throw new exception:\n{0}\nbut the exception was already " +
               "set to:\n{1}.", exc, exception));
       }
-      var instance = TypeType.IsInstance(exc, ExceptionType.Exception);
+      var instance = LispType.IsInstance(exc, ExceptionType.Exception);
       // If there is no value, then just keep the exception set by isinstance.
       if (instance.HasValue) {
         if (instance.Value) {

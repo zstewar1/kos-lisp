@@ -12,7 +12,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     private static readonly LispObject setcdrattr = SymbolType.Create("--setcdr--");
 
     public static LispObject GetCar([PositionalArgument] LispObject target) {
-      LispTypeObject targetType = target.__class__;
+      LispType targetType = target.__class__;
       // __class__ should be the first element of __mro__, but we can't use IterMro in
       // this method, because IterMro depends on being able to call GetCar, so trying to
       // use it would cause an infinite recursion.
@@ -45,7 +45,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         // Just accept cast errors. It should be impossible for any object in the MRO to
         // be assigned to a non-type and impossible for a type not to inheirt from
         // LispTypeObject.
-        targetType = (LispTypeObject)nextType;
+        targetType = (LispType)nextType;
       }
     }
 
@@ -189,8 +189,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// The object to resolve on. This method iterates over target.__class__.__mro__
     /// </param>
     /// <returns>A C# iterator that iterates over the given Lisp object's MRO</returns>
-    public static IEnumerable<LispTypeObject> IterMro(LispObject target) {
-      return IterList<LispTypeObject>(target.__class__.__mro__);
+    public static IEnumerable<LispType> IterMro(LispObject target) {
+      return IterList<LispType>(target.__class__.__mro__);
     }
   }
 }

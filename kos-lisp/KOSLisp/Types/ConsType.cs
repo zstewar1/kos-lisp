@@ -15,18 +15,19 @@ namespace ZStewart.KOSLisp.Types {
 
     // Configuration for the static type object that represents this type.
     #region Static Type Setup
-    private static LispTypeObject _cons;
+    private static LispType _cons;
     /// <summary>
     /// The singleton instance that represents the type "cons"
     /// </summary>
-    public static LispTypeObject Cons {
+    public static LispType Cons {
       get {
         if (_cons != null) return _cons;
 
-        _cons = new LispTypeObject {
+        _cons = new LispType {
           __name__ = "cons",
           __new__ = New,
           __init__ = Init,
+          _instance_type = typeof(ConsType),
           _list_methods = new ListMethods {
             __getcar__ = GetCar,
             __setcar__ = SetCar,
@@ -34,10 +35,10 @@ namespace ZStewart.KOSLisp.Types {
             __setcdr__ = SetCdr,
           },
         };
-        _cons.__class__ = TypeType.Type;
-        _cons.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
-        _cons.__mro__ = IConsType.ToLispTuple(_cons, ObjectType.Object);
-        _cons = LispTypeObject.ConfigureType(_cons);
+        _cons.__class__ = LispType.Type;
+        _cons.__bases__ = IConsType.ToLispTuple(LispObject.Object);
+        _cons.__mro__ = IConsType.ToLispTuple(_cons, LispObject.Object);
+        _cons = LispType.ConfigureType(_cons);
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_cons == null) throw new InvalidOperationException();
         return _cons;
@@ -58,7 +59,7 @@ namespace ZStewart.KOSLisp.Types {
         return null;
       }
       var result = new ConsType();
-      result.__class__ = (LispTypeObject)subtype;
+      result.__class__ = (LispType)subtype;
       // TODO(zstewar1): add an __dict__ for subtypes (dynamic types). (maybe, unless we
       // setup to do this somewhere else).
       return result;
@@ -195,7 +196,7 @@ namespace ZStewart.KOSLisp.Types {
           return null;
         }
       } else if (len.Value == 2) {
-        var instance = TypeType.IsInstance(Car, SymbolType.Symbol);
+        var instance = LispType.IsInstance(Car, SymbolType.Symbol);
         if (!instance.HasValue) return null;
         if (instance.Value) {
           if (Car == SymbolType.Create("quote")) {

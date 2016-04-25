@@ -24,26 +24,27 @@ namespace ZStewart.KOSLisp.Types {
 
     // Configuration for the static type object that represents this type.
     #region Static Type Setup
-    private static LispTypeObject _icons;
+    private static LispType _icons;
     /// <summary>
     /// The singleton instance that represents the type "cons"
     /// </summary>
-    public static LispTypeObject ICons {
+    public static LispType ICons {
       get {
         if (_icons != null) return _icons;
 
-        _icons = new LispTypeObject {
+        _icons = new LispType {
           __name__ = "icons",
           __new__ = New,
+          _instance_type = typeof(IConsType),
           _list_methods = new ListMethods {
             __getcar__ = GetCar,
             __getcdr__ = GetCdr,
           },
         };
-        _icons.__class__ = TypeType.Type;
-        _icons.__bases__ = ToLispTuple(ObjectType.Object);
-        _icons.__mro__ = ToLispTuple(_icons, ObjectType.Object);
-        _icons = LispTypeObject.ConfigureType(_icons);
+        _icons.__class__ = LispType.Type;
+        _icons.__bases__ = ToLispTuple(LispObject.Object);
+        _icons.__mro__ = ToLispTuple(_icons, LispObject.Object);
+        _icons = LispType.ConfigureType(_icons);
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_icons == null) throw new InvalidOperationException();
         return _icons;

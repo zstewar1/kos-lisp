@@ -74,7 +74,6 @@
     <Compile Include="KOSLisp\Parser\LispTokens.cs" />
     <Compile Include="KOSLisp\Program.cs" />
     <Compile Include="KOSLisp\Parser\SourceInformation.cs" />
-    <Compile Include="KOSLisp\Types\LispTypeObject.cs" />
     <Compile Include="KOSLisp\Types\NilType.cs" />
     <Compile Include="KOSLisp\Types\BoolType.cs" />
     <Compile Include="KOSLisp\Types\ExceptionType.cs" />
@@ -92,6 +91,7 @@
     <Compile Include="Options.cs" />
     <Compile Include="KOSLisp\Parser\Token.cs" />
     <Compile Include="KOSLisp\Parser\LispLexer.cs" />
+    <Compile Include="KOSLisp\Types\LispType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

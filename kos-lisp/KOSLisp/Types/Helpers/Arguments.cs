@@ -53,7 +53,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
             lastKeyword = null;
           } else {
             // TODO(zstewar1): Change to the keyword symbol subclass once implemented.
-            var kwdTypeCheck = TypeType.IsInstance(arg, SymbolType.Symbol);
+            var kwdTypeCheck = LispType.IsInstance(arg, SymbolType.Symbol);
             if (!kwdTypeCheck.HasValue) return;
             if (kwdTypeCheck.Value) {
               lastKeyword = arg;
@@ -66,7 +66,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           }
         } else {
           // TODO(zstewar1): Change to the keyword symbol subclass once implemented.
-         var kwdTypeCheck = TypeType.IsInstance(arg, SymbolType.Symbol);
+          bool? kwdTypeCheck = false;//TypeType.IsInstance(arg, SymbolType.Symbol);
           if (!kwdTypeCheck.HasValue) return;
           if (kwdTypeCheck.Value) {
             lastKeyword = arg;
@@ -142,6 +142,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="marshaled">Output parameter for the marshaled object.</param>
     /// <returns>True if the conversion succeeded, false if an error was set.</returns>
     public static bool Marshal(Type destType, LispObject source, out object marshaled) {
+      marshaled = null;
       // Marshal any parameter which is a plain object or lisp object (or of a type
       // appropriate to recieve such) to the raw lisp object.
       if (destType.IsAssignableFrom(source.GetType())) {
@@ -153,6 +154,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       if (destType.IsClass || destType.IsInterface
           || (destType.IsGenericType
               && destType.GetGenericTypeDefinition() == typeof(Nullable<>))
+          // Don't set null for LispObjects.
+          && !typeof(LispObject).IsAssignableFrom(destType)
           && source == NilType.Nil) {
         marshaled = null;
         return true;
@@ -160,11 +163,39 @@ namespace ZStewart.KOSLisp.Types.Helpers {
 
       // Explicitly check convertable types.
       if (destType == typeof(double)) {
-        // TODO(zstewar1): Call number on the type to convert it.
+        // TODO(zstewar1): Call the Number type with the object as the argument.
+        if (source is NumberType) {
+          marshaled = ((NumberType)source).Value;
+          return true;
+        }
+      }
+
+      if (destType == typeof(string)) {
+        var str = LispObject.Call(source, "--str--", NilType.Nil);
+        if (str == null) {
+          if (LispInterpreter.CheckException(ExceptionType.TypeError))
+            LispInterpreter.ClearException();
+          else return false;
+        } else if (str is StringType) {
+          marshaled = ((StringType)str).Value;
+          return true;
+        }
+      }
+
+      if (destType == typeof(bool)) {
+        var boolean = LispObject.Call(source, "--bool--", NilType.Nil);
+        if (boolean == null) {
+          if (LispInterpreter.CheckException(ExceptionType.TypeError))
+            LispInterpreter.ClearException();
+          else return false;
+        } else if (boolean is BoolType) {
+          marshaled = ((BoolType)boolean).Value;
+          return true;
+        }
       }
 
       // TODO(zstewar1): etc. for string and any other type which are reasonable to
-      // convert.
+      // convert. (Maybe List?)
 
       marshaled = null;
       LispInterpreter.SetException(ExceptionType.CreateTypeError(

@@ -12,32 +12,27 @@ namespace ZStewart.KOSLisp.Types {
     private BoolType (string name) : base(name) { }
 
     #region Static Type Setup
-    private static LispTypeObject _bool;
+    private static LispType _bool;
     /// <summary>
     /// The singleton instance that represents the type "bool"
     /// </summary>
-    public static LispTypeObject Bool {
+    public static LispType Bool {
       get {
         if (_bool != null) return _bool;
 
-        _bool = new LispTypeObject {
+        _bool = new LispType {
           __name__ = "bool",
           __new__ = New,
+          _instance_type = typeof(BoolType),
         };
-        _bool.__class__ = TypeType.Type;
+        _bool.__class__ = LispType.Type;
         _bool.__bases__ = IConsType.ToLispTuple(Symbol);
-        _bool.__mro__ = IConsType.ToLispTuple(_bool, Symbol, ObjectType.Object);
-        _bool = LispTypeObject.ConfigureType(_bool);
+        _bool.__mro__ = IConsType.ToLispTuple(_bool, Symbol, LispObject.Object);
+        _bool = LispType.ConfigureType(_bool);
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_bool == null) throw new InvalidOperationException();
 
-        MappingOperations.SetItem(
-          _bool.__dict__,
-          SymbolType.Create("--bool--"),
-          BuiltinFunctionType.Create(
-            typeof(BoolType).GetMethod(
-              "ToBool",
-              BindingFlags.NonPublic | BindingFlags.Static)));
+        LispType.AddStatic(_bool, "ToBool", "--bool--");
 
         return _bool;
       }
@@ -54,12 +49,7 @@ namespace ZStewart.KOSLisp.Types {
       return F;
     }
 
-    private static LispObject ToBool([PositionalArgument] LispObject obj) {
-      if (!(obj is BoolType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "Argument must be a bool, was {0}.", obj.__class__));
-        return null;
-      }
+    private static LispObject ToBool([PositionalArgument] BoolType obj) {
       return obj;
     }
     #endregion Static Type Setup
@@ -69,7 +59,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="obj">The object to convert.</param>
     /// <returns>True if the object's __bool__ is true, false if it is false
     public static BoolType From(LispObject obj) {
-      var b = ObjectType.Call(obj, "--bool--", NilType.Nil);
+      var b = LispObject.Call(obj, "--bool--", NilType.Nil);
       if (b == null) return null;
       if (b == T) return T;
       if (b == F) return F;
@@ -100,5 +90,7 @@ namespace ZStewart.KOSLisp.Types {
         return _t;
       }
     }
+
+    public bool Value { get { return this == T; } }
   }
 }

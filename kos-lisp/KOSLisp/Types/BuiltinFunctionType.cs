@@ -10,20 +10,22 @@ using ZStewart.KOSLisp.Types.Helpers;
 namespace ZStewart.KOSLisp.Types {
   public class BuiltinFunctionType : LispObject {
     #region Static Type Setup
-    private static LispTypeObject _builtinFunction;
-    public static LispTypeObject BuiltinFunction {
+    private static LispType _builtinFunction;
+    public static LispType BuiltinFunction {
       get {
         if (_builtinFunction != null) return _builtinFunction;
 
-        _builtinFunction = new LispTypeObject {
+        _builtinFunction = new LispType {
           __name__ = "BuiltinFunction",
+          __call__ = Call,
+          _instance_type = typeof(BuiltinFunctionType),
           // TODO(zstewar1): New/Call
         };
-        _builtinFunction.__class__ = TypeType.Type;
-        _builtinFunction.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
+        _builtinFunction.__class__ = LispType.Type;
+        _builtinFunction.__bases__ = IConsType.ToLispTuple(LispObject.Object);
         _builtinFunction.__mro__ = IConsType.ToLispTuple(
-          _builtinFunction, ObjectType.Object);
-        _builtinFunction = LispTypeObject.ConfigureType(_builtinFunction);
+          _builtinFunction, LispObject.Object);
+        _builtinFunction = LispType.ConfigureType(_builtinFunction);
         if (_builtinFunction == null) throw new InvalidOperationException();
         return _builtinFunction;
       }

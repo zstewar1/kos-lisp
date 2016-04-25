@@ -1,30 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using ZStewart.KOSLisp.Types.Attributes;
 
 namespace ZStewart.KOSLisp.Types {
   public class SymbolType : LispObject {
     #region Static Type Setup
-    private static LispTypeObject _symbol;
-    public static LispTypeObject Symbol {
+    private static LispType _symbol;
+    public static LispType Symbol {
       get {
         if (_symbol != null) return _symbol;
 
-        _symbol = new LispTypeObject {
+        _symbol = new LispType {
           __name__ = "symbol",
+          _instance_type = typeof(SymbolType),
         };
-        _symbol.__class__ = TypeType.Type;
-        _symbol.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
-        _symbol.__mro__ = IConsType.ToLispTuple(Symbol, ObjectType.Object);
-        _symbol = LispTypeObject.ConfigureType(_symbol);
+        _symbol.__class__ = LispType.Type;
+        _symbol.__bases__ = IConsType.ToLispTuple(LispObject.Object);
+        _symbol.__mro__ = IConsType.ToLispTuple(Symbol, LispObject.Object);
+        _symbol = LispType.ConfigureType(_symbol);
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_symbol == null) throw new InvalidOperationException();
+
+        LispType.AddStatic(_symbol, "ToStr", "--str--");
+
         return _symbol;
       }
     }
 
+    private static LispObject ToStr([PositionalArgument] SymbolType obj) {
+      return StringType.Create(obj.Identifier);
+    }
     // TODO(zstewar1): In language instantiation stuff.
     #endregion
 

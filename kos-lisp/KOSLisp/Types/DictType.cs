@@ -16,22 +16,22 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     #region Static Type Setup
-    private static LispTypeObject _dict;
-    public static LispTypeObject Dict {
+    private static LispType _dict;
+    public static LispType Dict {
       get {
         if (_dict != null) return _dict;
-
-        _dict = new LispTypeObject {
+        _dict = new LispType {
           __name__ = "dict",
+          _instance_type = typeof(DictType),
           _map_methods = new MappingMethods {
             __getitem__ = GetItem,
             __setitem__ = SetItem,
           },
         };
-        _dict.__class__ = TypeType.Type;
-        _dict.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
-        _dict.__mro__ = IConsType.ToLispTuple(_dict, ObjectType.Object);
-        _dict = LispTypeObject.ConfigureType(_dict);
+        _dict.__class__ = LispType.Type;
+        _dict.__bases__ = IConsType.ToLispTuple(LispObject.Object);
+        _dict.__mro__ = IConsType.ToLispTuple(_dict, LispObject.Object);
+        _dict = LispType.ConfigureType(_dict);
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_dict == null) throw new InvalidOperationException();
         return _dict;

@@ -37,8 +37,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </returns>
     internal static LispObject Lookup(
         LispObject target,
-        Predicate<LispTypeObject> hasBuiltin,
-        Func<LispTypeObject, Func<LispObject, LispObject>> getBuiltin,
+        Predicate<LispType> hasBuiltin,
+        Func<LispType, Func<LispObject, LispObject>> getBuiltin,
         LispObject fallbackSymbol,
         Func<string> errorFormat) {
       return InnerLookup(
@@ -82,8 +82,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </returns>
     internal static LispObject Lookup(
         LispObject target,
-        Predicate<LispTypeObject> hasBuiltin,
-        Func<LispTypeObject, Func<LispObject, LispObject>> getBuiltin,
+        Predicate<LispType> hasBuiltin,
+        Func<LispType, Func<LispObject, LispObject>> getBuiltin,
         LispObject fallbackSymbol,
         Func<LispObject> getFallbackArgs,
         Func<string> errorFormat) {
@@ -129,8 +129,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     internal static LispObject Lookup(
         LispObject target,
         LispObject arg1,
-        Predicate<LispTypeObject> hasBuiltin,
-        Func<LispTypeObject, Func<LispObject, LispObject, LispObject>> getBuiltin,
+        Predicate<LispType> hasBuiltin,
+        Func<LispType, Func<LispObject, LispObject, LispObject>> getBuiltin,
         LispObject fallbackSymbol,
         Func<string> errorFormat) {
       return InnerLookup(
@@ -178,8 +178,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     internal static LispObject Lookup(
         LispObject target,
         LispObject arg1,
-        Predicate<LispTypeObject> hasBuiltin,
-        Func<LispTypeObject, Func<LispObject, LispObject, LispObject>> getBuiltin,
+        Predicate<LispType> hasBuiltin,
+        Func<LispType, Func<LispObject, LispObject, LispObject>> getBuiltin,
         LispObject fallbackSymbol,
         Func<LispObject> getFallbackArgs,
         Func<string> errorFormat) {
@@ -229,8 +229,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         LispObject target,
         LispObject arg1,
         LispObject arg2,
-        Predicate<LispTypeObject> hasBuiltin,
-        Func<LispTypeObject, Func<LispObject, LispObject, LispObject, LispObject>>
+        Predicate<LispType> hasBuiltin,
+        Func<LispType, Func<LispObject, LispObject, LispObject, LispObject>>
           getBuiltin,
         LispObject fallbackSymbol,
         Func<string> errorFormat) {
@@ -283,8 +283,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         LispObject target,
         LispObject arg1,
         LispObject arg2,
-        Predicate<LispTypeObject> hasBuiltin,
-        Func<LispTypeObject, Func<LispObject, LispObject, LispObject, LispObject>>
+        Predicate<LispType> hasBuiltin,
+        Func<LispType, Func<LispObject, LispObject, LispObject, LispObject>>
           getBuiltin,
         LispObject fallbackSymbol,
         Func<LispObject> getFallbackArgs,
@@ -335,11 +335,11 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// an error set) if no appropriate method is found.
     /// </returns>
     private static LispObject InnerLookup<T>(
-        IEnumerable<LispTypeObject> typeIter,
+        IEnumerable<LispType> typeIter,
         Func<T, LispObject> doBuiltinCall,
         Func<LispObject> getFallbackArgs,
-        Predicate<LispTypeObject> hasBuiltin,
-        Func<LispTypeObject, T> getBuiltin,
+        Predicate<LispType> hasBuiltin,
+        Func<LispType, T> getBuiltin,
         LispObject fallbackSymbol,
         Func<string> errorFormat) {
       foreach (var targetType in typeIter) {

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
+using ZStewart.KOSLisp.Types.Attributes;
 
 namespace ZStewart.KOSLisp.Types {
   public class StringType : LispObject {
@@ -17,27 +18,44 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     #region Static Type Setup
-    private static LispTypeObject _string;
-    public static LispTypeObject String {
+    private static LispType _string;
+    public static LispType String {
       get {
         if (_string != null) return _string;
 
-        _string = new LispTypeObject {
+        _string = new LispType {
           __name__ = "str",
+          _instance_type = typeof(StringType),
         };
-        _string.__class__ = TypeType.Type;
-        _string.__bases__ = IConsType.ToLispTuple(ObjectType.Object);
-        _string.__mro__ = IConsType.ToLispTuple(String, ObjectType.Object);
-        _string = LispTypeObject.ConfigureType(_string);
+        _string.__class__ = LispType.Type;
+        _string.__bases__ = IConsType.ToLispTuple(LispObject.Object);
+        _string.__mro__ = IConsType.ToLispTuple(String, LispObject.Object);
+        _string = LispType.ConfigureType(_string);
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_string == null) throw new InvalidOperationException();
+
+        LispType.AddStatic(_string, "ToStr", "--str--");
+
         return _string;
       }
+    }
+
+    private static LispObject ToStr([PositionalArgument] StringType str) {
+      return str;
     }
     #endregion
 
     #region Static Helper Methods
-    public static LispObject Create(string value) {
+    private static StringType _empty;
+    public static StringType Empty {
+      get {
+        if (_empty != null) return _empty;
+        _empty = Create("");
+        return _empty;
+      }
+    }
+
+    public static StringType Create(string value) {
       return new StringType {
         __class__ = String,
         value = value,
