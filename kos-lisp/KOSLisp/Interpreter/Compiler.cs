@@ -303,7 +303,7 @@ namespace ZStewart.KOSLisp.Interpreter {
   public class LambdaSpecialForm : PrognSpecialForm {
     public override AstOp ExpressionToIntermediate(
         LispObject expression, Context context) {
-      List<SymbolType> args;
+      List<Binding> args;
       List<AstOp> forms;
       ParseArgsAndForms(expression, context, out args, out forms);
       return new AstLambda(args, forms);
@@ -311,7 +311,7 @@ namespace ZStewart.KOSLisp.Interpreter {
 
     protected void ParseArgsAndForms(
         LispObject expression, Context context,
-        out List<SymbolType> args, out List<AstOp> forms) {
+        out List<Binding> args, out List<AstOp> forms) {
       var len = ListOperations.Count(expression);
       if (!len.HasValue) throw new LispException();
       if (len.Value < 1) throw new CompilerError();
@@ -320,8 +320,10 @@ namespace ZStewart.KOSLisp.Interpreter {
       var rest = ListOperations.GetCdr(expression);
       if (rest == null) throw new LispException();
 
-      args = ParseArgumentList(arglist);
-      forms = ParseForms(rest, new ClosuredScopedContext(context, args));
+      var symargs = ParseArgumentList(arglist);
+      var innerContext = new ClosuredScopedContext(context, symargs);
+      args = symargs.Select(s => innerContext.GetBinding(s)).ToList();
+      forms = ParseForms(rest, innerContext);
     }
 
     protected virtual List<SymbolType> ParseArgumentList(LispObject arglist) {
@@ -353,12 +355,12 @@ namespace ZStewart.KOSLisp.Interpreter {
       var rest = ListOperations.GetCdr(expression);
       if (rest == null) throw new LispException();
 
-      context.AddBinding(name);
+      var binding = context.AddBinding(name);
 
-      List<SymbolType> args;
+      List<Binding> args;
       List<AstOp> forms;
       ParseArgsAndForms(rest, context, out args, out forms);
-      return new AstDefun(name, args, forms);
+      return new AstDefun(binding, args, forms);
     }
   }
 
@@ -500,11 +502,11 @@ namespace ZStewart.KOSLisp.Interpreter {
         sb.AppendFormat("Let Binding {0}:", i);
         sb.AppendLine();
         sb.Append(' ', baseIndent + 4);
-        sb.Append("Bound Symbol:");
+        sb.Append("Bound Symbol: ");
         Bindings[i].Item1.AppendAstStringIndented(sb, baseIndent + 4);
         sb.AppendLine();
         sb.Append(' ', baseIndent + 4);
-        sb.Append("To Value:");
+        sb.Append("To Value: ");
         Bindings[i].Item2.AppendAstStringIndented(sb, baseIndent + 4);
         sb.AppendLine();
       }
@@ -512,8 +514,8 @@ namespace ZStewart.KOSLisp.Interpreter {
   }
 
   public class AstLambda : AstProgn {
-    public IList<SymbolType> Args { get; }
-    public AstLambda(IList<SymbolType> args, IList<AstOp> forms) : base(forms) {
+    public IList<Binding> Args { get; }
+    public AstLambda(IList<Binding> args, IList<AstOp> forms) : base(forms) {
       Args = args;
     }
 
@@ -532,15 +534,16 @@ namespace ZStewart.KOSLisp.Interpreter {
     protected virtual void AppendArgs(StringBuilder sb, int baseIndent) {
       for (int i = 0; i < Args.Count; i++) {
         sb.Append(' ', baseIndent + 2);
-        sb.AppendFormat("Arg {0}: {1}", i, Args[i]);
+        sb.AppendFormat("Arg {0}: ", i);
+        Args[i].AppendAstStringIndented(sb, baseIndent + 4);
         sb.AppendLine();
       }
     }
   }
 
   public class AstDefun : AstLambda {
-    public SymbolType Name { get; }
-    public AstDefun(SymbolType name, IList<SymbolType> args, IList<AstOp> forms)
+    public Binding Name { get; }
+    public AstDefun(Binding name, IList<Binding> args, IList<AstOp> forms)
         : base(args, forms) {
       Name = name;
     }
@@ -548,7 +551,8 @@ namespace ZStewart.KOSLisp.Interpreter {
     public override void AppendAstStringIndented(StringBuilder sb, int baseIndent) {
       sb.AppendLine("[AST-Defun:");
       sb.Append(' ', baseIndent + 2);
-      sb.AppendFormat("Name: {0}", Name);
+      sb.Append("Name: ");
+      Name.AppendAstStringIndented(sb, baseIndent + 4);
       sb.AppendLine();
       AppendArgs(sb, baseIndent);
       AppendForms(sb, baseIndent);
