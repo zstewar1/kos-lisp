@@ -60,6 +60,7 @@
     <Compile Include="KOSLisp\Types\Attributes\RestKeywordArgument.cs" />
     <Compile Include="KOSLisp\Types\CallMagic.cs" />
     <Compile Include="KOSLisp\Types\DictType.cs" />
+    <Compile Include="KOSLisp\Types\ModuleType.cs" />
     <Compile Include="KOSLisp\Types\Helpers\Arguments.cs" />
     <Compile Include="KOSLisp\Types\Helpers\LookupHelpers.cs" />
     <Compile Include="KOSLisp\Types\Helpers\CallableOperations.cs" />
