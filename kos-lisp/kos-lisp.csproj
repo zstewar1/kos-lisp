@@ -80,6 +80,7 @@
     <Compile Include="KOSLisp\Types\ExceptionType.cs" />
     <Compile Include="KOSLisp\Types\NumberType.cs" />
     <Compile Include="KOSLisp\Types\BuiltinFunctionType.cs" />
+    <Compile Include="KOSLisp\Types\BuiltinDataDescriptorType.cs" />
     <Compile Include="KOSLisp\Types\ObjectType.cs" />
     <Compile Include="KOSLisp\Types\StringType.cs" />
     <Compile Include="KOSLisp\Types\SymbolType.cs" />
