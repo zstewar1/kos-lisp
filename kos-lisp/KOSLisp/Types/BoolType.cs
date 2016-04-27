@@ -55,6 +55,10 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Type Setup
 
     #region Static Helper Methods
+    public static BoolType Create(bool value) {
+      return value ? T : F;
+    }
+
     /// <summary>Convert an arbitrary lisp object to a boolean.</summary>
     /// <param name="obj">The object to convert.</param>
     /// <returns>True if the object's __bool__ is true, false if it is false
