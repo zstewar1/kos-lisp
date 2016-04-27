@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.Attributes;
@@ -29,5 +30,12 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
     #endregion
+
+    private string propName;
+    private Type propType;
+    private PropertyInfo property;
+
+    private void Get (LispObject instance) {
+    }
   }
 }
