@@ -77,6 +77,14 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject GetAttr(LispObject obj, LispObject attr) {
+      var instance = LispType.IsInstance(attr, SymbolType.Symbol);
+      if (!instance.HasValue) return null;
+      if (!instance.Value) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "attribute name must be symbol, not \"{0}\"", attr.__class__));
+        return null;
+      }
+
       // Check if the item is in the object's dictionary, then check the class. If the
       // class item is a data descriptor (not yet implemented) fetch the value and return
       // it, otherwise return the object item, if available, otherwise return the fetch
@@ -106,16 +114,8 @@ namespace ZStewart.KOSLisp.Types {
       if (objdictitem != null) return objdictitem;
       if (classitem != null) return classitem;
 
-      // Prevent an infinite --getattr--(--getattr--) recurision.
-      if (attr != SymbolType.Create("--getattr--")) {
-        var result = Call(obj, "--getattr--", attr);
-        if (result != null) return result;
-        if (LispInterpreter.CheckException(ExceptionType.TypeError))
-          LispInterpreter.ClearException();
-        else return null;
-      }
-      LispInterpreter.SetException(ExceptionType.CreateTypeError(
-        "{0} object has no attribute {1}", obj.__class__, attr));
+      LispInterpreter.SetException(ExceptionType.CreateAttributeError(
+        "\"{0}\" object has no attribute {1}", obj.__class__, attr));
       return null;
     }
 
@@ -127,7 +127,8 @@ namespace ZStewart.KOSLisp.Types {
     #region Static Helper Methods
     // in-lang --getattr-- is a different method. --getattribute-- is the real
     // unconditional lookup function in the language, as in Python.
-    private static LispObject getattrattr = StringType.Create("--getattribute--");
+    private static LispObject getattributeattr = StringType.Create("--getattribute--");
+    private static LispObject getattrattr = StringType.Create("--getattr--");
 
     /// <summary>
     /// Call a method on the given object.
@@ -147,13 +148,36 @@ namespace ZStewart.KOSLisp.Types {
     /// if provided.
     /// </summary>
     public static LispObject GetAttribute(LispObject obj, LispObject attribute) {
+      var instance = LispType.IsInstance(attribute, SymbolType.Symbol);
+      if (!instance.HasValue) return null;
+      if (!instance.Value) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "attribute name must be symbol"));
+        return null;
+      }
+
       // TODO(zstewar1): maybe check that attribute is a symbol?
-      return LookupHelpers.Lookup(
+      var value = LookupHelpers.Lookup(
         obj, attribute,
         t => t.__getattr__ != null,
         t => t.__getattr__,
+        getattributeattr,
+        // We should never reach this since everything inherits from object and object
+        // provides the final fallback getattribute method.
+        () => ExceptionType.CreateAttributeError(
+          "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
+
+      if (value != null) return value;
+      if (!LispInterpreter.CheckException(ExceptionType.AttributeError)) return null;
+      LispInterpreter.ClearException();
+
+      return LookupHelpers.Lookup(
+        obj, attribute,
+        t => false,
+        // Since the first predicate is false, this should never be called.
+        t => null,
         getattrattr,
-        () => string.Format(
+        () => ExceptionType.CreateAttributeError(
           "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
     }
     #endregion Static Helper Methods

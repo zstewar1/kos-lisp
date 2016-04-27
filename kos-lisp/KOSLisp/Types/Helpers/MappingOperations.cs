@@ -14,7 +14,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         t => t._map_methods != null && t._map_methods.__getitem__ != null,
         t => t._map_methods.__getitem__,
         getitemattr,
-        () => string.Format("\"{0}\" object is not subscriptable", target.__class__));
+        () => ExceptionType.CreateTypeError(
+          "\"{0}\" object is not subscriptable", target.__class__));
     }
 
     public static LispObject SetItem(
@@ -26,7 +27,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         t => t._map_methods != null && t._map_methods.__setitem__ != null,
         t => t._map_methods.__setitem__,
         setitemattr,
-        () => string.Format(
+        () => ExceptionType.CreateTypeError(
           "subscript of \"{0}\" object is not assignable", target.__class__));
     }
 

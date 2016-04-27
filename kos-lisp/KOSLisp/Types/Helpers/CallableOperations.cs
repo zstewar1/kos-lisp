@@ -28,7 +28,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         t => t.__call__,
         callattr,
         () => IConsType.Create(callable, args),
-        () => string.Format("\"{0}\" object is not callable", callable.__class__));
+        () => ExceptionType.CreateTypeError(
+          "\"{0}\" object is not callable", callable.__class__));
     }
   }
 }

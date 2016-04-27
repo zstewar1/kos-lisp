@@ -60,6 +60,42 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    private static LispType _attributeError;
+    public static LispType AttributeError {
+      get {
+        if (_attributeError != null) return _attributeError;
+
+        _attributeError = new LispType {
+          __name__ = "AttributeError",
+        };
+        _attributeError.__class__ = LispType.Type;
+        _attributeError.__bases__ = IConsType.ToLispTuple(Exception);
+        _attributeError.__mro__ = IConsType.ToLispTuple(
+          _attributeError, Exception, LispObject.Object);
+        _attributeError = LispType.ConfigureType(_attributeError);
+        if (_attributeError == null) throw new InvalidOperationException();
+        return _attributeError;
+      }
+    }
+
+    private static LispType _nameError;
+    public static LispType NameError {
+      get {
+        if (_nameError != null) return _nameError;
+
+        _nameError = new LispType {
+          __name__ = "NameError",
+        };
+        _nameError.__class__ = LispType.Type;
+        _nameError.__bases__ = IConsType.ToLispTuple(Exception);
+        _nameError.__mro__ = IConsType.ToLispTuple(
+          _nameError, Exception, LispObject.Object);
+        _nameError = LispType.ConfigureType(_nameError);
+        if (_nameError == null) throw new InvalidOperationException();
+        return _nameError;
+      }
+    }
+
     private static LispType _keyError;
     public static LispType KeyError {
       get {
@@ -115,6 +151,21 @@ namespace ZStewart.KOSLisp.Types {
     public static ExceptionType CreateValueError(string message, params object[] args) {
       return new ExceptionType {
         __class__ = ValueError,
+        message = string.Format(message, args),
+      };
+    }
+
+    public static ExceptionType CreateAttributeError(
+        string message, params object[] args) {
+      return new ExceptionType {
+        __class__ = AttributeError,
+        message = string.Format(message, args),
+      };
+    }
+
+    public static ExceptionType CreateNameError(string message, params object[] args) {
+      return new ExceptionType {
+        __class__ = NameError,
         message = string.Format(message, args),
       };
     }

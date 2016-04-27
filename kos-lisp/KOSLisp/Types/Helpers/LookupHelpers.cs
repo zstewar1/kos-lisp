@@ -26,9 +26,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
     /// returns false
     /// </param>
-    /// <param name="errorFormat">
-    /// A function which returns a formatted error message for when the approprate
-    /// function is not found as a builtin or dict item in the MRO.
+    /// <param name="generateError">
+    /// A function wich generate an error to be set when the lookup fails.
     /// </param>
     /// <returns>
     /// The result of the operation on the target object, throught the first builtin or
@@ -40,7 +39,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         Predicate<LispType> hasBuiltin,
         Func<LispType, Func<LispObject, LispObject>> getBuiltin,
         LispObject fallbackSymbol,
-        Func<string> errorFormat) {
+        Func<ExceptionType> generateError) {
       return InnerLookup(
         ListOperations.IterMro(target),
         f => f(target),
@@ -48,7 +47,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
-        errorFormat);
+        generateError);
     }
 
     /// <summary>
@@ -71,9 +70,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="getFallbackArgs">
     /// A function which produces the argument list to be used for the fallback.
     /// </param>
-    /// <param name="errorFormat">
-    /// A function which returns a formatted error message for when the approprate
-    /// function is not found as a builtin or dict item in the MRO.
+    /// <param name="generateError">
+    /// A function wich generate an error to be set when the lookup fails.
     /// </param>
     /// <returns>
     /// The result of the operation on the target object, throught the first builtin or
@@ -86,7 +84,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         Func<LispType, Func<LispObject, LispObject>> getBuiltin,
         LispObject fallbackSymbol,
         Func<LispObject> getFallbackArgs,
-        Func<string> errorFormat) {
+        Func<ExceptionType> generateError) {
       return InnerLookup(
         ListOperations.IterMro(target),
         f => f(target),
@@ -94,7 +92,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
-        errorFormat);
+        generateError);
     }
 
     /// <summary>
@@ -117,9 +115,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
     /// returns false
     /// </param>
-    /// <param name="errorFormat">
-    /// A function which returns a formatted error message for when the approprate
-    /// function is not found as a builtin or dict item in the MRO.
+    /// <param name="generateError">
+    /// A function wich generate an error to be set when the lookup fails.
     /// </param>
     /// <returns>
     /// The result of the operation on the target object, throught the first builtin or
@@ -132,7 +129,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         Predicate<LispType> hasBuiltin,
         Func<LispType, Func<LispObject, LispObject, LispObject>> getBuiltin,
         LispObject fallbackSymbol,
-        Func<string> errorFormat) {
+        Func<ExceptionType> generateError) {
       return InnerLookup(
         ListOperations.IterMro(target),
         f => f(target, arg1),
@@ -140,7 +137,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
-        errorFormat);
+        generateError);
     }
 
     /// <summary>
@@ -166,9 +163,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="getFallbackArgs">
     /// A function which produces the argument list to be used for the fallback.
     /// </param>
-    /// <param name="errorFormat">
-    /// A function which returns a formatted error message for when the approprate
-    /// function is not found as a builtin or dict item in the MRO.
+    /// <param name="generateError">
+    /// A function wich generate an error to be set when the lookup fails.
     /// </param>
     /// <returns>
     /// The result of the operation on the target object, throught the first builtin or
@@ -182,7 +178,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         Func<LispType, Func<LispObject, LispObject, LispObject>> getBuiltin,
         LispObject fallbackSymbol,
         Func<LispObject> getFallbackArgs,
-        Func<string> errorFormat) {
+        Func<ExceptionType> generateError) {
       return InnerLookup(
         ListOperations.IterMro(target),
         f => f(target, arg1),
@@ -190,7 +186,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
-        errorFormat);
+        generateError);
     }
 
     /// <summary>
@@ -216,9 +212,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
     /// returns false
     /// </param>
-    /// <param name="errorFormat">
-    /// A function which returns a formatted error message for when the approprate
-    /// function is not found as a builtin or dict item in the MRO.
+    /// <param name="generateError">
+    /// A function wich generate an error to be set when the lookup fails.
     /// </param>
     /// <returns>
     /// The result of the operation on the target object, throught the first builtin or
@@ -233,7 +228,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         Func<LispType, Func<LispObject, LispObject, LispObject, LispObject>>
           getBuiltin,
         LispObject fallbackSymbol,
-        Func<string> errorFormat) {
+        Func<ExceptionType> generateError) {
       return InnerLookup(
         ListOperations.IterMro(target),
         f => f(target, arg1, arg2),
@@ -241,7 +236,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
-        errorFormat);
+        generateError);
     }
 
     /// <summary>
@@ -270,9 +265,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="getFallbackArgs">
     /// A function which produces the argument list to be used for the fallback.
     /// </param>
-    /// <param name="errorFormat">
-    /// A function which returns a formatted error message for when the approprate
-    /// function is not found as a builtin or dict item in the MRO.
+    /// <param name="generateError">
+    /// A function wich generate an error to be set when the lookup fails.
     /// </param>
     /// <returns>
     /// The result of the operation on the target object, throught the first builtin or
@@ -288,7 +282,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           getBuiltin,
         LispObject fallbackSymbol,
         Func<LispObject> getFallbackArgs,
-        Func<string> errorFormat) {
+        Func<ExceptionType> generateError) {
       return InnerLookup(
         ListOperations.IterMro(target),
         f => f(target, arg1, arg2),
@@ -296,7 +290,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
-        errorFormat);
+        generateError);
     }
 
     /// <summary>
@@ -325,7 +319,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
     /// returns false
     /// </param>
-    /// <param name="errorFormat">
+    /// <param name="generateError">
     /// A function which returns a formatted error message for when the approprate
     /// function is not found as a builtin or dict item in the MRO.
     /// </param>
@@ -341,7 +335,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         Predicate<LispType> hasBuiltin,
         Func<LispType, T> getBuiltin,
         LispObject fallbackSymbol,
-        Func<string> errorFormat) {
+        Func<ExceptionType> generateError) {
       foreach (var targetType in typeIter) {
         if (targetType == null) return null;
         if (hasBuiltin(targetType)) {
@@ -360,7 +354,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           }
         }
       }
-      LispInterpreter.SetException(ExceptionType.CreateTypeError(errorFormat()));
+      LispInterpreter.SetException(generateError());
       return null;
     }
   }

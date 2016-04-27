@@ -58,7 +58,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         t => t._list_methods != null && t._list_methods.__getcdr__ != null,
         t => t._list_methods.__getcdr__,
         getcdrattr,
-        () => string.Format("cannot get cdr of \"{0}\" object", target.__class__));
+        () => ExceptionType.CreateTypeError(
+          "cannot get cdr of \"{0}\" object", target.__class__));
     }
 
     public static LispObject SetCar(
@@ -69,7 +70,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         t => t._list_methods != null && t._list_methods.__setcar__ != null,
         t => t._list_methods.__setcar__,
         setcarattr,
-        () => string.Format("cannot set car of \"{0}\" object", target.__class__));
+        () => ExceptionType.CreateTypeError(
+          "cannot set car of \"{0}\" object", target.__class__));
     }
 
     public static LispObject SetCdr(
@@ -80,7 +82,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         t => t._list_methods != null && t._list_methods.__setcdr__ != null,
         t => t._list_methods.__setcdr__,
         setcdrattr,
-        () => string.Format("cannot set cdr of \"{0}\" object", target.__class__));
+        () => ExceptionType.CreateTypeError(
+          "cannot set cdr of \"{0}\" object", target.__class__));
     }
 
     /// <summary>
