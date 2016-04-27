@@ -151,12 +151,11 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       }
       // Marshal any nullable which received Nil as null (unless it was captured as a
       // lisp object, in which case it would be captured as itself.
-      if (destType.IsClass || destType.IsInterface
-          || (destType.IsGenericType
-              && destType.GetGenericTypeDefinition() == typeof(Nullable<>))
-          // Don't set null for LispObjects.
+      if (source == NilType.Nil
           && !typeof(LispObject).IsAssignableFrom(destType)
-          && source == NilType.Nil) {
+          && (destType.IsClass || destType.IsInterface
+              || (destType.IsGenericType
+                  && destType.GetGenericTypeDefinition() == typeof(Nullable<>)))) {
         marshaled = null;
         return true;
       }
@@ -219,6 +218,36 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       } else {
         marshaled = (T)m;
         return true;
+      }
+    }
+
+    public static bool IsMarshalable(Type type) {
+      return type == typeof(double) || type == typeof(bool) || type == typeof(string)
+          || typeof(LispObject).IsAssignableFrom(type);
+    }
+
+    public static bool IsMarshalable<T>() {
+      return IsMarshalable(typeof(T));
+    }
+
+    public static LispObject Unmarshal(object value) {
+      if (value == null) {
+        return NilType.Nil;
+      } else {
+        var type = value.GetType();
+        if (type == typeof(double)) {
+          return NumberType.Create((double)value);
+        } else if (type == typeof(bool)) {
+          return BoolType.Create((bool)value);
+        } else if (type == typeof(string)) {
+          return StringType.Create((string)value);
+        } else if (typeof(LispObject).IsAssignableFrom(type)) {
+          return (LispObject)value;
+        } else {
+          LispInterpreter.SetException(ExceptionType.CreateTypeError(
+            "Cannot unmarshal C# type {0} as a lisp object", type));
+          return null;
+        }
       }
     }
   }
