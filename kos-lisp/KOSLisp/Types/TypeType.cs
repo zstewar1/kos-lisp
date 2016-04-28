@@ -123,11 +123,7 @@ namespace ZStewart.KOSLisp.Types {
       MappingOperations.SetItem(
         type.__dict__,
         SymbolType.Create(lispName),
-        BuiltinFunctionType.Create(
-          type._instance_type.GetMethod(
-            staticName,
-            BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static |
-            BindingFlags.FlattenHierarchy)));
+        BuiltinFunctionType.Create(type._instance_type, staticName, lispName));
     }
     #endregion Setup Functionality
 

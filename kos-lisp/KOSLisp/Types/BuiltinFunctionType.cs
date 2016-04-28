@@ -44,25 +44,76 @@ namespace ZStewart.KOSLisp.Types {
 
     #region Static Helpers
     /// <summary>
+    /// Create a bound method for the given static method name to be found on the given
+    /// type.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The type to lookup methodName on.
+    /// </param>
+    /// <param name="methodName">
+    /// The name of the C# static method to look up.
+    /// </param>
+    /// <param name="lispName">
+    /// The name the function should have in lisp.
+    /// </param>
+    /// <returns>
+    /// A Builtin Function that calls the specfied C# static method.
+    /// </returns>
+     public static BuiltinFunctionType Create<T>(string methodName, string lispName) {
+      return Create(typeof(T), methodName, lispName);
+    }
+
+    /// <summary>
+    /// Create a bound method for the given static method name to be found on the given
+    /// type.
+    /// </summary>
+    /// <param name="type">
+    /// The type to lookup methodName on.
+    /// </param>
+    /// <param name="methodName">
+    /// The name of the C# static method to look up.
+    /// </param>
+    /// <param name="lispName">
+    /// The name the function should have in lisp.
+    /// </param>
+    /// <returns>
+    /// A Builtin Function that calls the specfied C# static method.
+    /// </returns>
+    public static BuiltinFunctionType Create(
+        Type type, string methodName, string lispName) {
+      return Create(
+        type.GetMethod(
+          methodName,
+          BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static |
+          BindingFlags.FlattenHierarchy),
+        lispName);
+    }
+
+    /// <summary>
     /// Create a bound method for the specified methodinfo.
     /// </summary>
     /// <param name="boundMethod">
     /// The method to be called by this builtin function. This must be static.
     /// </param>
+    /// <param name="lispName">
+    /// The name of this function (for lisp)
+    /// </param>
     /// <returns>
     /// A BuiltinFunction which calls the specified function.
     /// </returns>
-    public static BuiltinFunctionType Create(MethodInfo boundMethod) {
-      return new BuiltinFunctionType(boundMethod) {
+    public static BuiltinFunctionType Create(MethodInfo boundMethod, string lispName) {
+      return new BuiltinFunctionType(boundMethod, lispName) {
         __class__ = BuiltinFunction,
       };
     }
     #endregion Static Helpers
 
-    protected BuiltinFunctionType(MethodInfo boundMethod) {
+    protected BuiltinFunctionType(MethodInfo boundMethod, string lispName) {
       caller = new CallMagic(boundMethod);
+      Name = lispName;
     }
 
-    private CallMagic caller;
+    private readonly CallMagic caller;
+    public string Name { get; }
   }
 }
