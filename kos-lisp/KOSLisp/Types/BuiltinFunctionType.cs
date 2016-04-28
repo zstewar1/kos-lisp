@@ -101,7 +101,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>
     /// A BuiltinFunction which calls the specified function.
     /// </returns>
-    public static BuiltinFunctionType Create(MethodInfo boundMethod, string lispName) {
+    private static BuiltinFunctionType Create(MethodInfo boundMethod, string lispName) {
       return new BuiltinFunctionType(boundMethod, lispName) {
         __class__ = BuiltinFunction,
       };
