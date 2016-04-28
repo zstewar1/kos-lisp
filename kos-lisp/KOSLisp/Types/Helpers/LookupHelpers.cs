@@ -43,52 +43,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       return InnerLookup(
         ListOperations.IterMro(target),
         f => f(target),
-        () => IConsType.ToLispTuple(target),
-        hasBuiltin,
-        getBuiltin,
-        fallbackSymbol,
-        generateError);
-    }
-
-    /// <summary>
-    /// Lookup and perform a unary operation on the target.
-    /// </summary>
-    /// <param name="target">
-    /// The target of the lookup. The object whose MRO should be looped through.
-    /// </param>
-    /// <param name="hasBuiltin">
-    /// A delegate that takes the type object and checks if it has the requested operation
-    /// available as a builtin.
-    /// </param>
-    /// <param name="getBuiltin">
-    /// A delegate that takes the type object and returns the requested builtin operation.
-    /// </param>
-    /// <param name="fallbackSymbol">
-    /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
-    /// returns false
-    /// </param>
-    /// <param name="getFallbackArgs">
-    /// A function which produces the argument list to be used for the fallback.
-    /// </param>
-    /// <param name="generateError">
-    /// A function wich generate an error to be set when the lookup fails.
-    /// </param>
-    /// <returns>
-    /// The result of the operation on the target object, throught the first builtin or
-    /// fallback method found in the target type's method resolution order, or null (with
-    /// an error set) if no appropriate method is found.
-    /// </returns>
-    internal static LispObject Lookup(
-        LispObject target,
-        Predicate<LispType> hasBuiltin,
-        Func<LispType, Func<LispObject, LispObject>> getBuiltin,
-        LispObject fallbackSymbol,
-        Func<LispObject> getFallbackArgs,
-        Func<ExceptionType> generateError) {
-      return InnerLookup(
-        ListOperations.IterMro(target),
-        f => f(target),
-        getFallbackArgs,
+        () => IConsType.ToLispTuple(),
+        () => IConsType.ToLispTuple(target, target.__class__),
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
@@ -133,56 +89,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       return InnerLookup(
         ListOperations.IterMro(target),
         f => f(target, arg1),
-        () => IConsType.ToLispTuple(target, arg1),
-        hasBuiltin,
-        getBuiltin,
-        fallbackSymbol,
-        generateError);
-    }
-
-    /// <summary>
-    /// Lookup and perform a binary operation on the target.
-    /// </summary>
-    /// <param name="target">
-    /// The target of the lookup. The object whose MRO should be looped through.
-    /// </param>
-    /// <param name="arg1">
-    /// The first argument (besides target) to the function call.
-    /// </param>
-    /// <param name="hasBuiltin">
-    /// A delegate that takes the type object and checks if it has the requested operation
-    /// available as a builtin.
-    /// </param>
-    /// <param name="getBuiltin">
-    /// A delegate that takes the type object and returns the requested builtin operation.
-    /// </param>
-    /// <param name="fallbackSymbol">
-    /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
-    /// returns false
-    /// </param>
-    /// <param name="getFallbackArgs">
-    /// A function which produces the argument list to be used for the fallback.
-    /// </param>
-    /// <param name="generateError">
-    /// A function wich generate an error to be set when the lookup fails.
-    /// </param>
-    /// <returns>
-    /// The result of the operation on the target object, throught the first builtin or
-    /// fallback method found in the target type's method resolution order, or null (with
-    /// an error set) if no appropriate method is found.
-    /// </returns>
-    internal static LispObject Lookup(
-        LispObject target,
-        LispObject arg1,
-        Predicate<LispType> hasBuiltin,
-        Func<LispType, Func<LispObject, LispObject, LispObject>> getBuiltin,
-        LispObject fallbackSymbol,
-        Func<LispObject> getFallbackArgs,
-        Func<ExceptionType> generateError) {
-      return InnerLookup(
-        ListOperations.IterMro(target),
-        f => f(target, arg1),
-        getFallbackArgs,
+        () => IConsType.ToLispTuple(arg1),
+        () => IConsType.ToLispTuple(target, target.__class__),
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
@@ -240,60 +148,6 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     }
 
     /// <summary>
-    /// Lookup and perform a ternary operation on the target.
-    /// </summary>
-    /// <param name="target">
-    /// The target of the lookup. The object whose MRO should be looped through.
-    /// </param>
-    /// <param name="arg1">
-    /// The first argument (besides target) to the function call.
-    /// </param>
-    /// <param name="arg2">
-    /// The second argument (besides target) to the function call.
-    /// </param>
-    /// <param name="hasBuiltin">
-    /// A delegate that takes the type object and checks if it has the requested operation
-    /// available as a builtin.
-    /// </param>
-    /// <param name="getBuiltin">
-    /// A delegate that takes the type object and returns the requested builtin operation.
-    /// </param>
-    /// <param name="fallbackSymbol">
-    /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
-    /// returns false
-    /// </param>
-    /// <param name="getFallbackArgs">
-    /// A function which produces the argument list to be used for the fallback.
-    /// </param>
-    /// <param name="generateError">
-    /// A function wich generate an error to be set when the lookup fails.
-    /// </param>
-    /// <returns>
-    /// The result of the operation on the target object, throught the first builtin or
-    /// fallback method found in the target type's method resolution order, or null (with
-    /// an error set) if no appropriate method is found.
-    /// </returns>
-    internal static LispObject Lookup(
-        LispObject target,
-        LispObject arg1,
-        LispObject arg2,
-        Predicate<LispType> hasBuiltin,
-        Func<LispType, Func<LispObject, LispObject, LispObject, LispObject>>
-          getBuiltin,
-        LispObject fallbackSymbol,
-        Func<LispObject> getFallbackArgs,
-        Func<ExceptionType> generateError) {
-      return InnerLookup(
-        ListOperations.IterMro(target),
-        f => f(target, arg1, arg2),
-        getFallbackArgs,
-        hasBuiltin,
-        getBuiltin,
-        fallbackSymbol,
-        generateError);
-    }
-
-    /// <summary>
     /// Inner implementation of Lookup designed to work for any number of arguments.
     /// </summary>
     /// <param name="typeIter">
@@ -307,6 +161,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="getFallbackArgs">
     /// A delegate that takes returns the arguments that should be passed to the fallback
     /// function call.
+    /// </param>
+    /// <param name="getBindingArgs">
+    /// A delegate that returns the arguments to use to make the __get__() call.
     /// </param>
     /// <param name="hasBuiltin">
     /// A delegate that takes the type object and checks if it has the requested operation
@@ -332,6 +189,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         IEnumerable<LispType> typeIter,
         Func<T, LispObject> doBuiltinCall,
         Func<LispObject> getFallbackArgs,
+        Func<LispObject> getBindingArgs,
         Predicate<LispType> hasBuiltin,
         Func<LispType, T> getBuiltin,
         LispObject fallbackSymbol,
@@ -350,7 +208,17 @@ namespace ZStewart.KOSLisp.Types.Helpers {
               return null;
             }
           } else {
-            return CallableOperations.Call(fallback, getFallbackArgs());
+            var hasGet = LispObject.HasAttribute(fallback, PropConsts.Get);
+            if (!hasGet.HasValue) return null;
+            if (!hasGet.Value) {
+              return CallableOperations.Call(fallback, getFallbackArgs());
+            } else {
+              var refallback = LispObject.GetAttribute(fallback, PropConsts.Get);
+              if (refallback == null) return null;
+              fallback = CallableOperations.Call(refallback, getBindingArgs());
+              if (fallback == null) return null;
+              return CallableOperations.Call(fallback, getFallbackArgs());
+            }
           }
         }
       }
