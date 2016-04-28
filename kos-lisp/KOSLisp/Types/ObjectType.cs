@@ -156,7 +156,6 @@ namespace ZStewart.KOSLisp.Types {
         return null;
       }
 
-      // TODO(zstewar1): maybe check that attribute is a symbol?
       var value = LookupHelpers.Lookup(
         obj, attribute,
         t => t.__getattr__ != null,
@@ -179,6 +178,25 @@ namespace ZStewart.KOSLisp.Types {
         getattrattr,
         () => ExceptionType.CreateAttributeError(
           "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
+    }
+
+    /// <summary>
+    /// Check if the given object has the specified attribute and returen true if it does,
+    /// false if it does not. Null is returned if there is an error while looking up the
+    /// attribute other than AttributeError.
+    /// </summary>
+    public static bool? HasAttribute(LispObject obj, LispObject attribute) {
+      var result = GetAttribute(obj, attribute);
+      if (result == null) {
+        if (LispInterpreter.CheckException(ExceptionType.AttributeError)) {
+          LispInterpreter.ClearException();
+          return false;
+        } else {
+          return null;
+        }
+      } else {
+        return true;
+      }
     }
     #endregion Static Helper Methods
   }
