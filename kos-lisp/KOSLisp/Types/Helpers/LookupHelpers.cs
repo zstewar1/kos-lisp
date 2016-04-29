@@ -41,10 +41,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         LispObject fallbackSymbol,
         Func<ExceptionType> generateError) {
       return InnerLookup(
-        ListOperations.IterMro(target),
+        target,
         f => f(target),
         () => IConsType.ToLispTuple(),
-        () => IConsType.ToLispTuple(target, target.__class__),
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
@@ -87,10 +86,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         LispObject fallbackSymbol,
         Func<ExceptionType> generateError) {
       return InnerLookup(
-        ListOperations.IterMro(target),
+        target,
         f => f(target, arg1),
         () => IConsType.ToLispTuple(arg1),
-        () => IConsType.ToLispTuple(target, target.__class__),
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
@@ -138,10 +136,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         LispObject fallbackSymbol,
         Func<ExceptionType> generateError) {
       return InnerLookup(
-        ListOperations.IterMro(target),
+        target,
         f => f(target, arg1, arg2),
         () => IConsType.ToLispTuple(arg1, arg2),
-        () => IConsType.ToLispTuple(target, target.__class__),
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
@@ -151,9 +148,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <summary>
     /// Inner implementation of Lookup designed to work for any number of arguments.
     /// </summary>
-    /// <param name="typeIter">
-    /// An iterator for the types to check the lookup in. Generally just IterMro of the
-    /// target object.
+    /// <param name="obj">
+    /// The object being searched through.
     /// </param>
     /// <param name="doBuiltinCall">
     /// A delegate that takes the builtin function and calls it with appropriate
@@ -162,9 +158,6 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="getFallbackArgs">
     /// A delegate that takes returns the arguments that should be passed to the fallback
     /// function call.
-    /// </param>
-    /// <param name="getBindingArgs">
-    /// A delegate that returns the arguments to use to make the __get__() call.
     /// </param>
     /// <param name="hasBuiltin">
     /// A delegate that takes the type object and checks if it has the requested operation
@@ -187,15 +180,14 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// an error set) if no appropriate method is found.
     /// </returns>
     private static LispObject InnerLookup<T>(
-        IEnumerable<LispType> typeIter,
+        LispObject obj,
         Func<T, LispObject> doBuiltinCall,
         Func<LispObject> getFallbackArgs,
-        Func<LispObject> getBindingArgs,
         Predicate<LispType> hasBuiltin,
         Func<LispType, T> getBuiltin,
         LispObject fallbackSymbol,
         Func<ExceptionType> generateError) {
-      foreach (var targetType in typeIter) {
+      foreach (var targetType in ListOperations.IterMro(obj)) {
         if (targetType == null) return null;
         if (hasBuiltin(targetType)) {
           return doBuiltinCall(getBuiltin(targetType));
@@ -209,14 +201,12 @@ namespace ZStewart.KOSLisp.Types.Helpers {
               return null;
             }
           } else {
-            var hasGet = LispObject.HasAttribute(fallback, PropConsts.Get);
-            if (!hasGet.HasValue) return null;
-            if (!hasGet.Value) {
+            var gettable = DescriptorOperations.IsDescriptor(fallback);
+            if (!gettable.HasValue) return null;
+            if (!gettable.Value) {
               return CallableOperations.Call(fallback, getFallbackArgs());
             } else {
-              var refallback = LispObject.GetAttribute(fallback, PropConsts.Get);
-              if (refallback == null) return null;
-              fallback = CallableOperations.Call(refallback, getBindingArgs());
+              fallback = DescriptorOperations.Get(fallback, obj, obj.__class__);
               if (fallback == null) return null;
               return CallableOperations.Call(fallback, getFallbackArgs());
             }

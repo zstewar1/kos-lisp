@@ -110,9 +110,34 @@ namespace ZStewart.KOSLisp.Types {
           break;
         }
       }
-      // TODO(zstewar1): Preference data descriptors
+
+      // If neither is null, we have to preference data-descriptors.
+      if (classitem != null && objdictitem != null) {
+        var gettable = DescriptorOperations.IsDescriptor(classitem);
+        if (!gettable.HasValue) return null;
+        // Always give the object item if not get-able.
+        if (!gettable.Value) return objdictitem;
+
+        // If there is an __get__, preference the class item only if there is also an
+        // __set__ or __del__.
+
+        // TODO(zstewar1): Also check if deleteable (either set or delete is data).
+        var settable = DescriptorOperations.IsDataDescriptor(classitem);
+        if (!settable.HasValue) return null;
+        // Set exists, so it is a data descriptor.
+        if (settable.Value) {
+          return DescriptorOperations.Get(classitem, obj, obj.__class__);
+        }
+        return objdictitem;
+      }
       if (objdictitem != null) return objdictitem;
-      if (classitem != null) return classitem;
+      if (classitem != null) {
+        var gettable = DescriptorOperations.IsDescriptor(classitem);
+        if (!gettable.HasValue) return null;
+        if (gettable.Value)
+          return DescriptorOperations.Get(classitem, obj, obj.__class__);
+        return classitem;
+      }
 
       LispInterpreter.SetException(ExceptionType.CreateAttributeError(
         "\"{0}\" object has no attribute {1}", obj.__class__, attr));
@@ -125,11 +150,6 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Type Setup
 
     #region Static Helper Methods
-    // in-lang --getattr-- is a different method. --getattribute-- is the real
-    // unconditional lookup function in the language, as in Python.
-    private static LispObject getattributeattr = StringType.Create("--getattribute--");
-    private static LispObject getattrattr = StringType.Create("--getattr--");
-
     /// <summary>
     /// Call a method on the given object.
     /// </summary>
@@ -138,9 +158,20 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="args">The arguments to the method.</param>
     /// <returns>The result of calling method method of object</returns>
     public static LispObject Call(LispObject obj, string method, LispObject args) {
-      var m = GetAttribute(obj, SymbolType.Create(method));
+      return Call(obj, SymbolType.Create(method), args);
+    }
+
+    /// <summary>
+    /// Call a method on the given object.
+    /// </summary>
+    /// <param name="obj">The object to call a method on.</param>
+    /// <param name="method">The name of the method to call.</param>
+    /// <param name="args">The arguments to the method.</param>
+    /// <returns>The result of calling method method of object</returns>
+    public static LispObject Call(LispObject obj, SymbolType method, LispObject args) {
+      var m = GetAttribute(obj, method);
       if (m == null) return null;
-      return CallableOperations.Call(m, IConsType.Create(obj, args));
+      return CallableOperations.Call(m, args);
     }
 
     /// <summary>
@@ -160,7 +191,7 @@ namespace ZStewart.KOSLisp.Types {
         obj, attribute,
         t => t.__getattr__ != null,
         t => t.__getattr__,
-        getattributeattr,
+        PropConsts.GetAttribute,
         // We should never reach this since everything inherits from object and object
         // provides the final fallback getattribute method.
         () => ExceptionType.CreateAttributeError(
@@ -175,7 +206,7 @@ namespace ZStewart.KOSLisp.Types {
         t => false,
         // Since the first predicate is false, this should never be called.
         t => null,
-        getattrattr,
+        PropConsts.GetAttr,
         () => ExceptionType.CreateAttributeError(
           "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
     }

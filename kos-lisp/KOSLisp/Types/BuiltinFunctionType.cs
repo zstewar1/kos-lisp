@@ -19,6 +19,7 @@ namespace ZStewart.KOSLisp.Types {
         _builtinFunction = new LispType {
           __name__ = "BuiltinFunction",
           __call__ = Call,
+          __get__ = Get,
           _instance_type = typeof(BuiltinFunctionType),
           // TODO(zstewar1): New/Call
         };
@@ -28,8 +29,6 @@ namespace ZStewart.KOSLisp.Types {
           _builtinFunction, LispObject.Object);
         _builtinFunction = LispType.ConfigureType(_builtinFunction);
         if (_builtinFunction == null) throw new InvalidOperationException();
-
-        LispType.AddStatic(_builtinFunction, "Get", PropConsts.Get);
 
         return _builtinFunction;
       }
@@ -46,9 +45,14 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject Get (
-        [PositionalArgument] BuiltinFunctionType self,
-        [PositionalArgument] LispObject instance,
-        [PositionalArgument] LispObject type) {
+        LispObject self,
+        LispObject instance,
+        LispObject type) {
+      if (!(self is BuiltinFunctionType)) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "self must be a BuiltinFunction"));
+        return null;
+      }
       if (instance == NilType.Nil && type != NilType.NilClass) {
         return self;
       } else {

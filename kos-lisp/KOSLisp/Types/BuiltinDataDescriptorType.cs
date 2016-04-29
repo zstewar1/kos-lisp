@@ -17,6 +17,8 @@ namespace ZStewart.KOSLisp.Types {
 
         _builtinDataDescriptor = new LispType {
           __name__ = "BuiltinDataDescriptor",
+          __get__ = GetStatic,
+          __set__ = SetStatic,
           _instance_type = typeof(BuiltinDataDescriptorType),
         };
         _builtinDataDescriptor.__class__ = LispType.Type;
@@ -26,25 +28,37 @@ namespace ZStewart.KOSLisp.Types {
         _builtinDataDescriptor = LispType.ConfigureType(_builtinDataDescriptor);
         if (_builtinDataDescriptor == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_builtinDataDescriptor, "GetStatic", PropConsts.Get);
-        LispType.AddStatic(_builtinDataDescriptor, "SetStatic", PropConsts.Set);
-
         return _builtinDataDescriptor;
       }
     }
 
     private static LispObject GetStatic(
-        [PositionalArgument] BuiltinDataDescriptorType self,
-        [PositionalArgument] LispObject instance,
-        [PositionalArgument] LispType type) {
-      return self.Get(instance, type);
+        LispObject self,
+        LispObject instance,
+        LispObject type) {
+      if (!(self is BuiltinDataDescriptorType)) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "self must be a BuiltinDataDescriptor"));
+        return null;
+      }
+      if (!(self is LispType)) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "type must be a Type"));
+        return null;
+      }
+      return ((BuiltinDataDescriptorType)self).Get(instance, (LispType)type);
     }
 
     private static LispObject SetStatic(
-        [PositionalArgument] BuiltinDataDescriptorType self,
-        [PositionalArgument] LispObject instance,
-        [PositionalArgument] LispObject value) {
-      return self.Set(instance, value);
+        LispObject self,
+        LispObject instance,
+        LispObject value) {
+      if (!(self is BuiltinDataDescriptorType)) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "self must be a BuiltinDataDescriptor"));
+        return null;
+      }
+      return ((BuiltinDataDescriptorType)self).Set(instance, value);
     }
     #endregion
 

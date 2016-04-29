@@ -64,6 +64,7 @@
     <Compile Include="KOSLisp\Types\Helpers\Arguments.cs" />
     <Compile Include="KOSLisp\Types\Helpers\LookupHelpers.cs" />
     <Compile Include="KOSLisp\Types\Helpers\CallableOperations.cs" />
+    <Compile Include="KOSLisp\Types\Helpers\DescriptorOperations.cs" />
     <Compile Include="KOSLisp\Types\Helpers\ComparisonOperations.cs" />
     <Compile Include="KOSLisp\Types\Helpers\MappingOperations.cs" />
     <Compile Include="KOSLisp\Parser\Errors.cs" />

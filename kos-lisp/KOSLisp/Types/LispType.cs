@@ -46,6 +46,15 @@ namespace ZStewart.KOSLisp.Types {
     public LispObject __mro__;
 
     /// <summary>
+    /// Function to implement Get in the descriptor protocol.
+    /// </summary>
+    public Func<LispObject, LispObject, LispObject, LispObject> __get__;
+    /// <summary>
+    /// Function to implement Set (and possibly delete) in the descriptor protocol.
+    /// </summary>
+    public Func<LispObject, LispObject, LispObject, LispObject> __set__;
+
+    /// <summary>
     /// Methods used to implement comparison for this type.
     /// </summary>
     public ComparisonMethods _comparison_methods;

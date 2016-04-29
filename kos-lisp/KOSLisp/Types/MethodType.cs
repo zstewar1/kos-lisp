@@ -15,6 +15,7 @@ namespace ZStewart.KOSLisp.Types {
         _method = new LispType {
           __name__ = "Method",
           __call__ = Call,
+          __get__ = Get,
           _instance_type = typeof(MethodType),
         };
         _method.__class__ = LispType.Type;
@@ -22,8 +23,6 @@ namespace ZStewart.KOSLisp.Types {
         _method.__mro__ = IConsType.ToLispTuple(_method, LispObject.Object);
         _method = LispType.ConfigureType(_method);
         if (_method == null) throw new InvalidOperationException();
-
-        LispType.AddStatic(_method, "Get", PropConsts.Get);
 
         return _method;
       }
@@ -40,9 +39,14 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject Get (
-        [PositionalArgument] MethodType self,
-        [PositionalArgument] LispObject instance,
-        [PositionalArgument] LispType type) {
+        LispObject self,
+        LispObject instance,
+        LispObject type) {
+      if (!(self is MethodType)) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "self must be a Method"));
+        return null;
+      }
       return self;
     }
     #endregion
