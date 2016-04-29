@@ -27,13 +27,13 @@ namespace ZStewart.KOSLisp.Interpreter {
   }
 
   public class CompilerModule {
-    public SymbolType Name { get; }
-    private List<AstOp> Code = new List<AstOp>();
-    private List<CompilerModule> ImportedModules = new List<CompilerModule>();
-    private ModuleType LispModule;
+    public SymbolType Name { get { return lispModule.Name; } }
+    private List<AstOp> code = new List<AstOp>();
+    private List<CompilerModule> importedModules = new List<CompilerModule>();
+    private ModuleType lispModule;
 
     public CompilerModule (SymbolType name) {
-      Name = name;
+      lispModule = ModuleType.Create(name);
     }
   }
 

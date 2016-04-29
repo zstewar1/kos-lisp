@@ -44,6 +44,6 @@ namespace ZStewart.KOSLisp.Types {
       Name = name;
     }
 
-    private SymbolType Name { get; }
+    public  SymbolType Name { get; }
   }
 }
