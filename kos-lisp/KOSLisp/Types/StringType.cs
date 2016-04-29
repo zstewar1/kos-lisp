@@ -34,7 +34,8 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_string == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_string, "ToStr", "--str--");
+        LispType.AddStatic(_string, "ToBool", PropConsts.Bool);
+        LispType.AddStatic(_string, "ToStr", PropConsts.Str);
 
         return _string;
       }
@@ -42,6 +43,10 @@ namespace ZStewart.KOSLisp.Types {
 
     private static LispObject ToStr([PositionalArgument] StringType str) {
       return str;
+    }
+
+    private static LispObject ToBool([PositionalArgument] string self) {
+      return BoolType.Create(self.Length != 0);
     }
     #endregion
 

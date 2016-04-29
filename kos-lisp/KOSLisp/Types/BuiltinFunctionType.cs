@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+
 using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.Attributes;
 using ZStewart.KOSLisp.Types.Helpers;
@@ -27,6 +28,9 @@ namespace ZStewart.KOSLisp.Types {
           _builtinFunction, LispObject.Object);
         _builtinFunction = LispType.ConfigureType(_builtinFunction);
         if (_builtinFunction == null) throw new InvalidOperationException();
+
+        LispType.AddStatic(_builtinFunction, "Get", PropConsts.Get);
+
         return _builtinFunction;
       }
     }
@@ -36,8 +40,19 @@ namespace ZStewart.KOSLisp.Types {
         return ((BuiltinFunctionType)self).caller.Call(args);
       } else {
         LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "First argument must be a BuiltinFunction"));
+          "first argument must be a BuiltinFunction"));
         return null;
+      }
+    }
+
+    private static LispObject Get (
+        [PositionalArgument] BuiltinFunctionType self,
+        [PositionalArgument] LispObject instance,
+        [PositionalArgument] LispObject type) {
+      if (instance == NilType.Nil && type != NilType.NilClass) {
+        return self;
+      } else {
+        return MethodType.Create(instance, self);
       }
     }
     #endregion Static Type Setup
@@ -59,7 +74,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>
     /// A Builtin Function that calls the specfied C# static method.
     /// </returns>
-     public static BuiltinFunctionType Create<T>(string methodName, string lispName) {
+     public static BuiltinFunctionType Create<T>(string methodName, SymbolType lispName) {
       return Create(typeof(T), methodName, lispName);
     }
 
@@ -80,7 +95,7 @@ namespace ZStewart.KOSLisp.Types {
     /// A Builtin Function that calls the specfied C# static method.
     /// </returns>
     public static BuiltinFunctionType Create(
-        Type type, string methodName, string lispName) {
+        Type type, string methodName, SymbolType lispName) {
       return Create(
         type.GetMethod(
           methodName,
@@ -101,19 +116,20 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>
     /// A BuiltinFunction which calls the specified function.
     /// </returns>
-    private static BuiltinFunctionType Create(MethodInfo boundMethod, string lispName) {
+    private static BuiltinFunctionType Create(
+        MethodInfo boundMethod, SymbolType lispName) {
       return new BuiltinFunctionType(boundMethod, lispName) {
         __class__ = BuiltinFunction,
       };
     }
     #endregion Static Helpers
 
-    protected BuiltinFunctionType(MethodInfo boundMethod, string lispName) {
+    protected BuiltinFunctionType(MethodInfo boundMethod, SymbolType lispName) {
       caller = new CallMagic(boundMethod);
       Name = lispName;
     }
 
     private readonly CallMagic caller;
-    public string Name { get; }
+    public SymbolType Name { get; }
   }
 }

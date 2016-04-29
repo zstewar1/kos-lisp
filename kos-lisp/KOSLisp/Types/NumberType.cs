@@ -33,8 +33,8 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_number == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_number, "ToBool", "--bool--");
-        LispType.AddStatic(_number, "ToStr", "--str--");
+        LispType.AddStatic(_number, "ToBool", PropConsts.Bool);
+        LispType.AddStatic(_number, "ToStr", PropConsts.Str);
 
         return _number;
       }

@@ -23,7 +23,7 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_symbol == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_symbol, "ToStr", "--str--");
+        LispType.AddStatic(_symbol, "ToStr", PropConsts.Str);
 
         return _symbol;
       }

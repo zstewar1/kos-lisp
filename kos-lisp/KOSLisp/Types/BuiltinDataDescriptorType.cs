@@ -26,8 +26,8 @@ namespace ZStewart.KOSLisp.Types {
         _builtinDataDescriptor = LispType.ConfigureType(_builtinDataDescriptor);
         if (_builtinDataDescriptor == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_builtinDataDescriptor, "GetStatic", "--get--");
-        LispType.AddStatic(_builtinDataDescriptor, "SetStatic", "--set--");
+        LispType.AddStatic(_builtinDataDescriptor, "GetStatic", PropConsts.Get);
+        LispType.AddStatic(_builtinDataDescriptor, "SetStatic", PropConsts.Set);
 
         return _builtinDataDescriptor;
       }

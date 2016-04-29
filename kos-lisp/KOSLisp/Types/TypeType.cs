@@ -119,10 +119,10 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     public static void AddStatic(
-      LispType type, string staticName, string lispName) {
+      LispType type, string staticName, SymbolType lispName) {
       MappingOperations.SetItem(
         type.__dict__,
-        SymbolType.Create(lispName),
+        lispName,
         BuiltinFunctionType.Create(type._instance_type, staticName, lispName));
     }
     #endregion Setup Functionality
