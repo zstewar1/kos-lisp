@@ -14,6 +14,10 @@ namespace ZStewart.KOSLisp.Types {
         return SymbolType.Create("--getattribute--");
       }
     }
+    /// <summary>
+    /// The function used to set an attribute on an object.
+    /// </summary>
+    public static SymbolType SetAttr { get { return SymbolType.Create("--setattr--"); } }
 
     /// <summary>
     /// The function used to get an underlying value in the [data] descriptor protocol.

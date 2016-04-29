@@ -255,6 +255,25 @@ namespace ZStewart.KOSLisp.Types {
           "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
     }
 
+    public static LispObject SetAttribute(
+        LispObject obj, LispObject attribute, LispObject value) {
+      var instance = LispType.IsInstance(attribute, SymbolType.Symbol);
+      if (!instance.HasValue) return null;
+      if (!instance.Value) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "attribute name must be symbol"));
+        return null;
+      }
+
+      return LookupHelpers.Lookup(
+        obj, attribute, value,
+        t => t.__setattr__ != null,
+        t => t.__setattr__,
+        PropConsts.SetAttr,
+        () => ExceptionType.CreateAttributeError(
+          "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
+    }
+
     /// <summary>
     /// Check if the given object has the specified attribute and returen true if it does,
     /// false if it does not. Null is returned if there is an error while looking up the
