@@ -37,5 +37,10 @@ namespace ZStewart.KOSLisp.Types {
     /// The function used to convert the object to a string.
     /// </summary>
     public static SymbolType Str { get { return SymbolType.Create("--str--"); } }
+
+    /// <summary>
+    /// The name of an object, method, module, etc.
+    /// </summary>
+    public static SymbolType Name { get { return SymbolType.Create("--name--"); } }
   }
 }

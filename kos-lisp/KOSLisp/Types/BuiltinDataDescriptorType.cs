@@ -28,6 +28,8 @@ namespace ZStewart.KOSLisp.Types {
         _builtinDataDescriptor = LispType.ConfigureType(_builtinDataDescriptor);
         if (_builtinDataDescriptor == null) throw new InvalidOperationException();
 
+        LispType.AddDataProperty(_builtinDataDescriptor, "Name", PropConsts.Name);
+
         return _builtinDataDescriptor;
       }
     }
@@ -60,14 +62,31 @@ namespace ZStewart.KOSLisp.Types {
       }
       return ((BuiltinDataDescriptorType)self).Set(instance, value);
     }
-    #endregion
+    #endregion Static Type Setup
 
-    protected BuiltinDataDescriptorType(PropertyInfo property, string name) {
+    #region Static Helper Methods
+    public static BuiltinDataDescriptorType Create<T>(
+        string propName, SymbolType lispName) {
+      return Create(typeof(T), propName, lispName);
+    }
+
+    public static BuiltinDataDescriptorType Create(
+        Type type, string propName, SymbolType lispName) {
+      return new BuiltinDataDescriptorType(
+        type.GetProperty(
+          propName,
+          BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance |
+          BindingFlags.FlattenHierarchy),
+        lispName);
+    }
+    #endregion Static Helper Methods
+
+    protected BuiltinDataDescriptorType(PropertyInfo property, SymbolType name) {
       this.property = property;
       Name = name;
     }
 
-    public string Name { get; }
+    public SymbolType Name { get; }
     private Type ObjectType { get { return property.DeclaringType; } }
     private Type PropertyType { get { return property.PropertyType; } }
     private readonly PropertyInfo property;

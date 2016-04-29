@@ -6,10 +6,6 @@ using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
   public class ModuleType : LispObject {
-    protected ModuleType(string name) {
-      Name = name;
-    }
-
     #region Static Type Setup
     private static LispType _module;
     public static LispType Module {
@@ -25,11 +21,19 @@ namespace ZStewart.KOSLisp.Types {
         _module = LispType.ConfigureType(_module);
         if (_module == null) throw new InvalidOperationException();
 
+        LispType.AddDataProperty(_module, "Name", PropConsts.Name);
+
         return _module;
       }
     }
     #endregion Static Type Setup
 
-    private string Name { get; }
+    protected ModuleType(string name) : this(SymbolType.Create(name)) { }
+
+    protected ModuleType(SymbolType name) {
+      Name = name;
+    }
+
+    private SymbolType Name { get; }
   }
 }

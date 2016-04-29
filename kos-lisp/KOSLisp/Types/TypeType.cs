@@ -125,6 +125,14 @@ namespace ZStewart.KOSLisp.Types {
         lispName,
         BuiltinFunctionType.Create(type._instance_type, staticName, lispName));
     }
+
+    public static void AddDataProperty(
+        LispType type, string propName, SymbolType lispName) {
+      MappingOperations.SetItem(
+        type.__dict__,
+        lispName,
+        BuiltinDataDescriptorType.Create(type._instance_type, propName, lispName));
+    }
     #endregion Setup Functionality
 
     /// <summary>
