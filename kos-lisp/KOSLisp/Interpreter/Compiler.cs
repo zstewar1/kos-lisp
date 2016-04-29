@@ -26,6 +26,17 @@ namespace ZStewart.KOSLisp.Interpreter {
     }
   }
 
+  public class CompilerModule {
+    public SymbolType Name { get; }
+    private List<AstOp> Code = new List<AstOp>();
+    private List<CompilerModule> ImportedModules = new List<CompilerModule>();
+    // private ModuleType LispModule;
+
+    public CompilerModule (SymbolType name) {
+      Name = name;
+    }
+  }
+
   public interface Binding : AstOp {
     SymbolType BoundSymbol { get; }
     bool IsClosure { get; }
@@ -50,9 +61,9 @@ namespace ZStewart.KOSLisp.Interpreter {
   /// The base, or global context. No symbols are ever bound in this context.
   /// </summary>
   public class GlobalContext : Context {
-    private SymbolType module;
-    public GlobalContext(SymbolType module) {
-      this.module = module;
+    private CompilerModule module;
+    public GlobalContext(SymbolType moduleName) {
+      module = new CompilerModule(moduleName);
     }
     public virtual Binding GetBinding(SymbolType symbol) {
       return new AstGlobalBinding(symbol, module);
@@ -64,10 +75,10 @@ namespace ZStewart.KOSLisp.Interpreter {
 
     private class AstGlobalBinding : AstOpBase, Binding {
       public SymbolType BoundSymbol { get; }
-      public SymbolType Module { get; }
+      public CompilerModule Module { get; }
       public bool IsClosure { get { return true; } }
       public void TakeClosure() {}
-      public AstGlobalBinding(SymbolType boundSymbol, SymbolType module) {
+      public AstGlobalBinding(SymbolType boundSymbol, CompilerModule module) {
         BoundSymbol = boundSymbol;
         Module = module;
       }
@@ -78,7 +89,7 @@ namespace ZStewart.KOSLisp.Interpreter {
           "Bound Symbol: {0}", BoundSymbol);
         sb.AppendLine();
         sb.Append(' ', baseIndent + 2);
-        sb.AppendFormat("Module: {0}", Module);
+        sb.AppendFormat("Module: {0}", Module.Name);
         sb.AppendLine();
         sb.Append(' ', baseIndent);
         sb.Append("]");
