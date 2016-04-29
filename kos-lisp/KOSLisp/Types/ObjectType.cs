@@ -28,6 +28,7 @@ namespace ZStewart.KOSLisp.Types {
           __name__ = "object",
           __new__ = New,
           __getattr__ = GetAttr,
+          __setattr__ = SetAttr,
           _instance_type = typeof(LispObject),
         };
         _object.__class__ = LispType.Type;
@@ -86,9 +87,8 @@ namespace ZStewart.KOSLisp.Types {
       }
 
       // Check if the item is in the object's dictionary, then check the class. If the
-      // class item is a data descriptor (not yet implemented) fetch the value and return
-      // it, otherwise return the object item, if available, otherwise return the fetch
-      // result.
+      // class item is a data descriptor fetch the value and return it, otherwise return
+      // the object item, if available, otherwise return the fetch result.
       LispObject objdictitem = null;
       if (obj.__dict__ != null) {
         objdictitem = MappingOperations.GetItem(obj.__dict__, attr);
@@ -143,6 +143,50 @@ namespace ZStewart.KOSLisp.Types {
         "\"{0}\" object has no attribute {1}", obj.__class__, attr));
       return null;
     }
+
+    private static LispObject SetAttr(LispObject obj, LispObject attr, LispObject value) {
+      var instance = LispType.IsInstance(attr, SymbolType.Symbol);
+      if (!instance.HasValue) return null;
+      if (!instance.Value) {
+        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+          "attribute name must be symbol, not \"{0}\"", attr.__class__));
+        return null;
+      }
+
+      // Check if the item is in the class dictionary, then check if the clas item is a
+      // data descriptor. If it is, call the data descriptor's set with the instance.
+      // Otherwise, just set it on the instance dictionary (if available).
+      LispObject classitem = null;
+      foreach (var targetType in ListOperations.IterMro(obj)) {
+        if (targetType == null) return null;
+        classitem = MappingOperations.GetItem(targetType.__dict__, attr);
+        if (classitem == null) {
+          if (LispInterpreter.CheckException(ExceptionType.KeyError))
+            LispInterpreter.ClearException();
+          else return null;
+        } else {
+          break;
+        }
+      }
+
+      if (classitem != null) {
+        var settable = DescriptorOperations.IsDataDescriptor(classitem);
+        if (!settable.HasValue) return null;
+        if (settable.Value) {
+          return DescriptorOperations.Set(classitem, obj, value) == null ?
+            null : NilType.Nil;
+        }
+      }
+      if (obj.__dict__ != null) {
+        return MappingOperations.SetItem(obj.__dict__, attr, value) == null ?
+          null : NilType.Nil;
+      }
+
+      LispInterpreter.SetException(ExceptionType.CreateAttributeError(
+        "\"{0}\" object has no attribute {1}", obj.__class__, attr));
+      return null;
+    }
+
 
     private static LispObject ToBool([PositionalArgument] LispObject nil) {
       return BoolType.T;

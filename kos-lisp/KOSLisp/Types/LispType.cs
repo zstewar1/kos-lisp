@@ -39,7 +39,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <summary>
     /// Function to set a property of this type. Inherited.
     /// </summary>
-    public Func<LispObject, LispObject, LispObject> __setattr__;
+    public Func<LispObject, LispObject, LispObject, LispObject> __setattr__;
     /// <summary>
     /// Ordering to use when doing lookups on this type. ICons.
     /// </summary>

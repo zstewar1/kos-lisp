@@ -33,7 +33,7 @@ namespace ZStewart.KOSLisp.Types {
       return new ModuleType (name) {
         __class__ = Module,
         // Modules always have an instance dict.
-        __dict__ = DictType.Create();
+        __dict__ = DictType.Create(),
       };
     }
     #endregion Static Helper Methods
