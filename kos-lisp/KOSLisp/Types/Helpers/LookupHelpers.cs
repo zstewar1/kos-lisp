@@ -140,7 +140,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       return InnerLookup(
         ListOperations.IterMro(target),
         f => f(target, arg1, arg2),
-        () => IConsType.ToLispTuple(target, arg1, arg2),
+        () => IConsType.ToLispTuple(arg1, arg2),
+        () => IConsType.ToLispTuple(target, target.__class__),
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,
@@ -224,6 +225,24 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       }
       LispInterpreter.SetException(generateError());
       return null;
+    }
+
+    public static bool? Query(
+        LispObject target, Predicate<LispType> hasBuiltin, LispObject fallbackSymbol) {
+      foreach (var targetType in ListOperations.IterMro(target)) {
+        if (targetType == null) return null;
+        if (hasBuiltin(targetType)) return true;
+        LispObject fallback = MappingOperations.GetItem(
+          targetType.__dict__, fallbackSymbol);
+        if (fallback == null) {
+          if (LispInterpreter.CheckException(ExceptionType.AttributeError))
+            LispInterpreter.ClearException();
+          else return null;
+        } else {
+          return true;
+        }
+      }
+      return false;
     }
   }
 }

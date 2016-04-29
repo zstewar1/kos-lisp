@@ -11,8 +11,6 @@ namespace ZStewart.KOSLisp.Types.Helpers {
   /// Helpers for working with callables.
   /// </summary>
   public static class CallableOperations {
-    private static readonly LispObject callattr = SymbolType.Create("--call--");
-
     /// <summary>
     /// Call a Lisp object as a function.
     /// </summary>
@@ -26,10 +24,13 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         callable, args,
         t => t.__call__ != null,
         t => t.__call__,
-        callattr,
-        () => IConsType.Create(callable, args),
+        PropConsts.Call,
         () => ExceptionType.CreateTypeError(
           "\"{0}\" object is not callable", callable.__class__));
+    }
+
+    public static bool? IsCallable(LispObject callable) {
+      return LookupHelpers.Query(callable, t => t.__call__ != null, PropConsts.Call);
     }
   }
 }

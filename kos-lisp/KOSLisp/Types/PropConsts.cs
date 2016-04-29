@@ -15,5 +15,10 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// The function used to get an underlying value in the descriptor protocol.
     /// </summary>
     public static readonly SymbolType Get = SymbolType.Create("--get--");
+
+    /// <summary>
+    /// The function used to call the given object as a function.
+    /// </summary>
+    public static readonly SymbolType Call = SymbolType.Create("--call--");
   }
 }
