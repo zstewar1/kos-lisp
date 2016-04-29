@@ -28,6 +28,16 @@ namespace ZStewart.KOSLisp.Types {
     }
     #endregion Static Type Setup
 
+    #region Static Helper Methods
+    public static ModuleType Create(SymbolType name) {
+      return new ModuleType (name) {
+        __class__ = Module,
+        // Modules always have an instance dict.
+        __dict__ = DictType.Create();
+      };
+    }
+    #endregion Static Helper Methods
+
     protected ModuleType(string name) : this(SymbolType.Create(name)) { }
 
     protected ModuleType(SymbolType name) {

@@ -30,7 +30,7 @@ namespace ZStewart.KOSLisp.Interpreter {
     public SymbolType Name { get; }
     private List<AstOp> Code = new List<AstOp>();
     private List<CompilerModule> ImportedModules = new List<CompilerModule>();
-    // private ModuleType LispModule;
+    private ModuleType LispModule;
 
     public CompilerModule (SymbolType name) {
       Name = name;
