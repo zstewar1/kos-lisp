@@ -53,8 +53,8 @@ namespace ZStewart.KOSLisp.Interpreter {
   /// </summary>
   public class GlobalContext : Context {
     private ModuleType module;
-    public GlobalContext(SymbolType moduleName) {
-      module = ModuleType.Create(moduleName);
+    public GlobalContext(ModuleType module) {
+      this.module = module;
     }
     public virtual Binding GetBinding(SymbolType symbol) {
       return new AstGlobalBinding(symbol, module);

@@ -69,7 +69,8 @@ namespace ZStewart.KOSLisp {
       LispLexer lexer = LispLexer.Lex(name, reader);
       LispParser parser = new LispParser(lexer);
 
-      Context context = new GlobalContext(SymbolType.Create(name));
+      var mainModule = ModuleType.Create(SymbolType.Create(name));
+      Context context = new GlobalContext(mainModule);
       for(;;) {
         try {
           var parsed = parser.Parse();
