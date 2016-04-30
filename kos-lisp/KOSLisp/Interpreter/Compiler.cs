@@ -70,6 +70,7 @@ namespace ZStewart.KOSLisp.Interpreter {
       public bool IsClosure { get { return true; } }
       public void TakeClosure() {}
       public AstGlobalBinding(SymbolType boundSymbol, ModuleType module) {
+        if (SymbolType.IsSelfEvaluating(boundSymbol)) throw new CompilerError();
         BoundSymbol = boundSymbol;
         Module = module;
       }
@@ -157,9 +158,14 @@ namespace ZStewart.KOSLisp.Interpreter {
                   Expression.Call(
                     typeof(ExceptionType), "CreateNameError", null,
                     Expression.Constant("name \"{0}\" is not defined"),
-                    Expression.Constant(BoundSymbol))),
-                Expression.Return(returnTarget)),
-              Expression.Return(returnTarget)), // End if attribute error.
+                    Expression.NewArrayInit(
+                      typeof(object),
+                      Expression.Constant(BoundSymbol)))),
+                Expression.Return(
+                  returnTarget, Expression.Constant(null, typeof(LispObject)))),
+              Expression.Return(
+                returnTarget, Expression.Constant(null, typeof(LispObject)))),
+              // End if attribute error.
             Expression.Return(returnTarget, Expression.Constant(NilType.Nil))),
           Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
       }
@@ -221,6 +227,7 @@ namespace ZStewart.KOSLisp.Interpreter {
 
       public AstLocalBinding(SymbolType boundSymbol) : this(boundSymbol, false) {}
       public AstLocalBinding(SymbolType boundSymbol, bool isClosure) {
+        if (SymbolType.IsSelfEvaluating(boundSymbol)) throw new CompilerError();
         BoundSymbol = boundSymbol;
         this.isClosure = isClosure;
       }
@@ -369,8 +376,9 @@ namespace ZStewart.KOSLisp.Interpreter {
       bindings = new List<Tuple<Binding, AstOp>>();
       Context context = new ScopedContext(outerContext);
       foreach (var newbind in ListOperations.IterList(bindinglist)) {
-        if ((newbind is SymbolType)
-            && !SymbolType.IsSelfEvaluating((SymbolType)newbind)) {
+        if (newbind is SymbolType) {
+          if (SymbolType.IsSelfEvaluating((SymbolType)newbind))
+            throw new CompilerError();
           var binding = context.AddBinding((SymbolType)newbind);
           bindings.Add(Tuple.Create<Binding, AstOp>(binding, new AstConst(NilType.Nil)));
         } else {
@@ -447,7 +455,8 @@ namespace ZStewart.KOSLisp.Interpreter {
 
       var nameObj = ListOperations.GetCar(expression);
       if (nameObj == null) throw new LispException();
-      if (!(nameObj is SymbolType)) throw new CompilerError();
+      if (!(nameObj is SymbolType) || SymbolType.IsSelfEvaluating((SymbolType)nameObj))
+        throw new CompilerError();
       var name = (SymbolType)nameObj;
 
       var rest = ListOperations.GetCdr(expression);
@@ -481,20 +490,30 @@ namespace ZStewart.KOSLisp.Interpreter {
       return sb.ToString();
     }
 
-    public static Expression ValueOrReturn(Expression expr, LabelTarget returnTarget) {
-      var intermediate = Expression.Variable(expr.Type);
+    public static Expression ValueOrReturn(
+        Type exprType, Expression expr, LabelTarget returnTarget) {
+      var intermediate = Expression.Variable(exprType);
       return Expression.Block(
         typeof(LispObject),
         ImmutableList.Create(intermediate),
         Expression.Assign(intermediate, expr),
         Expression.Condition(
-          Expression.Equal(intermediate, Expression.Constant(null, expr.Type)),
+          Expression.Equal(intermediate, Expression.Constant(null, exprType)),
           Expression.Block(
-            expr.Type,
+            exprType,
             Expression.Return(
-              returnTarget, Expression.Constant(null, expr.Type)),
-            Expression.Constant(null, expr.Type)),
+              returnTarget, Expression.Constant(null, exprType)),
+            Expression.Constant(null, exprType)),
           intermediate));
+    }
+
+    public static Expression ValueOrReturn<T>(Expression expr, LabelTarget returnTarget)
+        where T: LispObject {
+      return ValueOrReturn(typeof(T), expr, returnTarget);
+    }
+
+    public static Expression ValueOrReturn(Expression expr, LabelTarget returnTarget) {
+      return ValueOrReturn(expr.Type, expr, returnTarget);
     }
 
     public abstract void AppendAstStringIndented(StringBuilder sb, int baseIndent);
@@ -553,8 +572,12 @@ namespace ZStewart.KOSLisp.Interpreter {
             ValueOrReturn(
               Expression.Call(
                 typeof(IConsType), "ToLispTuple", null,
-                Arguments.Select(
-                  arg => ValueOrReturn(arg.CompileCSharp(), returnTarget)).ToArray()),
+                Expression.Convert(
+                  Expression.NewArrayInit(
+                    typeof(LispObject),
+                    Arguments.Select(
+                      arg => ValueOrReturn(arg.CompileCSharp(), returnTarget))),
+                  typeof(IReadOnlyList<LispObject>))),
               returnTarget))),
         Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
     }
@@ -635,6 +658,10 @@ namespace ZStewart.KOSLisp.Interpreter {
     }
 
     public override Expression CompileCSharp() {
+      return GetFormsCSharp();
+    }
+
+    protected Expression GetFormsCSharp() {
       if (Forms.Count == 0) return Expression.Constant(NilType.Nil, typeof(LispObject));
 
       var returnTarget = Expression.Label(typeof(LispObject));
@@ -735,6 +762,97 @@ namespace ZStewart.KOSLisp.Interpreter {
         sb.AppendLine();
       }
     }
+
+    protected virtual SymbolType GetFunctionName() {
+      return SymbolType.Create("<lambda>");
+    }
+
+    public override Expression CompileCSharp() {
+      var argsParameter = Expression.Parameter(typeof(LispObject), "_in-args");
+      return Expression.Call(
+        typeof(FunctionType), "Create", null,
+        Expression.Constant(GetFunctionName()),
+        Expression.Lambda(
+          typeof(Func<LispObject, LispObject>),
+          GetLambdaBodyCSharp(argsParameter),
+          GetFunctionName().Identifier,
+          ImmutableList.Create(argsParameter)));
+
+    }
+
+    private Expression GetLambdaBodyCSharp(ParameterExpression argsParameter) {
+      var returnTarget = Expression.Label(typeof(LispObject));
+
+      return Expression.Block(
+        typeof(LispObject),
+        Args.Select(b => (ParameterExpression)b.CompileCSharp()),
+        ValueOrReturn(GetBindArgsBlockCSharp(argsParameter), returnTarget),
+        Expression.Return(returnTarget, GetFormsCSharp()),
+        Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
+    }
+
+    private Expression GetBindArgsBlockCSharp(ParameterExpression argsParameter) {
+      var returnTarget = Expression.Label(typeof(LispObject));
+      var argList = Expression.Variable(typeof(List<LispObject>), "Arg List");
+      var argCount = Expression.Variable(typeof(int), "Arg Count");
+
+      return Expression.Block(
+        typeof(LispObject),
+        ImmutableList.Create(argList, argCount),
+        Expression.Assign(
+          argList,
+          Expression.Call(
+            typeof(Arguments), "GetPositionalArguments", null, argsParameter)),
+        // Check if the list is null and return null if it is.
+        Expression.Condition(
+          Expression.Equal(argList, Expression.Constant(null, typeof(List<LispObject>))),
+          Expression.Return(returnTarget, Expression.Constant(null, typeof(LispObject))),
+          Expression.Empty()),
+        Expression.Assign(
+          argCount,
+          Expression.Property(argList, "Count")),
+        // Check if the list has the correct number of arguments.
+        Expression.Condition(
+          Expression.NotEqual(argCount, Expression.Constant(Args.Count)),
+          Expression.Block(
+            Expression.Call(typeof(LispInterpreter), "SetException", null,
+              Expression.Call(typeof(ExceptionType), "CreateTypeError", null,
+                Expression.Constant(
+                  "function " + GetFunctionName().Identifier + " expected " +
+                  Args.Count + " arguments, got {0}"),
+                Expression.NewArrayInit(
+                  typeof(object),
+                  Expression.Convert(argCount, typeof(object))))),
+            Expression.Return(
+              returnTarget, Expression.Constant(null, typeof(LispObject)))),
+          Expression.Empty()),
+        Expression.Return(returnTarget, GetInstantiateArgsBlock(argList)),
+        Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
+    }
+
+    private Expression GetInstantiateArgsBlock(ParameterExpression argList) {
+      var returnTarget = Expression.Label(typeof(LispObject));
+
+      var bindExpressions = new List<Expression>(Args.Count + 2);
+
+      int item = 0;
+      foreach (var arg in Args) {
+        bindExpressions.Add(
+          arg.SetValueCSharp(
+            ValueOrReturn(
+              Expression.Property(argList, "Item", Expression.Constant(item++)),
+              returnTarget)));
+      }
+
+      bindExpressions.Add(
+        Expression.Return(returnTarget, Expression.Constant(NilType.Nil)));
+      bindExpressions.Add(
+        Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
+
+      return Expression.Block(
+        typeof(LispObject),
+        bindExpressions);
+    }
   }
 
   public class AstDefun : AstLambda {
@@ -754,6 +872,23 @@ namespace ZStewart.KOSLisp.Interpreter {
       AppendForms(sb, baseIndent);
       sb.Append(' ', baseIndent);
       sb.Append("]");
+    }
+
+    protected override SymbolType GetFunctionName() {
+      return Name.BoundSymbol;
+    }
+
+    public override Expression CompileCSharp() {
+      var returnTarget = Expression.Label(typeof(LispObject));
+      var intermediate = Expression.Variable(typeof(LispObject));
+      return Expression.Block(
+        typeof(LispObject),
+        ImmutableList.Create(intermediate),
+        Expression.Assign(
+          intermediate, ValueOrReturn(base.CompileCSharp(), returnTarget)),
+        ValueOrReturn(Name.SetValueCSharp(intermediate), returnTarget),
+        Expression.Return(returnTarget, intermediate),
+        Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
     }
   }
 
@@ -810,13 +945,13 @@ namespace ZStewart.KOSLisp.Interpreter {
       if (expression is ConsType) {
         var op = ListOperations.GetCar(expression);
         if (op == null) throw new LispException();
-        // TODO(zstewar1): More specific error? (can't look up non-symbol)
-        if (!(op is SymbolType)) throw new CompilerError();
-        SpecialForm sf;
-        if (specialForms.TryGetValue((SymbolType)op, out sf)) {
-          var args = ListOperations.GetCdr(expression);
-          if (args == null) throw new LispException();
-          return sf.ExpressionToIntermediate(args, context);
+        if (op is SymbolType) {
+          SpecialForm sf;
+          if (specialForms.TryGetValue((SymbolType)op, out sf)) {
+            var args = ListOperations.GetCdr(expression);
+            if (args == null) throw new LispException();
+            return sf.ExpressionToIntermediate(args, context);
+          }
         }
         return functionForm.ExpressionToIntermediate(expression, context);
       } else {
