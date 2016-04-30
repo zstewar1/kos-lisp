@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.TypeCategories;
+using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Types {
   public class ModuleType : LispObject {
@@ -35,6 +36,12 @@ namespace ZStewart.KOSLisp.Types {
         // Modules always have an instance dict.
         __dict__ = DictType.Create(),
       };
+    }
+
+    public static ModuleType Create(SymbolType name, LispObject builtins) {
+      var module = Create(name);
+      MappingOperations.SetItem(module, PropConsts.Builtins, builtins);
+      return module;
     }
     #endregion Static Helper Methods
 
