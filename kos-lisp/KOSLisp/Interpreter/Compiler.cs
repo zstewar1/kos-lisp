@@ -43,13 +43,6 @@ namespace ZStewart.KOSLisp.Interpreter {
     void TakeClosure();
   }
 
-  public interface StackBinding : Binding {
-    /// <summary>
-    /// Index in the stack frame of this binding.
-    /// </summary>
-    int Index { get; }
-  }
-
   public interface Context {
     /// <summary>
     /// Gets a binding from this context, returning null if the given symbol is not bound
@@ -62,25 +55,6 @@ namespace ZStewart.KOSLisp.Interpreter {
     /// occur in expression evaluated after the symbol has been added, but not before.
     /// </summary>
     Binding AddBinding(SymbolType symbol);
-
-  public interface StackContext : Context {
-    /// <summary>
-    /// The index of the last binding created by this context. New stack local bindings
-    /// should come after this point.
-    /// </summary>
-    int LastBinding { get; }
-
-    /// <summary>
-    /// Size of the stack frame for this context. Should include subcontexts which reuse
-    /// the parent stack frame.
-    /// </summary>
-    int StackFrameSize { get; }
-
-    /// <summary>
-    /// Extends the parent stack frame size by the given value, allocating space for that
-    /// many more variables.
-    /// </summary>
-    void ExtendStackFrame(int extraSpace);
   }
 
   /// <summary>
@@ -88,12 +62,7 @@ namespace ZStewart.KOSLisp.Interpreter {
   /// </summary>
   public class GlobalContext : Context {
     private CompilerModule module;
-
-    public static GlobalContext Create(SymbolType moduleName) {
-      return new GlobalContext(SymbolType moduleName);
-    }
-
-    private GlobalContext(SymbolType moduleName) {
+    public GlobalContext(SymbolType moduleName) {
       module = new CompilerModule(moduleName);
     }
     public virtual Binding GetBinding(SymbolType symbol) {
@@ -128,21 +97,12 @@ namespace ZStewart.KOSLisp.Interpreter {
     }
   }
 
-  public class ScopedContext : Context, StackContext {
+  public class ScopedContext : Context {
     private readonly Context parentScope;
     protected readonly Dictionary<SymbolType, Binding> bindings =
       new Dictionary<SymbolType, Binding>();
 
-    public static ScopedContext Create(
-        Context parentScope, IEnumerable<SymbolType> newBindings) {
-      if (parentScope is StackContext) {
-        return new ScopedContext(parentScope, newBindings);
-      } else {
-        return new ClosuredScopedContext(parentScope, newBindings);
-      }
-    }
-
-    private ScopedContext(Context parentScope, IEnumerable<SymbolType> newBindings) {
+    public ScopedContext(Context parentScope, IEnumerable<SymbolType> newBindings) {
       this.parentScope = parentScope;
 
       foreach (var symbol in newBindings) {
@@ -153,6 +113,9 @@ namespace ZStewart.KOSLisp.Interpreter {
         bindings.Add(symbol, new AstLocalBinding(symbol));
       }
     }
+
+    public ScopedContext(Context parentScope, params SymbolType[] newBindings)
+        : this(parentScope, (IEnumerable<SymbolType>)newBindings) {}
 
     public virtual Binding GetBinding(SymbolType symbol) {
       var local = GetLocalBinding(symbol);
