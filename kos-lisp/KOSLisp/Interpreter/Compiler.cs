@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
 
 using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Types.Helpers;
@@ -26,21 +27,11 @@ namespace ZStewart.KOSLisp.Interpreter {
     }
   }
 
-  public class CompilerModule {
-    public SymbolType Name { get { return lispModule.Name; } }
-    private List<AstOp> code = new List<AstOp>();
-    private List<CompilerModule> importedModules = new List<CompilerModule>();
-    private ModuleType lispModule;
-
-    public CompilerModule (SymbolType name) {
-      lispModule = ModuleType.Create(name);
-    }
-  }
-
   public interface Binding : AstOp {
     SymbolType BoundSymbol { get; }
     bool IsClosure { get; }
     void TakeClosure();
+    Expression SetValueCSharp(Expression value);
   }
 
   public interface Context {
@@ -61,9 +52,9 @@ namespace ZStewart.KOSLisp.Interpreter {
   /// The base, or global context. No symbols are ever bound in this context.
   /// </summary>
   public class GlobalContext : Context {
-    private CompilerModule module;
+    private ModuleType module;
     public GlobalContext(SymbolType moduleName) {
-      module = new CompilerModule(moduleName);
+      module = ModuleType.Create(moduleName);
     }
     public virtual Binding GetBinding(SymbolType symbol) {
       return new AstGlobalBinding(symbol, module);
@@ -75,10 +66,10 @@ namespace ZStewart.KOSLisp.Interpreter {
 
     private class AstGlobalBinding : AstOpBase, Binding {
       public SymbolType BoundSymbol { get; }
-      public CompilerModule Module { get; }
+      public ModuleType Module { get; }
       public bool IsClosure { get { return true; } }
       public void TakeClosure() {}
-      public AstGlobalBinding(SymbolType boundSymbol, CompilerModule module) {
+      public AstGlobalBinding(SymbolType boundSymbol, ModuleType module) {
         BoundSymbol = boundSymbol;
         Module = module;
       }
@@ -93,6 +84,84 @@ namespace ZStewart.KOSLisp.Interpreter {
         sb.AppendLine();
         sb.Append(' ', baseIndent);
         sb.Append("]");
+      }
+
+      public override Expression CompileCSharp() {
+        // TODO(zstewar1): Fallback on --builtins-- bindings if no binding is found
+        // directly in the module.
+        var intermediate = Expression.Variable(typeof(LispObject));
+        var returnTarget = Expression.Label(typeof(LispObject));
+        return Expression.Block(
+          typeof(LispObject),
+          ImmutableList.Create(intermediate),
+          // Call get attribute and write the value to an intermediate so we can use it
+          // again without recomputing.
+          Expression.Assign(
+            intermediate,
+            Expression.Call(
+              typeof(LispObject), "GetAttribute", null,
+              Expression.Constant(Module, typeof(LispObject)),
+              Expression.Constant(BoundSymbol, typeof(LispObject)))),
+          // Check if the value is null. If it is, we also have to check if it is an
+          // attribute error and convert it to a name error.
+          Expression.Condition(
+            Expression.Equal(intermediate, Expression.Constant(null, typeof(LispObject))),
+            Expression.Condition(
+              // Test if it is an attribute error.
+              Expression.Call(
+                typeof(LispInterpreter), "CheckException", null,
+                Expression.Constant(ExceptionType.AttributeError)),
+              // Clear the exception and set a new one.
+              Expression.Block(
+                Expression.Call(typeof(LispInterpreter), "ClearException", null),
+                Expression.Call(
+                  typeof(LispInterpreter), "SetException", null,
+                  Expression.Call(
+                    typeof(ExceptionType), "CreateNameError", null,
+                    Expression.Constant("name \"{0}\" is not defined"),
+                    Expression.NewArrayInit(
+                      typeof(object), Expression.Constant(BoundSymbol)))),
+                Expression.Return(
+                  returnTarget, Expression.Constant(null, typeof(LispObject)))),
+              Expression.Return(
+                returnTarget, Expression.Constant(null, typeof(LispObject)))),
+              // End if attribute error.
+            Expression.Return(returnTarget, intermediate)), // End if null
+          Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
+      }
+
+      public Expression SetValueCSharp(Expression value) {
+        var returnTarget = Expression.Label(typeof(LispObject));
+        return Expression.Block(
+          typeof(LispObject),
+          Expression.Condition(
+            // compare setattr to null.
+            Expression.Equal(
+              // Do the set attr call.
+              Expression.Call(
+                typeof(LispObject), "SetAttribute", null,
+                Expression.Constant(Module),
+                Expression.Constant(BoundSymbol),
+                value),
+              Expression.Constant(null, typeof(LispObject))),
+            Expression.Condition(
+              // Test if it is an attribute error.
+              Expression.Call(
+                typeof(LispInterpreter), "CheckException", null,
+                Expression.Constant(ExceptionType.AttributeError)),
+              // Clear the exception and set a new one.
+              Expression.Block(
+                Expression.Call(typeof(LispInterpreter), "ClearException", null),
+                Expression.Call(
+                  typeof(LispInterpreter), "SetException", null,
+                  Expression.Call(
+                    typeof(ExceptionType), "CreateNameError", null,
+                    Expression.Constant("name \"{0}\" is not defined"),
+                    Expression.Constant(BoundSymbol))),
+                Expression.Return(returnTarget)),
+              Expression.Return(returnTarget)), // End if attribute error.
+            Expression.Return(returnTarget, Expression.Constant(NilType.Nil))),
+          Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
       }
     }
   }
@@ -144,8 +213,12 @@ namespace ZStewart.KOSLisp.Interpreter {
 
     private class AstLocalBinding : AstOpBase, Binding {
       public SymbolType BoundSymbol { get; }
+      // TODO(zstewar1): With code generation, isClosure may not matter.
       private bool isClosure;
       public bool IsClosure { get { return isClosure; } }
+
+      private ParameterExpression variableBinding;
+
       public AstLocalBinding(SymbolType boundSymbol) : this(boundSymbol, false) {}
       public AstLocalBinding(SymbolType boundSymbol, bool isClosure) {
         BoundSymbol = boundSymbol;
@@ -166,6 +239,20 @@ namespace ZStewart.KOSLisp.Interpreter {
         sb.AppendLine();
         sb.Append(' ', baseIndent);
         sb.Append("]");
+      }
+
+      public override Expression CompileCSharp() {
+        if (variableBinding == null)
+          variableBinding = Expression.Variable(
+            typeof(LispObject), BoundSymbol.Identifier);
+        return variableBinding;
+      }
+
+      public Expression SetValueCSharp(Expression value) {
+        if (variableBinding == null)
+          variableBinding = Expression.Variable(
+            typeof(LispObject), BoundSymbol.Identifier);
+        return Expression.Assign(variableBinding, value);
       }
     }
   }
@@ -299,7 +386,7 @@ namespace ZStewart.KOSLisp.Interpreter {
           if (len.Value == 2) {
             value = ListOperations.GetCdr(newbind);
             if (value == null) throw new LispException();
-            value = ListOperations.GetCar(newbind);
+            value = ListOperations.GetCar(value);
             if (value == null) throw new LispException();
           }
           var binding = context.AddBinding((SymbolType)symb);
@@ -383,6 +470,8 @@ namespace ZStewart.KOSLisp.Interpreter {
     /// after the appended value.
     /// </summary>
     void AppendAstStringIndented(StringBuilder sb, int baseIndent);
+
+    Expression CompileCSharp();
   }
 
   public abstract class AstOpBase : AstOp {
@@ -392,7 +481,25 @@ namespace ZStewart.KOSLisp.Interpreter {
       return sb.ToString();
     }
 
+    public static Expression ValueOrReturn(Expression expr, LabelTarget returnTarget) {
+      var intermediate = Expression.Variable(expr.Type);
+      return Expression.Block(
+        typeof(LispObject),
+        ImmutableList.Create(intermediate),
+        Expression.Assign(intermediate, expr),
+        Expression.Condition(
+          Expression.Equal(intermediate, Expression.Constant(null, expr.Type)),
+          Expression.Block(
+            expr.Type,
+            Expression.Return(
+              returnTarget, Expression.Constant(null, expr.Type)),
+            Expression.Constant(null, expr.Type)),
+          intermediate));
+    }
+
     public abstract void AppendAstStringIndented(StringBuilder sb, int baseIndent);
+
+    public abstract Expression CompileCSharp();
   }
 
   public class AstConst : AstOpBase {
@@ -403,6 +510,10 @@ namespace ZStewart.KOSLisp.Interpreter {
 
     public override void AppendAstStringIndented(StringBuilder sb, int baseIndent) {
       sb.AppendFormat("[AST-Constant: {0}]", Value);
+    }
+
+    public override Expression CompileCSharp() {
+      return Expression.Constant(Value);
     }
   }
 
@@ -428,6 +539,24 @@ namespace ZStewart.KOSLisp.Interpreter {
       }
       sb.Append(' ', baseIndent);
       sb.Append("]");
+    }
+
+    public override Expression CompileCSharp() {
+      var returnTarget = Expression.Label(typeof(LispObject));
+      return Expression.Block(
+        typeof(LispObject),
+        Expression.Return(
+          returnTarget,
+          Expression.Call(
+            typeof(CallableOperations), "Call", null,
+            ValueOrReturn(Function.CompileCSharp(), returnTarget),
+            ValueOrReturn(
+              Expression.Call(
+                typeof(IConsType), "ToLispTuple", null,
+                Arguments.Select(
+                  arg => ValueOrReturn(arg.CompileCSharp(), returnTarget)).ToArray()),
+              returnTarget))),
+        Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
     }
   }
 
@@ -459,6 +588,24 @@ namespace ZStewart.KOSLisp.Interpreter {
       sb.Append(' ', baseIndent);
       sb.Append("]");
     }
+
+    public override Expression CompileCSharp() {
+      var returnTarget = Expression.Label(typeof(LispObject));
+      return Expression.Block(
+        typeof(LispObject),
+        Expression.Condition(
+          Expression.Equal(
+            ValueOrReturn(
+              Expression.Call(
+                typeof(BoolType), "From", null,
+                ValueOrReturn(Condition.CompileCSharp(), returnTarget)),
+              returnTarget),
+            Expression.Constant(BoolType.T)),
+          // Rest of contitional goes here.
+          Expression.Return(returnTarget, ValueIfTrue.CompileCSharp()),
+          Expression.Return(returnTarget, ValueIfFalse.CompileCSharp())),
+        Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
+    }
   }
 
   public class AstProgn : AstOpBase {
@@ -485,6 +632,24 @@ namespace ZStewart.KOSLisp.Interpreter {
         Forms[i].AppendAstStringIndented(sb, baseIndent + 2);
         sb.AppendLine();
       }
+    }
+
+    public override Expression CompileCSharp() {
+      if (Forms.Count == 0) return Expression.Constant(NilType.Nil, typeof(LispObject));
+
+      var returnTarget = Expression.Label(typeof(LispObject));
+
+      var expressions = new List<Expression>(Forms.Count + 1);
+      for (int i = 0; i < Forms.Count - 1; i++) {
+        expressions.Add(
+          ValueOrReturn(Forms[i].CompileCSharp(), returnTarget));
+      }
+      expressions.Add(
+        Expression.Return(returnTarget, Forms[Forms.Count - 1].CompileCSharp()));
+      expressions.Add(
+        Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
+
+      return Expression.Block(typeof(LispObject), expressions);
     }
   }
 
@@ -521,6 +686,26 @@ namespace ZStewart.KOSLisp.Interpreter {
         Bindings[i].Item2.AppendAstStringIndented(sb, baseIndent + 4);
         sb.AppendLine();
       }
+    }
+
+    public override Expression CompileCSharp() {
+      var returnTarget = Expression.Label(typeof(LispObject));
+
+      var expressions = new List<Expression>(Bindings.Count + 2);
+      foreach (var b in Bindings) {
+        expressions.Add(
+          b.Item1.SetValueCSharp(
+            ValueOrReturn(b.Item2.CompileCSharp(), returnTarget)));
+      }
+      expressions.Add(
+        Expression.Return(returnTarget, base.CompileCSharp()));
+      expressions.Add(
+        Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
+
+      return Expression.Block(
+        typeof(LispObject),
+        Bindings.Select(b => (ParameterExpression)b.Item1.CompileCSharp()),
+        expressions);
     }
   }
 
@@ -637,6 +822,13 @@ namespace ZStewart.KOSLisp.Interpreter {
       } else {
         return plainPrimitiveForm.ExpressionToIntermediate(expression, context);
       }
+    }
+
+    public static Func<LispObject> CompileExpression(
+        LispObject expression, Context context) {
+      var ast = ExpressionToIntermediate(expression, context);
+      var compiler = Expression.Lambda<Func<LispObject>>(ast.CompileCSharp());
+      return compiler.Compile();
     }
   }
 }
