@@ -11,21 +11,6 @@ using ZStewart.KOSLisp.Types.Helpers;
 namespace ZStewart.KOSLisp.Interpreter {
 
   public class CompilerError : Exception {}
-  public class LispException : CompilerError {
-    ExceptionType Exception { get; set; }
-    public LispException () {
-      Exception = LispInterpreter.SaveException();
-    }
-
-    public override string ToString() {
-      return new StringBuilder("Compiler Error due to lisp exception.")
-        .AppendLine()
-        .Append(Exception)
-        .AppendLine()
-        .Append(base.ToString())
-        .ToString();
-    }
-  }
 
   public interface Binding : AstOp {
     SymbolType BoundSymbol { get; }

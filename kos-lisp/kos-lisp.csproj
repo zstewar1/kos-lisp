@@ -79,6 +79,7 @@
     <Compile Include="KOSLisp\Types\NilType.cs" />
     <Compile Include="KOSLisp\Types\BoolType.cs" />
     <Compile Include="KOSLisp\Types\ExceptionType.cs" />
+    <Compile Include="KOSLisp\Types\ExceptionWrapper.cs" />
     <Compile Include="KOSLisp\Types\NumberType.cs" />
     <Compile Include="KOSLisp\Types\MethodType.cs" />
     <Compile Include="KOSLisp\Types\FunctionType.cs" />
