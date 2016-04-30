@@ -547,16 +547,14 @@ namespace ZStewart.KOSLisp.Interpreter {
           Expression.Call(
             typeof(CallableOperations), "Call", null,
             ValueOrReturn(Function.CompileCSharp(), returnTarget),
-            ValueOrReturn(
-              Expression.Call(
-                typeof(IConsType), "ToLispTuple", null,
-                Expression.Convert(
-                  Expression.NewArrayInit(
-                    typeof(LispObject),
-                    Arguments.Select(
-                      arg => ValueOrReturn(arg.CompileCSharp(), returnTarget))),
-                  typeof(IReadOnlyList<LispObject>))),
-              returnTarget))),
+            Expression.Call(
+              typeof(IConsType), "ToLispTuple", null,
+              Expression.Convert(
+                Expression.NewArrayInit(
+                  typeof(LispObject),
+                  Arguments.Select(
+                    arg => ValueOrReturn(arg.CompileCSharp(), returnTarget))),
+                typeof(IReadOnlyList<LispObject>))))),
         Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
     }
   }
@@ -940,6 +938,7 @@ namespace ZStewart.KOSLisp.Interpreter {
     public static Func<LispObject> CompileExpression(
         LispObject expression, Context context) {
       var ast = ExpressionToIntermediate(expression, context);
+      Console.WriteLine(ast);
       var compiler = Expression.Lambda<Func<LispObject>>(ast.CompileCSharp());
       return compiler.Compile();
     }

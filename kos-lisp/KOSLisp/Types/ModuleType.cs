@@ -40,7 +40,7 @@ namespace ZStewart.KOSLisp.Types {
 
     public static ModuleType Create(SymbolType name, LispObject builtins) {
       var module = Create(name);
-      MappingOperations.SetItem(module, PropConsts.Builtins, builtins);
+      MappingOperations.SetItem(module.__dict__, PropConsts.Builtins, builtins);
       return module;
     }
     #endregion Static Helper Methods
