@@ -18,6 +18,13 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           "\"{0}\" object is not subscriptable", target.__class__));
     }
 
+    public static bool? CanGet([PositionalArgument] LispObject target) {
+      return LookupHelpers.Query(
+        target,
+        t => t._map_methods != null && t._map_methods.__getitem__ != null,
+        getitemattr);
+    }
+
     public static LispObject SetItem(
         [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject key,
@@ -29,6 +36,13 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         setitemattr,
         () => ExceptionType.CreateTypeError(
           "subscript of \"{0}\" object is not assignable", target.__class__));
+    }
+
+    public static bool? CanSet([PositionalArgument] LispObject target) {
+      return LookupHelpers.Query(
+        target,
+        t => t._map_methods != null && t._map_methods.__setitem__ != null,
+        setitemattr);
     }
 
     // TODO(zstewar1): Implement SetItem and DelItem.
