@@ -81,6 +81,7 @@
     <Compile Include="KOSLisp\Types\ExceptionType.cs" />
     <Compile Include="KOSLisp\Types\NumberType.cs" />
     <Compile Include="KOSLisp\Types\MethodType.cs" />
+    <Compile Include="KOSLisp\Types\FunctionType.cs" />
     <Compile Include="KOSLisp\Types\BuiltinFunctionType.cs" />
     <Compile Include="KOSLisp\Types\BuiltinDataDescriptorType.cs" />
     <Compile Include="KOSLisp\Types\ObjectType.cs" />

@@ -30,6 +30,8 @@ namespace ZStewart.KOSLisp.Types {
         _builtinFunction = LispType.ConfigureType(_builtinFunction);
         if (_builtinFunction == null) throw new InvalidOperationException();
 
+        LispType.AddDataProperty(_builtinFunction, "Name", PropConsts.Name);
+
         return _builtinFunction;
       }
     }
@@ -56,7 +58,7 @@ namespace ZStewart.KOSLisp.Types {
       if (instance == NilType.Nil && type != NilType.NilClass) {
         return self;
       } else {
-        return MethodType.Create(instance, self);
+        return MethodType.Create(((BuiltinFunctionType)self).Name, instance, self);
       }
     }
     #endregion Static Type Setup

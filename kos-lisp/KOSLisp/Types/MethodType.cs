@@ -24,6 +24,8 @@ namespace ZStewart.KOSLisp.Types {
         _method = LispType.ConfigureType(_method);
         if (_method == null) throw new InvalidOperationException();
 
+        LispType.AddDataProperty(_method, "Name", PropConsts.Name);
+
         return _method;
       }
     }
@@ -52,7 +54,8 @@ namespace ZStewart.KOSLisp.Types {
     #endregion
 
     #region Static Helper Methods
-    public static MethodType Create(LispObject receiver, LispObject function) {
+    public static MethodType Create(
+        SymbolType name, LispObject receiver, LispObject function) {
       var isCallable = CallableOperations.IsCallable(function);
       if (!isCallable.HasValue) return null;
       if (!isCallable.Value) {
@@ -60,19 +63,21 @@ namespace ZStewart.KOSLisp.Types {
           "function must be callable"));
         return null;
       }
-      return new MethodType(receiver, function) {
+      return new MethodType(name, receiver, function) {
         __class__ = Method,
       };
     }
     #endregion
 
-    protected MethodType(LispObject receiver, LispObject function) {
+    public SymbolType Name { get; }
+    private LispObject receiver;
+    private LispObject function;
+
+    protected MethodType(SymbolType name, LispObject receiver, LispObject function) {
+      Name = name;
       this.receiver = receiver;
       this.function = function;
     }
-
-    private LispObject receiver;
-    private LispObject function;
 
     public LispObject Call(LispObject args) {
       return CallableOperations.Call(function, IConsType.Create(receiver, args));
