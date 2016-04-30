@@ -87,87 +87,65 @@ namespace ZStewart.KOSLisp.Interpreter {
         sb.Append("]");
       }
 
+      private static LispObject GetGlobal(ModuleType module, SymbolType symbol) {
+        var val = LispObject.GetAttribute(module, symbol);
+        if (val != null) return val;
+
+        if (!LispInterpreter.CheckException(ExceptionType.AttributeError)) return null;
+        LispInterpreter.ClearException();
+
+        var builtins = LispObject.GetAttribute(module, PropConsts.Builtins);
+        if (builtins == null) {
+          if (LispInterpreter.CheckException(ExceptionType.AttributeError)) {
+            LispInterpreter.ClearException();
+            LispInterpreter.SetException(ExceptionType.CreateNameError(
+              "name \"{0}\" is not defined", symbol));
+          }
+          return null;
+        }
+
+        if (builtins is ModuleType) {
+          val = LispObject.GetAttribute(builtins, symbol);
+          if (val != null) return val;
+          if (LispInterpreter.CheckException(ExceptionType.AttributeError)) {
+            LispInterpreter.ClearException();
+            LispInterpreter.SetException(ExceptionType.CreateNameError(
+              "name \"{0}\" is not defined", symbol));
+          }
+          return null;
+        } else {
+          val = MappingOperations.GetItem(builtins, symbol);
+          if (val != null) return val;
+          if (LispInterpreter.CheckException(ExceptionType.KeyError)) {
+            LispInterpreter.ClearException();
+            LispInterpreter.SetException(ExceptionType.CreateNameError(
+              "name \"{0}\" is not defined", symbol));
+          }
+          return null;
+        }
+      }
+
       public override Expression CompileCSharp() {
-        // TODO(zstewar1): Fallback on --builtins-- bindings if no binding is found
-        // directly in the module.
-        var intermediate = Expression.Variable(typeof(LispObject));
-        var returnTarget = Expression.Label(typeof(LispObject));
-        return Expression.Block(
-          typeof(LispObject),
-          ImmutableList.Create(intermediate),
-          // Call get attribute and write the value to an intermediate so we can use it
-          // again without recomputing.
-          Expression.Assign(
-            intermediate,
-            Expression.Call(
-              typeof(LispObject), "GetAttribute", null,
-              Expression.Constant(Module, typeof(LispObject)),
-              Expression.Constant(BoundSymbol, typeof(LispObject)))),
-          // Check if the value is null. If it is, we also have to check if it is an
-          // attribute error and convert it to a name error.
-          Expression.Condition(
-            Expression.Equal(intermediate, Expression.Constant(null, typeof(LispObject))),
-            Expression.Condition(
-              // Test if it is an attribute error.
-              Expression.Call(
-                typeof(LispInterpreter), "CheckException", null,
-                Expression.Constant(ExceptionType.AttributeError)),
-              // Clear the exception and set a new one.
-              Expression.Block(
-                Expression.Call(typeof(LispInterpreter), "ClearException", null),
-                Expression.Call(
-                  typeof(LispInterpreter), "SetException", null,
-                  Expression.Call(
-                    typeof(ExceptionType), "CreateNameError", null,
-                    Expression.Constant("name \"{0}\" is not defined"),
-                    Expression.NewArrayInit(
-                      typeof(object), Expression.Constant(BoundSymbol)))),
-                Expression.Return(
-                  returnTarget, Expression.Constant(null, typeof(LispObject)))),
-              Expression.Return(
-                returnTarget, Expression.Constant(null, typeof(LispObject)))),
-              // End if attribute error.
-            Expression.Return(returnTarget, intermediate)), // End if null
-          Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
+        return Expression.Call(
+          typeof(AstGlobalBinding), "GetGlobal", null,
+          Expression.Constant(Module), Expression.Constant(BoundSymbol));
+      }
+
+      private static LispObject SetGlobal(
+          ModuleType module, SymbolType symbol, LispObject value) {
+        if (LispObject.SetAttribute(module, symbol, value) != null) return NilType.Nil;
+        if (LispInterpreter.CheckException(ExceptionType.AttributeError)) {
+          LispInterpreter.ClearException();
+          LispInterpreter.SetException(ExceptionType.CreateNameError(
+            "name \"{0}\" is not defined", symbol));
+        }
+        return null;
       }
 
       public Expression SetValueCSharp(Expression value) {
-        var returnTarget = Expression.Label(typeof(LispObject));
-        return Expression.Block(
-          typeof(LispObject),
-          Expression.Condition(
-            // compare setattr to null.
-            Expression.Equal(
-              // Do the set attr call.
-              Expression.Call(
-                typeof(LispObject), "SetAttribute", null,
-                Expression.Constant(Module),
-                Expression.Constant(BoundSymbol),
-                value),
-              Expression.Constant(null, typeof(LispObject))),
-            Expression.Condition(
-              // Test if it is an attribute error.
-              Expression.Call(
-                typeof(LispInterpreter), "CheckException", null,
-                Expression.Constant(ExceptionType.AttributeError)),
-              // Clear the exception and set a new one.
-              Expression.Block(
-                Expression.Call(typeof(LispInterpreter), "ClearException", null),
-                Expression.Call(
-                  typeof(LispInterpreter), "SetException", null,
-                  Expression.Call(
-                    typeof(ExceptionType), "CreateNameError", null,
-                    Expression.Constant("name \"{0}\" is not defined"),
-                    Expression.NewArrayInit(
-                      typeof(object),
-                      Expression.Constant(BoundSymbol)))),
-                Expression.Return(
-                  returnTarget, Expression.Constant(null, typeof(LispObject)))),
-              Expression.Return(
-                returnTarget, Expression.Constant(null, typeof(LispObject)))),
-              // End if attribute error.
-            Expression.Return(returnTarget, Expression.Constant(NilType.Nil))),
-          Expression.Label(returnTarget, Expression.Constant(null, typeof(LispObject))));
+        return Expression.Call(
+          typeof(AstGlobalBinding), "SetGlobal", null,
+          Expression.Constant(Module), Expression.Constant(BoundSymbol), value);
       }
     }
   }

@@ -20,6 +20,15 @@ namespace ZStewart.KOSLisp.Types {
     public static SymbolType SetAttr { get { return SymbolType.Create("--setattr--"); } }
 
     /// <summary>
+    /// The member which contains the builtins object.
+    /// </summary>
+    public static SymbolType Builtins {
+      get {
+        return SymbolType.Create("--builtins--");
+      }
+    }
+
+    /// <summary>
     /// The function used to get an underlying value in the [data] descriptor protocol.
     /// </summary>
     public static SymbolType Get { get { return SymbolType.Create("--get--"); } }
