@@ -12,6 +12,7 @@ namespace ZStewart.KOSLisp.Interpreter {
   /// This is a singleton currently.
   /// </summary>
   public static class LispInterpreter {
+    #region Exception Handling
     /// <summary>
     /// The currently set exception.
     /// </summary>
@@ -88,5 +89,19 @@ namespace ZStewart.KOSLisp.Interpreter {
       exception = null;
       return exc;
     }
+    #endregion Exception Handling
+
+    #region Builtins Module
+    private static ModuleType _builtins;
+    public static ModuleType Builtins {
+      get {
+        if (_builtins != null) return _builtins;
+
+        _builtins = ModuleType.Create(SymbolType.Create("builtins"));
+
+        return _builtins;
+      }
+    }
+    #endregion
   }
 }
