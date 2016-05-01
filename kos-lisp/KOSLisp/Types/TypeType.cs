@@ -47,9 +47,7 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject Call(LispObject receiver, LispObject args) {
-
-      // TODO(zstewar1): Calling a type calls new then maybe init.
-      return null;
+      throw ExceptionType.ThrowNotImplemented("");
     }
     #endregion Static Type Setup
 
@@ -58,10 +56,7 @@ namespace ZStewart.KOSLisp.Types {
     #region Setup Funtionality
     public static LispType ConfigureType (LispType type) {
       if (type.__mro__ == null) {
-        var mro = Linearize(type);
-        // Propagate errors.
-        if (mro == null) return null;
-        type.__mro__ = mro;
+        type.__mro__ = Linearize(type);
       }
       // TODO(zstewar1): Populate dict.
       type.__dict__ = DictType.Create();
@@ -77,18 +72,13 @@ namespace ZStewart.KOSLisp.Types {
       if (type.__bases__ == NilType.Nil) {
         return IConsType.ToLispTuple(type);
       }
-      var merged = MergeMroBases(type.__bases__);
-      if (merged == null) return null;
-      return IConsType.Create(type, merged);
+      return IConsType.Create(type, MergeMroBases(type.__bases__));
     }
 
     private static LispObject MergeMroBases(LispObject bases) {
       var mroList = new List<List<LispType>>();
       foreach (var b in ListOperations.IterList<LispType>(bases)) {
-        if (b == null) return null;
-        var mro = ListOperations.IterList<LispType>(b.__mro__).ToList();
-        if (mro.Any(x => x == null)) return null;
-        mroList.Add(mro);
+        mroList.Add(ListOperations.IterList<LispType>(b.__mro__).ToList());
       }
       var linearization = new List<LispType>();
 
@@ -106,8 +96,7 @@ namespace ZStewart.KOSLisp.Types {
           break;
         }
         if (head == null) {
-          // Cannot Create Consistend MRO Error
-          return null;
+          throw ExceptionType.ThrowTypeError("Cannot create consistent MRO");
         }
         linearization.Add(head);
         for (int i = 0; i < mroList.Count; i++) {
@@ -141,16 +130,14 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="instance">The instance to look up.</param>
     /// <param name="type">The type to look for.</param>
     /// <returns>
-    /// True if instance is of type type, false if it is not, and null on error.
+    /// True if instance is of type type, false if it is not
     /// </returns>
-    public static bool? IsInstance(LispObject instance, LispObject type) {
+    public static bool IsInstance(LispObject instance, LispObject type) {
       if (!(type is LispType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "Second argument must be a type, got {0}", type));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "Second argument must be a type, got {0}", type);
       }
       foreach (var t in ListOperations.IterMro(instance)) {
-        if (t == null) return null;
         if (t == type) return true;
       }
       return false;
@@ -162,23 +149,18 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="subtype">The type to test if it is a subtype.</param>
     /// <param name="type">The parent type to test subtype against.</param>
     /// <returns>
-    /// True if subtype is a subtype of parentType, false if it is not and null on error.
+    /// True if subtype is a subtype of parentType, false if it is not.
     /// </returns>
-    public static bool? IsSubtype(LispObject subtype, LispObject parentType) {
+    public static bool IsSubtype(LispObject subtype, LispObject parentType) {
       if (!(subtype is LispType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "First argument must be a type, got {0}", subtype));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "First argument must be a type, got {0}", subtype);
       }
       if (!(parentType is LispType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "Second argument must be a type, got {0}", parentType));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "Second argument must be a type, got {0}", parentType);
       }
-      foreach (
-          var t in ListOperations.IterList<LispType>(
-            ((LispType)subtype).__mro__)) {
-        if (t == null) return null;
+      foreach (var t in ListOperations.IterList<LispType>(((LispType)subtype).__mro__)) {
         if (t ==  parentType) return true;
       }
       return false;

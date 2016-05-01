@@ -33,11 +33,8 @@ namespace ZStewart.KOSLisp.Types {
     private static LispObject Call (LispObject self, LispObject args) {
       if (self is MethodType) {
         return ((MethodType)self).Call(args);
-      } else {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "first argument must be a Method"));
-        return null;
       }
+      throw ExceptionType.ThrowTypeError("first argument must be a Method");
     }
 
     private static LispObject Get (
@@ -45,9 +42,7 @@ namespace ZStewart.KOSLisp.Types {
         LispObject instance,
         LispObject type) {
       if (!(self is MethodType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "self must be a Method"));
-        return null;
+        throw ExceptionType.ThrowTypeError("self must be a Method");
       }
       return self;
     }
@@ -56,12 +51,8 @@ namespace ZStewart.KOSLisp.Types {
     #region Static Helper Methods
     public static MethodType Create(
         SymbolType name, LispObject receiver, LispObject function) {
-      var isCallable = CallableOperations.IsCallable(function);
-      if (!isCallable.HasValue) return null;
-      if (!isCallable.Value) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "function must be callable"));
-        return null;
+      if (!CallableOperations.IsCallable(function)) {
+        throw ExceptionType.ThrowTypeError("function must be callable");
       }
       return new MethodType(name, receiver, function) {
         __class__ = Method,

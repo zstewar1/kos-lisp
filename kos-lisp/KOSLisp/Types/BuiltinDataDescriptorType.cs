@@ -39,16 +39,9 @@ namespace ZStewart.KOSLisp.Types {
         LispObject instance,
         LispObject type) {
       if (!(self is BuiltinDataDescriptorType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "self must be a BuiltinDataDescriptor"));
-        return null;
+        throw ExceptionType.ThrowTypeError("self must be a BuiltinDataDescriptor");
       }
-      if (!(self is LispType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "type must be a Type"));
-        return null;
-      }
-      return ((BuiltinDataDescriptorType)self).Get(instance, (LispType)type);
+      return ((BuiltinDataDescriptorType)self).Get(instance, type);
     }
 
     private static LispObject SetStatic(
@@ -56,9 +49,7 @@ namespace ZStewart.KOSLisp.Types {
         LispObject instance,
         LispObject value) {
       if (!(self is BuiltinDataDescriptorType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "self must be a BuiltinDataDescriptor"));
-        return null;
+        throw ExceptionType.ThrowTypeError("self must be a BuiltinDataDescriptor");
       }
       return ((BuiltinDataDescriptorType)self).Set(instance, value);
     }
@@ -91,18 +82,18 @@ namespace ZStewart.KOSLisp.Types {
     private Type PropertyType { get { return property.PropertyType; } }
     private readonly PropertyInfo property;
 
-    private LispObject Get (LispObject instance, LispType type) {
-      if (instance == NilType.Nil && type != NilType.NilClass) {
+    private LispObject Get (LispObject instance, LispObject type) {
+      if (!(type is LispType) && type != NilType.Nil) {
+        throw ExceptionType.ThrowTypeError("type must be a type or nil");
+      } else if (instance == NilType.Nil && type != NilType.NilClass) {
         return this;
       } else if (!ObjectType.IsAssignableFrom(instance.GetType())) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        throw ExceptionType.ThrowTypeError(
           "builtin property \"{0}\" does not apply to \"{1}\" objects",
-          Name, instance.__class__));
-        return null;
+          Name, instance.__class__);
       } else if (!property.CanRead) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "can't get property \"{0}\" of \"{1}\"", Name, instance.__class__));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "can't get property \"{0}\" of \"{1}\"", Name, instance.__class__);
       } else {
         return Arguments.Unmarshal(property.GetValue(instance));
       }
@@ -110,18 +101,14 @@ namespace ZStewart.KOSLisp.Types {
 
     private LispObject Set (LispObject instance, LispObject value) {
       if (!ObjectType.IsAssignableFrom(instance.GetType())) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        throw ExceptionType.ThrowTypeError(
           "builtin property \"{0}\" does not apply to \"{1}\" objects",
-          Name, instance.__class__));
-        return null;
+          Name, instance.__class__);
       } else if (!property.CanWrite) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "can't set property \"{0}\" of \"{1}\"", Name, instance.__class__));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "can't set property \"{0}\" of \"{1}\"", Name, instance.__class__);
       } else {
-        object marshaled;
-        if (!Arguments.Marshal(PropertyType, value, out marshaled)) return null;
-        property.SetValue(instance, marshaled);
+        property.SetValue(instance, Arguments.Marshal(PropertyType, value));
         return NilType.Nil;
       }
     }

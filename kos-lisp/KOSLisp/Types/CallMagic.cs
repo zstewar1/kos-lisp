@@ -105,19 +105,17 @@ namespace ZStewart.KOSLisp.Types {
       List<LispObject> pargs;
       Dictionary<SymbolType, LispObject> kwargs;
       Arguments.GetArguments(args, out pargs, out kwargs);
-      if (pargs == null || kwargs == null) return null;
 
       if (pargs.Count < positionalArguments.Count) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        throw ExceptionType.ThrowTypeError(
           "not enough positional arguments, expected {0}, got {1}",
-          positionalArguments.Count, pargs.Count));
-        return null;
+          positionalArguments.Count, pargs.Count);
       }
 
       if (pargs.Count > positionalArguments.Count && !rest) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
+        throw ExceptionType.ThrowTypeError(
           "too many positional arguments, expected {0}, got {1}",
-          positionalArguments.Count, pargs.Count));
+          positionalArguments.Count, pargs.Count);
       }
 
       if (!restKwargs) {
@@ -125,20 +123,16 @@ namespace ZStewart.KOSLisp.Types {
         var extraKwargs = kwargs.Keys.Where(
           k => !keywordArguments.Select(t => t.Item1).Contains(k)).ToList();
         if (extraKwargs.Count > 0) {
-          LispInterpreter.SetException(ExceptionType.CreateTypeError(
-            "got unexpected keyword arguments: ({0})", string.Join(" ", extraKwargs)));
-          return null;
+          throw ExceptionType.ThrowTypeError(
+            "got unexpected keyword arguments: ({0})", string.Join(" ", extraKwargs));
         }
       }
 
       object[] arguments = new object[paraminfos.Length];
       int index = 0;
 
-      for (int i = 0; i < positionalArguments.Count; i++) {
-        object marshaled;
-        if(!Arguments.Marshal(positionalArguments[i], pargs[i], out marshaled))
-          return null;
-        arguments[index++] = marshaled;
+      for (int i = 0; i < positionalArguments.Count; i++, index++) {
+        arguments[index] = Arguments.Marshal(positionalArguments[i], pargs[i]);
       }
 
       if (rest) {
@@ -150,10 +144,7 @@ namespace ZStewart.KOSLisp.Types {
       for (int i = 0; i < keywordArguments.Count; i++, index++) {
         LispObject arg;
         if (kwargs.TryGetValue(keywordArguments[i].Item1, out arg)) {
-          object marshaled;
-          if (!Arguments.Marshal(keywordArguments[i].Item2, arg, out marshaled))
-            return null;
-          arguments[index] = marshaled;
+          arguments[index] = Arguments.Marshal(keywordArguments[i].Item2, arg);
           kwargs.Remove(keywordArguments[i].Item1);
         }
       }

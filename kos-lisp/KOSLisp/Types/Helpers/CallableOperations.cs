@@ -19,7 +19,6 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <returns></returns>
     public static LispObject Call(LispObject callable, LispObject args) {
       args = IConsType.Copy(args);
-      if (args == null) return null;
       return LookupHelpers.Lookup(
         callable, args,
         t => t.__call__ != null,
@@ -29,7 +28,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           "\"{0}\" object is not callable", callable.__class__));
     }
 
-    public static bool? IsCallable(LispObject callable) {
+    public static bool IsCallable(LispObject callable) {
       return LookupHelpers.Query(callable, t => t.__call__ != null, PropConsts.Call);
     }
   }

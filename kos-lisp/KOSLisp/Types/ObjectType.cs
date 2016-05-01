@@ -67,23 +67,18 @@ namespace ZStewart.KOSLisp.Types {
             __class__ = Object,
           };
         } else {
+          throw ExceptionType.ThrowNotImplemented("Cannot initialize subtypes yet.");
           // TODO(zstewar1): Dynamic object.
-          return null;
         }
       } else {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "Argument must be a type"));
-        return null;
+        throw ExceptionType.ThrowTypeError("Argument must be a type");
       }
     }
 
     private static LispObject GetAttr(LispObject obj, LispObject attr) {
-      var instance = LispType.IsInstance(attr, SymbolType.Symbol);
-      if (!instance.HasValue) return null;
-      if (!instance.Value) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "attribute name must be symbol, not \"{0}\"", attr.__class__));
-        return null;
+      if (!LispType.IsInstance(attr, SymbolType.Symbol)) {
+        throw ExceptionType.ThrowTypeError(
+          "attribute name must be symbol, not \"{0}\"", attr.__class__);
       }
 
       // Check if the item is in the object's dictionary, then check the class. If the
@@ -91,66 +86,51 @@ namespace ZStewart.KOSLisp.Types {
       // the object item, if available, otherwise return the fetch result.
       LispObject objdictitem = null;
       if (obj.__dict__ != null) {
-        objdictitem = MappingOperations.GetItem(obj.__dict__, attr);
-        if (objdictitem == null) {
-          if (LispInterpreter.CheckException(ExceptionType.KeyError))
-            LispInterpreter.ClearException();
-          else return null;
+        try {
+          objdictitem = MappingOperations.GetItem(obj.__dict__, attr);
+        } catch (ExceptionWrapper ex) {
+          if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
         }
       }
       LispObject classitem = null;
       foreach (var targetType in ListOperations.IterMro(obj)) {
-        if (targetType == null) return null;
-        classitem = MappingOperations.GetItem(targetType.__dict__, attr);
-        if (classitem == null) {
-          if (LispInterpreter.CheckException(ExceptionType.KeyError))
-            LispInterpreter.ClearException();
-          else return null;
-        } else {
+        try {
+          classitem = MappingOperations.GetItem(targetType.__dict__, attr);
           break;
+        } catch (ExceptionWrapper ex) {
+          if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
         }
       }
 
       // If neither is null, we have to preference data-descriptors.
       if (classitem != null && objdictitem != null) {
-        var gettable = DescriptorOperations.IsDescriptor(classitem);
-        if (!gettable.HasValue) return null;
         // Always give the object item if not get-able.
-        if (!gettable.Value) return objdictitem;
+        if (!DescriptorOperations.IsDescriptor(classitem)) return objdictitem;
 
         // If there is an __get__, preference the class item only if there is also an
         // __set__ or __del__.
 
         // TODO(zstewar1): Also check if deleteable (either set or delete is data).
-        var settable = DescriptorOperations.IsDataDescriptor(classitem);
-        if (!settable.HasValue) return null;
-        // Set exists, so it is a data descriptor.
-        if (settable.Value) {
+        if (DescriptorOperations.IsDataDescriptor(classitem)) {
           return DescriptorOperations.Get(classitem, obj, obj.__class__);
         }
         return objdictitem;
       }
       if (objdictitem != null) return objdictitem;
       if (classitem != null) {
-        var gettable = DescriptorOperations.IsDescriptor(classitem);
-        if (!gettable.HasValue) return null;
-        if (gettable.Value)
+        if (DescriptorOperations.IsDescriptor(classitem))
           return DescriptorOperations.Get(classitem, obj, obj.__class__);
         return classitem;
       }
 
-      LispInterpreter.SetException(ExceptionType.CreateAttributeError(
-        "\"{0}\" object has no attribute {1}", obj.__class__, attr));
-      return null;
+      throw ExceptionType.ThrowAttributeError(
+        "\"{0}\" object has no attribute {1}", obj.__class__, attr);
     }
 
     private static LispObject SetAttr(LispObject obj, LispObject attr, LispObject value) {
-      var instance = LispType.IsInstance(attr, SymbolType.Symbol);
-      if (!instance.HasValue) return null;
-      if (!instance.Value) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "attribute name must be symbol, not \"{0}\"", attr.__class__));
-        return null;
+      if (!LispType.IsInstance(attr, SymbolType.Symbol)) {
+        throw ExceptionType.ThrowTypeError(
+          "attribute name must be symbol, not \"{0}\"", attr.__class__);
       }
 
       // Check if the item is in the class dictionary, then check if the clas item is a
@@ -158,33 +138,27 @@ namespace ZStewart.KOSLisp.Types {
       // Otherwise, just set it on the instance dictionary (if available).
       LispObject classitem = null;
       foreach (var targetType in ListOperations.IterMro(obj)) {
-        if (targetType == null) return null;
-        classitem = MappingOperations.GetItem(targetType.__dict__, attr);
-        if (classitem == null) {
-          if (LispInterpreter.CheckException(ExceptionType.KeyError))
-            LispInterpreter.ClearException();
-          else return null;
-        } else {
+        try {
+          classitem = MappingOperations.GetItem(targetType.__dict__, attr);
           break;
+        } catch (ExceptionWrapper ex) {
+          if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
         }
       }
 
       if (classitem != null) {
-        var settable = DescriptorOperations.IsDataDescriptor(classitem);
-        if (!settable.HasValue) return null;
-        if (settable.Value) {
-          return DescriptorOperations.Set(classitem, obj, value) == null ?
-            null : NilType.Nil;
+        if (DescriptorOperations.IsDataDescriptor(classitem)) {
+          DescriptorOperations.Set(classitem, obj, value);
+          return NilType.Nil;
         }
       }
       if (obj.__dict__ != null) {
-        return MappingOperations.SetItem(obj.__dict__, attr, value) == null ?
-          null : NilType.Nil;
+        MappingOperations.SetItem(obj.__dict__, attr, value);
+        return NilType.Nil;
       }
 
-      LispInterpreter.SetException(ExceptionType.CreateAttributeError(
-        "\"{0}\" object has no attribute {1}", obj.__class__, attr));
-      return null;
+      throw ExceptionType.ThrowAttributeError(
+        "\"{0}\" object has no attribute {1}", obj.__class__, attr);
     }
 
 
@@ -213,9 +187,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="args">The arguments to the method.</param>
     /// <returns>The result of calling method method of object</returns>
     public static LispObject Call(LispObject obj, SymbolType method, LispObject args) {
-      var m = GetAttribute(obj, method);
-      if (m == null) return null;
-      return CallableOperations.Call(m, args);
+      return CallableOperations.Call(GetAttribute(obj, method), args);
     }
 
     /// <summary>
@@ -223,27 +195,23 @@ namespace ZStewart.KOSLisp.Types {
     /// if provided.
     /// </summary>
     public static LispObject GetAttribute(LispObject obj, LispObject attribute) {
-      var instance = LispType.IsInstance(attribute, SymbolType.Symbol);
-      if (!instance.HasValue) return null;
-      if (!instance.Value) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "attribute name must be symbol"));
-        return null;
+      if (!LispType.IsInstance(attribute, SymbolType.Symbol)) {
+        throw ExceptionType.ThrowTypeError("attribute name must be symbol");
       }
 
-      var value = LookupHelpers.Lookup(
-        obj, attribute,
-        t => t.__getattr__ != null,
-        t => t.__getattr__,
-        PropConsts.GetAttribute,
-        // We should never reach this since everything inherits from object and object
-        // provides the final fallback getattribute method.
-        () => ExceptionType.CreateAttributeError(
-          "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
-
-      if (value != null) return value;
-      if (!LispInterpreter.CheckException(ExceptionType.AttributeError)) return null;
-      LispInterpreter.ClearException();
+      try {
+        return LookupHelpers.Lookup(
+          obj, attribute,
+          t => t.__getattr__ != null,
+          t => t.__getattr__,
+          PropConsts.GetAttribute,
+          // We should never reach this since everything inherits from object and object
+          // provides the final fallback getattribute method.
+          () => ExceptionType.CreateAttributeError(
+            "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
+      } catch (ExceptionWrapper ex) {
+        if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
+      }
 
       return LookupHelpers.Lookup(
         obj, attribute,
@@ -257,12 +225,8 @@ namespace ZStewart.KOSLisp.Types {
 
     public static LispObject SetAttribute(
         LispObject obj, LispObject attribute, LispObject value) {
-      var instance = LispType.IsInstance(attribute, SymbolType.Symbol);
-      if (!instance.HasValue) return null;
-      if (!instance.Value) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "attribute name must be symbol"));
-        return null;
+      if (!LispType.IsInstance(attribute, SymbolType.Symbol)) {
+        throw ExceptionType.ThrowTypeError("attribute name must be symbol");
       }
 
       return LookupHelpers.Lookup(
@@ -279,18 +243,14 @@ namespace ZStewart.KOSLisp.Types {
     /// false if it does not. Null is returned if there is an error while looking up the
     /// attribute other than AttributeError.
     /// </summary>
-    public static bool? HasAttribute(LispObject obj, LispObject attribute) {
-      var result = GetAttribute(obj, attribute);
-      if (result == null) {
-        if (LispInterpreter.CheckException(ExceptionType.AttributeError)) {
-          LispInterpreter.ClearException();
-          return false;
-        } else {
-          return null;
-        }
-      } else {
+    public static bool HasAttribute(LispObject obj, LispObject attribute) {
+      try {
+        GetAttribute(obj, attribute);
         return true;
+      } catch (ExceptionWrapper ex) {
+        if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
       }
+      return false;
     }
     #endregion Static Helper Methods
   }

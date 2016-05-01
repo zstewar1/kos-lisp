@@ -33,11 +33,8 @@ namespace ZStewart.KOSLisp.Types {
     private static LispObject Call (LispObject self, LispObject args) {
       if (self is FunctionType) {
         return ((FunctionType)self).Call(args);
-      } else {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "first argument must be a Function"));
-        return null;
       }
+      throw ExceptionType.ThrowTypeError("first argument must be a Function");
     }
 
     private static LispObject Get (
@@ -45,11 +42,8 @@ namespace ZStewart.KOSLisp.Types {
         LispObject instance,
         LispObject type) {
       if (!(self is FunctionType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "self must be a Function"));
-        return null;
-      }
-      if (instance == NilType.Nil && type != NilType.NilClass) {
+        throw ExceptionType.ThrowTypeError("self must be a Function");
+      } else if (instance == NilType.Nil && type != NilType.NilClass) {
         return self;
       } else {
         return MethodType.Create(((FunctionType)self).Name, instance, self);

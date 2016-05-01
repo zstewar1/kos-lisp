@@ -64,21 +64,17 @@ namespace ZStewart.KOSLisp.Types {
       // type.
       if (instance is IConsType) {
         return (instance as IConsType).Car;
-      } else {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "instance must be of type {0}, was {1}", ICons, instance.__class__));
-        return null;
       }
+      throw ExceptionType.ThrowTypeError(
+        "instance must be of type {0}, was {1}", ICons, instance.__class__);
     }
 
     private static LispObject GetCdr (LispObject instance) {
       if (instance is IConsType) {
         return (instance as IConsType).Cdr;
-      } else {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "instance must be of type {0}, was {1}", ICons, instance.__class__));
-        return null;
       }
+      throw ExceptionType.ThrowTypeError(
+        "instance must be of type {0}, was {1}", ICons, instance.__class__);
     }
     #endregion Static Type Setup
 
@@ -101,11 +97,8 @@ namespace ZStewart.KOSLisp.Types {
     public static LispObject Copy(LispObject originalList) {
       if (originalList == NilType.Nil) return NilType.Nil;
       var car = ListOperations.GetCar(originalList);
-      if (car == null) return null;
       var cdr = ListOperations.GetCdr(originalList);
-      if (cdr == null) return null;
       var newcdr = Copy(cdr);
-      if (newcdr == null) return null;
       // We use exact type equality because any subtype of ICons should still be
       // converted.
       if (newcdr == cdr && originalList.__class__ == ICons) {

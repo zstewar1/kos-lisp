@@ -14,9 +14,5 @@ namespace ZStewart.KOSLisp.Types {
     public static implicit operator ExceptionType(ExceptionWrapper ew) {
       return ew.LispException;
     }
-
-    public static implicit operator ExceptionWrapper(ExceptionType ex) {
-      return new ExceptionWrapper(ex);
-    }
   }
 }

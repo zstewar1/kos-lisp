@@ -41,8 +41,7 @@ namespace ZStewart.KOSLisp.Types {
 
     private static LispObject New (LispObject subtype, LispObject args) {
       if (args != Nil) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(string.Format(
-          "{0} takes no arguments.", subtype)));
+        throw ExceptionType.ThrowTypeError("{0} takes no arguments.", subtype);
       }
       return Nil;
     }

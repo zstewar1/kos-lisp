@@ -22,26 +22,24 @@ namespace ZStewart.KOSLisp.Types.Helpers {
             && targetType._list_methods.__getcar__ != null) {
           return targetType._list_methods.__getcar__(target);
         } else {
-          LispObject __getcar__ = MappingOperations.GetItem(targetType.__dict__, getcarattr);
-          if (__getcar__ == null) {
-            if (LispInterpreter.CheckException(ExceptionType.KeyError))
-              LispInterpreter.ClearException();
-            else return null;
-          } else {
-            return CallableOperations.Call(__getcar__, IConsType.ToLispTuple(target));
+          LispObject getcar = null;
+          try {
+            getcar = MappingOperations.GetItem(targetType.__dict__, getcarattr);
+          } catch (ExceptionWrapper ex) {
+            if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+          }
+          if (getcar != null) {
+            return CallableOperations.Call(getcar, IConsType.ToLispTuple(target));
           }
         }
         // Advance to CDR before continuing, since we have to force-skip the first
         // element.
         __mro__ = GetCdr(__mro__);
-        if (__mro__ == null) return null; // Propagate errors.
         if (__mro__ == NilType.Nil) {
-          LispInterpreter.SetException(ExceptionType.CreateTypeError(
-            "cannot get car of \"{0}\" object", target.__class__));
-          return null;
+          throw ExceptionType.ThrowTypeError(
+            "cannot get car of \"{0}\" object", target.__class__);
         }
         LispObject nextType = GetCar(__mro__);
-        if (nextType == null) return null; // Propagate errors.
         // Just accept cast errors. It should be impossible for any object in the MRO to
         // be assigned to a non-type and impossible for a type not to inheirt from
         // LispTypeObject.
@@ -91,20 +89,18 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </summary>
     /// <param name="list">The list.</param>
     /// <returns>The number of elements or null if there is an error counting.</returns>
-    public static int? Count(LispObject list) {
+    public static int Count(LispObject list) {
       int cnt = 0;
       while (list != NilType.Nil) {
         cnt++;
-        list = GetCdr(list);
-        if (list == null) {
-          if (LispInterpreter.CheckException(ExceptionType.TypeError)) {
-            var cause = LispInterpreter.SaveException();
-            var extended = ExceptionType.CreateTypeError(
-              "Count list failed: not a proper list.");
-            extended.__cause__ = cause;
-            LispInterpreter.SetException(extended);
-          }
-          return null;
+        try {
+          list = GetCdr(list);
+        } catch (ExceptionWrapper ex) {
+          if (!ExceptionType.Check(ex, ExceptionType.TypeError)) throw;
+
+          var ne = ExceptionType.CreateTypeError("Count list failed: not a proper list.");
+          ne.__cause__ = ex;
+          throw new ExceptionWrapper(ne);
         }
       }
       return cnt;
@@ -113,25 +109,14 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <summary>
     /// Checks if a lisp list is a proper list (i.e. not dotted)
     /// </summary>
-    public static bool? Proper(LispObject list) {
-      var cnt = Count(list);
-      if (!cnt.HasValue) {
-        if (LispInterpreter.CheckException(ExceptionType.TypeError)) {
-          LispInterpreter.ClearException();
-          return false;
-        }
-        return null;
+    public static bool Proper(LispObject list) {
+      try {
+        Count(list);
+        return true;
+      } catch (ExceptionWrapper ex) {
+        if (!ExceptionType.Check(ex, ExceptionType.TypeError)) throw;
       }
-      return true;
-    }
-
-    /// <summary>
-    /// Lisp-enabled version of Count.
-    /// </summary>
-    public static LispObject LispCount([PositionalArgument] LispObject list) {
-      var cnt = Count(list);
-      if (!cnt.HasValue) return null;
-      return NumberType.Create(cnt.Value);
+      return false;
     }
 
     /// <summary>
@@ -146,14 +131,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <returns>A C# iterator that iterates over the given Lisp List.</returns>
     public static IEnumerable<LispObject> IterList(LispObject list) {
       while (list != NilType.Nil) {
-        LispObject value = GetCar(list);
-        yield return value;
-        if (value == null) yield break;
+        yield return GetCar(list);
         list = GetCdr(list);
-        if (list == null) {
-          yield return null;
-          yield break;
-        }
       }
     }
 
@@ -166,20 +145,13 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <returns>An enumerable of the list that returns elements as type T.</returns>
     public static IEnumerable<T> IterList<T>(LispObject list) where T : LispObject {
       foreach (var next in IterList(list)) {
-        // Propagate errors.
-        if (next == null) {
-          yield return null;
-          yield break;
-        }
         if (next is T) {
           yield return next as T;
         } else {
-          LispInterpreter.SetException(ExceptionType.CreateTypeError(string.Format(
+          throw ExceptionType.ThrowTypeError(
             "A builtin attempted to iterate the list {0} as C# type IEnumerable<{1}>, " +
             "but there was an element of C# type {2}, which could not be cast to {1}",
-            list, typeof(T).Name, next.GetType().Name)));
-          yield return null;
-          yield break;
+            list, typeof(T).Name, next.GetType().Name);
         }
       }
     }

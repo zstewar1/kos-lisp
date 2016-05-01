@@ -46,11 +46,11 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           "\"{0}\" object has no attribute __set__", descriptor.__class__));
     }
 
-    public static bool? IsDescriptor(LispObject descriptor) {
+    public static bool IsDescriptor(LispObject descriptor) {
       return LookupHelpers.Query(descriptor, t => t.__get__ != null, PropConsts.Get);
     }
 
-    public static bool? IsDataDescriptor(LispObject descriptor) {
+    public static bool IsDataDescriptor(LispObject descriptor) {
       return LookupHelpers.Query(descriptor, t => t.__set__ != null, PropConsts.Set);
     }
   }

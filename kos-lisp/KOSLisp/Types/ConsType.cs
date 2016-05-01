@@ -48,32 +48,34 @@ namespace ZStewart.KOSLisp.Types {
     private static LispObject New (LispObject subtype, LispObject args) {
       // TODO(zstewar1): Check that subtype is really a subtype.
       var pargs = Arguments.GetPositionalArguments(args);
-      if (pargs == null) return null;
-      if (subtype != Cons && pargs.Count > 0) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "got {0} arguments, expected 1", pargs.Count + 1));
-        return null;
+      if (!(subtype is LispType)) {
+        throw ExceptionType.ThrowTypeError(
+          "subtype must be a type, was {0}", subtype.__class__);
+      } else if (subtype != Cons && pargs.Count > 0) {
+        throw ExceptionType.ThrowTypeError(
+          "got {0} arguments, expected 1", pargs.Count + 1);
       } else if (subtype == Cons && pargs.Count != 2) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "got {0} arguments, expected 3", pargs.Count + 1));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "got {0} arguments, expected 3", pargs.Count + 1);
       }
       var result = new ConsType();
       result.__class__ = (LispType)subtype;
-      // TODO(zstewar1): add an __dict__ for subtypes (dynamic types). (maybe, unless we
-      // setup to do this somewhere else).
+      if (subtype != Cons)
+        result.__dict__ = DictType.Create();
       return result;
     }
 
     private static LispObject Init (LispObject self, LispObject args) {
+      if (!(self is ConsType))
+        throw ExceptionType.ThrowTypeError(
+          "self must be a cons, was {0}", self.__class__);
+
       var pargs = Arguments.GetPositionalArguments(args);
       // TODO(zstewar1): subtype argument checking as above.
-      if (pargs == null) return null;
-      if (pargs.Count != 2) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "got {0} arguments, expected 3", pargs.Count + 1));
-        return null;
-      }
+      if (pargs.Count != 2)
+        throw ExceptionType.ThrowTypeError(
+          "got {0} arguments, expected 3", pargs.Count + 1);
+
       ((ConsType)self).Car = pargs[0];
       ((ConsType)self).Cdr = pargs[1];
       return NilType.Nil;
@@ -88,9 +90,8 @@ namespace ZStewart.KOSLisp.Types {
       if (instance is ConsType) {
         return (instance as ConsType).Car;
       } else {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "instance must be of type {0}, was {1}", Cons, instance.__class__));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "instance must be of type {0}, was {1}", Cons, instance.__class__);
       }
     }
 
@@ -98,9 +99,8 @@ namespace ZStewart.KOSLisp.Types {
       if (instance is ConsType) {
         return (instance as ConsType).Cdr;
       } else {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "instance must be of type {0}, was {1}", Cons, instance.__class__));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "instance must be of type {0}, was {1}", Cons, instance.__class__);
       }
     }
 
@@ -109,9 +109,8 @@ namespace ZStewart.KOSLisp.Types {
         (instance as ConsType).Car = value;
         return NilType.Nil;
       } else {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "instance must be of type {0}, was {1}", Cons, instance.__class__));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "instance must be of type {0}, was {1}", Cons, instance.__class__);
       }
     }
 
@@ -120,9 +119,8 @@ namespace ZStewart.KOSLisp.Types {
         (instance as ConsType).Cdr = value;
         return NilType.Nil;
       } else {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "instance must be of type {0}, was {1}", Cons, instance.__class__));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "instance must be of type {0}, was {1}", Cons, instance.__class__);
       }
     }
     #endregion Static Type Setup
@@ -146,9 +144,7 @@ namespace ZStewart.KOSLisp.Types {
     public static LispObject Copy(LispObject originalList) {
       if (originalList == NilType.Nil) return NilType.Nil;
       var car = ListOperations.GetCar(originalList);
-      if (car == null) return null;
       var cdr = ListOperations.GetCdr(originalList);
-      if (cdr == null) return null;
       var newcdr = Copy(cdr);
       return Create(car, newcdr);
     }
@@ -188,17 +184,9 @@ namespace ZStewart.KOSLisp.Types {
     public override string ToString () {
       // TODO(zstewar1): This could raise an error. Later we should change these to call
       // the in-language --str-- method and return the value from that.
-      var len = ListOperations.Count(this);
-      if (!len.HasValue) {
-        if (LispInterpreter.CheckException(ExceptionType.TypeError)) {
-          LispInterpreter.ClearException();
-        } else {
-          return null;
-        }
-      } else if (len.Value == 2) {
-        var instance = LispType.IsInstance(Car, SymbolType.Symbol);
-        if (!instance.HasValue) return null;
-        if (instance.Value) {
+      try {
+        var len = ListOperations.Count(this);
+        if (len == 2 && LispType.IsInstance(Car, SymbolType.Symbol)) {
           if (Car == SymbolType.Create("quote")) {
             return "'" + ListOperations.GetCar(Cdr).ToString();
           } else if (Car == SymbolType.Create("--backquote--")) {
@@ -209,6 +197,8 @@ namespace ZStewart.KOSLisp.Types {
             return ",@" + ListOperations.GetCar(Cdr).ToString();
           }
         }
+      } catch (ExceptionWrapper ex) {
+        if (!ExceptionType.Check(ex, ExceptionType.TypeError)) throw;
       }
       StringBuilder val = new StringBuilder("(");
       ConsType value = this;

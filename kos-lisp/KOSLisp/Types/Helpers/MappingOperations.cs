@@ -18,7 +18,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           "\"{0}\" object is not subscriptable", target.__class__));
     }
 
-    public static bool? CanGet([PositionalArgument] LispObject target) {
+    public static bool CanGet([PositionalArgument] LispObject target) {
       return LookupHelpers.Query(
         target,
         t => t._map_methods != null && t._map_methods.__getitem__ != null,
@@ -38,7 +38,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           "subscript of \"{0}\" object is not assignable", target.__class__));
     }
 
-    public static bool? CanSet([PositionalArgument] LispObject target) {
+    public static bool CanSet([PositionalArgument] LispObject target) {
       return LookupHelpers.Query(
         target,
         t => t._map_methods != null && t._map_methods.__setitem__ != null,

@@ -44,13 +44,12 @@ namespace ZStewart.KOSLisp.Types {
       return module;
     }
     #endregion Static Helper Methods
+    public  SymbolType Name { get; }
 
     protected ModuleType(string name) : this(SymbolType.Create(name)) { }
 
     protected ModuleType(SymbolType name) {
       Name = name;
     }
-
-    public  SymbolType Name { get; }
   }
 }

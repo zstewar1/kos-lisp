@@ -7,14 +7,6 @@ using ZStewart.KOSLisp.Types.TypeCategories;
 namespace ZStewart.KOSLisp.Types {
   public class DictType : LispObject {
 
-    protected DictType() {
-      storage = new Dictionary<LispObject, LispObject>();
-    }
-
-    protected DictType(IDictionary<LispObject, LispObject> startingContents) {
-      storage = new Dictionary<LispObject, LispObject>(startingContents);
-    }
-
     #region Static Type Setup
     private static LispType _dict;
     public static LispType Dict {
@@ -40,18 +32,16 @@ namespace ZStewart.KOSLisp.Types {
 
     private static LispObject GetItem(LispObject dict, LispObject key) {
       if (!(dict is DictType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "dict must be a dictionary or dictionary subtype, was {0}", dict.__class__));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "dict must be a dictionary or dictionary subtype, was {0}", dict.__class__);
       }
       return ((DictType)dict).GetItem(key);
     }
 
     private static LispObject SetItem(LispObject dict, LispObject key, LispObject value) {
       if (!(dict is DictType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "dict must be a dictionary or dictionary subtype, was {0}", dict.__class__));
-        return null;
+        throw ExceptionType.ThrowTypeError(
+          "dict must be a dictionary or dictionary subtype, was {0}", dict.__class__);
       }
       return ((DictType)dict).SetItem(key, value);
     }
@@ -74,17 +64,42 @@ namespace ZStewart.KOSLisp.Types {
         __class__ = Dict,
       };
     }
+
+    /// <summary>
+    /// Converts a C# dictionary of lisp objects to a lisp dictionary.
+    /// </summary>
+    /// <param name="dict">The dictionary to convert.</param>
+    /// <returns>A lisp dictionary with the same contents as the original dict.</returns>
+    public static DictType ToLispDict(IDictionary<SymbolType, LispObject> dict) {
+      return new DictType (dict) {
+        __class__ = Dict,
+      };
+    }
     #endregion Static Helper Methods
 
     private Dictionary<LispObject, LispObject> storage;
+
+    protected DictType() {
+      storage = new Dictionary<LispObject, LispObject>();
+    }
+
+    protected DictType(IDictionary<LispObject, LispObject> startingContents) {
+      storage = new Dictionary<LispObject, LispObject>(startingContents);
+    }
+
+    protected DictType(IDictionary<SymbolType, LispObject> startingContents) {
+      storage = new Dictionary<LispObject, LispObject>();
+      foreach (var kvp in startingContents) {
+        storage.Add(kvp.Key, kvp.Value);
+      }
+    }
 
     protected LispObject GetItem(LispObject key) {
       LispObject value;
       if (storage.TryGetValue(key, out value))
         return value;
-      LispInterpreter.SetException(ExceptionType.CreateKeyError(
-        "the key {0} was not found in the dictionary", key));
-      return null;
+      throw ExceptionType.ThrowKeyError(
+        "the key {0} was not found in the dictionary", key);
     }
 
     protected LispObject SetItem(LispObject key, LispObject value) {

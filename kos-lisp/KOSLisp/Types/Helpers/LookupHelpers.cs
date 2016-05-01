@@ -188,48 +188,38 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         LispObject fallbackSymbol,
         Func<ExceptionType> generateError) {
       foreach (var targetType in ListOperations.IterMro(obj)) {
-        if (targetType == null) return null;
         if (hasBuiltin(targetType)) {
           return doBuiltinCall(getBuiltin(targetType));
         } else {
-          LispObject fallback = MappingOperations.GetItem(
-            targetType.__dict__, fallbackSymbol);
-          if (fallback == null) {
-            if (LispInterpreter.CheckException(ExceptionType.KeyError)) {
-              LispInterpreter.ClearException();
-            } else {
-              return null;
-            }
-          } else {
-            var gettable = DescriptorOperations.IsDescriptor(fallback);
-            if (!gettable.HasValue) return null;
-            if (!gettable.Value) {
+          LispObject fallback = null;
+          try {
+            fallback = MappingOperations.GetItem(targetType.__dict__, fallbackSymbol);
+          } catch (ExceptionWrapper ex) {
+            if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+          }
+          if (fallback != null) {
+            if (!DescriptorOperations.IsDescriptor(fallback)) {
               return CallableOperations.Call(fallback, getFallbackArgs());
             } else {
-              fallback = DescriptorOperations.Get(fallback, obj, obj.__class__);
-              if (fallback == null) return null;
-              return CallableOperations.Call(fallback, getFallbackArgs());
+              return CallableOperations.Call(
+                DescriptorOperations.Get(fallback, obj, obj.__class__),
+                getFallbackArgs());
             }
           }
         }
       }
-      LispInterpreter.SetException(generateError());
-      return null;
+      throw new ExceptionWrapper(generateError());
     }
 
-    public static bool? Query(
+    public static bool Query(
         LispObject target, Predicate<LispType> hasBuiltin, LispObject fallbackSymbol) {
       foreach (var targetType in ListOperations.IterMro(target)) {
-        if (targetType == null) return null;
         if (hasBuiltin(targetType)) return true;
-        LispObject fallback = MappingOperations.GetItem(
-          targetType.__dict__, fallbackSymbol);
-        if (fallback == null) {
-          if (LispInterpreter.CheckException(ExceptionType.AttributeError))
-            LispInterpreter.ClearException();
-          else return null;
-        } else {
+        try {
+          MappingOperations.GetItem(targetType.__dict__, fallbackSymbol);
           return true;
+        } catch (ExceptionWrapper ex) {
+          if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
         }
       }
       return false;

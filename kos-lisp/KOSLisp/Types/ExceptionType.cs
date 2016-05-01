@@ -141,6 +141,10 @@ namespace ZStewart.KOSLisp.Types {
       };
     }
 
+    public static void ThrowException(string message, params object[] args) {
+      throw new ExceptionWrapper(CreateException(message, args));
+    }
+
     public static ExceptionType CreateTypeError(string message, params object[] args) {
       return new ExceptionType {
         __class__ = TypeError,
@@ -148,11 +152,19 @@ namespace ZStewart.KOSLisp.Types {
       };
     }
 
+    public static ExceptionWrapper ThrowTypeError(string message, params object[] args) {
+      throw new ExceptionWrapper(CreateTypeError(message, args));
+    }
+
     public static ExceptionType CreateValueError(string message, params object[] args) {
       return new ExceptionType {
         __class__ = ValueError,
         message = string.Format(message, args),
       };
+    }
+
+    public static ExceptionWrapper ThrowValueError(string message, params object[] args) {
+      throw new ExceptionWrapper(CreateValueError(message, args));
     }
 
     public static ExceptionType CreateAttributeError(
@@ -163,11 +175,20 @@ namespace ZStewart.KOSLisp.Types {
       };
     }
 
+    public static ExceptionWrapper ThrowAttributeError(
+        string message, params object[] args) {
+      throw new ExceptionWrapper(CreateAttributeError(message, args));
+    }
+
     public static ExceptionType CreateNameError(string message, params object[] args) {
       return new ExceptionType {
         __class__ = NameError,
         message = string.Format(message, args),
       };
+    }
+
+    public static ExceptionWrapper ThrowNameError(string message, params object[] args) {
+      throw new ExceptionWrapper(CreateNameError(message, args));
     }
 
     public static ExceptionType CreateKeyError(string message, params object[] args) {
@@ -177,12 +198,24 @@ namespace ZStewart.KOSLisp.Types {
       };
     }
 
+    public static ExceptionWrapper ThrowKeyError(string message, params object[] args) {
+      throw new ExceptionWrapper(CreateKeyError(message, args));
+    }
+
     public static ExceptionType CreateNotImplemented(
         string message, params object[] args) {
       return new ExceptionType {
         __class__ = NotImplemented,
         message = string.Format(message, args),
       };
+    }
+
+    public static ExceptionWrapper ThrowNotImplemented(string message, params object[] args) {
+      throw new ExceptionWrapper(CreateNotImplemented(message, args));
+    }
+
+    public static bool Check(ExceptionType ex, LispType type) {
+      return LispType.IsInstance(ex, type);
     }
     #endregion
 

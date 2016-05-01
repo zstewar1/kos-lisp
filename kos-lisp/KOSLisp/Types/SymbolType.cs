@@ -57,9 +57,9 @@ namespace ZStewart.KOSLisp.Types {
       // here. If it leads to duplicated logic when __new__ is implemented, we may be able
       // to simplify and just __call__ the type.
 
-      val = new SymbolType(identifier);
-      val.__class__ = Symbol;
-      return val;
+      return new SymbolType(identifier) {
+        __class__ = Symbol,
+      };
     }
 
     public static bool IsSelfEvaluating(SymbolType symbol) {

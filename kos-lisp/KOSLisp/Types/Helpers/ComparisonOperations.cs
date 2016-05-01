@@ -14,7 +14,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </summary>
     /// <param name="target">First object to compare.</param>
     /// <param name="other">Second object to compare.</param>
-    /// <returns>T/F/null</returns>
+    /// <returns>T/F</returns>
     public static LispObject Eq(
         [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject other) {
@@ -33,7 +33,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </summary>
     /// <param name="target">First object to compare.</param>
     /// <param name="other">Second object to compare.</param>
-    /// <returns>T/F/null</returns>
+    /// <returns>T/F</returns>
     public static LispObject Le(
         [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject other) {
@@ -52,7 +52,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </summary>
     /// <param name="target">First object to compare.</param>
     /// <param name="other">Second object to compare.</param>
-    /// <returns>T/F/null</returns>
+    /// <returns>T/F</returns>
     public static LispObject Lt(
         [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject other) {
@@ -71,7 +71,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </summary>
     /// <param name="target">First object to compare.</param>
     /// <param name="other">Second object to compare.</param>
-    /// <returns>T/F/null</returns>
+    /// <returns>T/F</returns>
     public static LispObject Gt(
         [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject other) {
@@ -90,7 +90,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </summary>
     /// <param name="target">First object to compare.</param>
     /// <param name="other">Second object to compare.</param>
-    /// <returns>T/F/null</returns>
+    /// <returns>T/F</returns>
     public static LispObject Ge(
         [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject other) {

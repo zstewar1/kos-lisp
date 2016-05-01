@@ -72,13 +72,13 @@ namespace ZStewart.KOSLisp.Types {
     public string Value { get { return value; } }
 
     public override string ToString () {
-      StringBuilder val = new StringBuilder(Value);
-      val.Replace("\"", "\\\"");
-      val.Replace("\n", "\\n");
-      val.Replace("\r", "\\r");
-      val.Insert(0, "\"");
-      val.Append("\"");
-      return val.ToString();
+      return new StringBuilder(Value)
+        .Replace("\"", "\\\"")
+        .Replace("\n", "\\n")
+        .Replace("\r", "\\r")
+        .Insert(0, "\"")
+        .Append("\"")
+        .ToString();
     }
   }
 }

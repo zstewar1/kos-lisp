@@ -40,9 +40,7 @@ namespace ZStewart.KOSLisp.Types {
       if (self is BuiltinFunctionType) {
         return ((BuiltinFunctionType)self).caller.Call(args);
       } else {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "first argument must be a BuiltinFunction"));
-        return null;
+        throw ExceptionType.ThrowTypeError("first argument must be a BuiltinFunction");
       }
     }
 
@@ -51,9 +49,7 @@ namespace ZStewart.KOSLisp.Types {
         LispObject instance,
         LispObject type) {
       if (!(self is BuiltinFunctionType)) {
-        LispInterpreter.SetException(ExceptionType.CreateTypeError(
-          "self must be a BuiltinFunction"));
-        return null;
+        throw ExceptionType.ThrowTypeError("self must be a BuiltinFunction");
       }
       if (instance == NilType.Nil && type != NilType.NilClass) {
         return self;
