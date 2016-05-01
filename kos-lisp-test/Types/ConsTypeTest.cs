@@ -8,11 +8,6 @@ using ZStewart.KOSLisp.Interpreter;
 namespace ZStewart.KOSLisp.Types {
   [TestFixture]
   public class ConsTypeTest {
-    [TearDown]
-    public void Cleanup () {
-      if (LispInterpreter.ExceptionOccurred)
-        LispInterpreter.ClearException();
-    }
 
     [Test]
     public void TestCreate () {
@@ -175,7 +170,6 @@ namespace ZStewart.KOSLisp.Types {
       var result = ListOperations.SetCar(cons, n3);
 
       Assert.AreSame(result, NilType.Nil);
-      Assert.False(LispInterpreter.ExceptionOccurred);
       Assert.AreSame(n3, cons.Car);
       Assert.AreSame(n2, cons.Cdr);
     }
@@ -191,7 +185,6 @@ namespace ZStewart.KOSLisp.Types {
       var result = ListOperations.SetCdr(cons, n3);
 
       Assert.AreSame(result, NilType.Nil);
-      Assert.False(LispInterpreter.ExceptionOccurred);
       Assert.AreSame(n1, cons.Car);
       Assert.AreSame(n3, cons.Cdr);
     }
