@@ -159,7 +159,14 @@ namespace ZStewart.KOSLisp.Types {
           "list, which should be impossible.");
       }
 
-      return (LispObject)boundMethod.Invoke(null, arguments);
+      try {
+        return (LispObject)boundMethod.Invoke(null, arguments);
+      } catch (TargetInvocationException ex) {
+        // TODO(zstewar1): This loses the stack grace from the inner method. There is no
+        // way to keep it directly, so we would like to replace the use of reflection with
+        // runtime function generation through Expressions.
+        throw ex.InnerException;
+      }
     }
   }
 }
