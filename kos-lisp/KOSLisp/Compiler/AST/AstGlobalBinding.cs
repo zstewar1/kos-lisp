@@ -5,6 +5,10 @@ using ZStewart.KOSLisp.Types;
 namespace ZStewart.KOSLisp.Compiler.AST {
   /// <summary>
   /// Represents a binding to a module-level variable.
+  ///
+  /// Globals do not need to be created in a variable-declaration statement before use.
+  /// They reference module-level variables and will "only" cause a NameError if the
+  /// symbol they reference doesn't exists *when the global is used*.
   /// </summary>
   public class AstGlobalBinding : AstOpBase, AstBinding {
     /// <summary>

@@ -5,6 +5,14 @@ using ZStewart.KOSLisp.Types;
 namespace ZStewart.KOSLisp.Compiler.AST {
   /// <summary>
   /// Represents a binding to a module-level variable.
+  ///
+  /// Local bindings are not valid unless they appear in a variable declaration
+  /// statement before being used. This means that they must appear as arguments to lambda
+  /// or defun, or as bindings in a let, and chan only be used from within the scope of
+  /// the defun, lambda, or let where they were defined. Using a LocalBinding without
+  /// including it in a variable declartion expression is undefined behavior.
+  /// - the CSharpGenerator will cause an undefined local exception during expression
+  ///   compilation.
   /// </summary>
   public class AstLocalBinding : AstOpBase, AstBinding {
     /// <summary>

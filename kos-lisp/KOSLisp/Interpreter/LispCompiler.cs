@@ -7,26 +7,13 @@ using System.Linq.Expressions;
 
 using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Types.Helpers;
+using ZStewart.KOSLisp.Compiler;
 using ZStewart.KOSLisp.Compiler.AST;
 using ZStewart.KOSLisp.Compiler.Generators.CSharp;
 
 namespace ZStewart.KOSLisp.Interpreter {
 
   public class CompilerError : Exception {}
-
-  public interface Context {
-    /// <summary>
-    /// Gets a binding from this context, returning null if the given symbol is not bound
-    /// in this context.
-    /// </summary>
-    AstBinding GetBinding(SymbolType symbol);
-
-    /// <summary>
-    /// Add a binding after the Context has been created. This will affect lookups that
-    /// occur in expression evaluated after the symbol has been added, but not before.
-    /// </summary>
-    AstBinding AddBinding(SymbolType symbol);
-  }
 
   /// <summary>
   /// The base, or global context. No symbols are ever bound in this context.

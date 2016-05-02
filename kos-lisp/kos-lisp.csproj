@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
     <Compile Include="KOSLisp\Interpreter\Errors.cs" />
+    <Compile Include="KOSLisp\Compiler\Context.cs" />
     <Compile Include="KOSLisp\Compiler\AST\Ast.cs" />
     <Compile Include="KOSLisp\Compiler\AST\AstOp.cs" />
     <Compile Include="KOSLisp\Compiler\AST\AstBinding.cs" />
