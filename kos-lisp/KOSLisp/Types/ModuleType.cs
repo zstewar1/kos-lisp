@@ -43,7 +43,62 @@ namespace ZStewart.KOSLisp.Types {
       MappingOperations.SetItem(module.__dict__, PropConsts.Builtins, builtins);
       return module;
     }
+
+    /// <summary>
+    /// Retrieves a global from the specified module. Differes from GetAttribute in that
+    /// if the symbol is missing, the module's --builtins-- attribute is also checked, and
+    /// if the symbol is not found, the error is a NameError rather than an
+    /// AttributeError.
+    /// </summary>
+    public static LispObject GetGlobal(ModuleType module, SymbolType symbol) {
+      try {
+        return LispObject.GetAttribute(module, symbol);
+      } catch (ExceptionWrapper ex) {
+        if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
+      }
+
+      LispObject builtins;
+      try {
+        builtins = LispObject.GetAttribute(module, PropConsts.Builtins);
+      } catch (ExceptionWrapper ex) {
+        if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
+        throw ExceptionType.ThrowNameError(
+            "name \"{0}\" is not defined", symbol);
+      }
+
+      if (builtins is ModuleType) {
+        try {
+          return LispObject.GetAttribute(builtins, symbol);
+        } catch (ExceptionWrapper ex) {
+          if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
+          throw ExceptionType.ThrowNameError("name \"{0}\" is not defined", symbol);
+        }
+      } else {
+        try {
+          return MappingOperations.GetItem(builtins, symbol);
+        } catch (ExceptionWrapper ex) {
+          if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+          throw ExceptionType.ThrowNameError("name \"{0}\" is not defined", symbol);
+        }
+      }
+    }
+
+    /// <summary>
+    /// Sets a global symbol on the given module. This differs from SetAttribute in that
+    /// AttributeErrors are converted to NameErrors.
+    /// </summary>
+    public static LispObject SetGlobal(
+        ModuleType module, SymbolType symbol, LispObject value) {
+      try {
+        LispObject.SetAttribute(module, symbol, value);
+        return NilType.Nil;
+      } catch (ExceptionWrapper ex) {
+        if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
+        throw ExceptionType.ThrowNameError("name \"{0}\" is not defined", symbol);
+      }
+    }
     #endregion Static Helper Methods
+
     public  SymbolType Name { get; }
 
     protected ModuleType(string name) : this(SymbolType.Create(name)) { }

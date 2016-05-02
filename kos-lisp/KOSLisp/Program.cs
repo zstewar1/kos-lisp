@@ -76,7 +76,7 @@ namespace ZStewart.KOSLisp {
         try {
           var parsed = parser.Parse();
           if (parsed == null) break;
-          var func = Compiler.CompileExpression(parsed, context);
+          var func = LispCompiler.CompileExpression(parsed, context);
           Console.WriteLine(func());
         } catch (ParserError e) {
           Console.WriteLine("Exception while Parsing:");

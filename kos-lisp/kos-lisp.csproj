@@ -52,8 +52,34 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
-    <Compile Include="KOSLisp\Interpreter\Compiler.cs" />
     <Compile Include="KOSLisp\Interpreter\Errors.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\Ast.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstOp.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstBinding.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstOpBase.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstConst.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstFuncCall.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstIf.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstProgn.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstLet.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstLambda.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstDefun.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstGlobalBinding.cs" />
+    <Compile Include="KOSLisp\Compiler\AST\AstLocalBinding.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\GeneratorFactory.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CodeGenerator.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpGeneratorFactory.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpGenerator.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpBindingGenerator.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpConstGenerator.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpFuncCallGenerator.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpIfGenerator.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpPrognGenerator.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpLetGenerator.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpLambdaGenerator.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpDefunGenerator.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpGlobalBindingGenerator.cs" />
+    <Compile Include="KOSLisp\Compiler\Generators\CSharp\CSharpLocalBindingGenerator.cs" />
     <Compile Include="KOSLisp\Types\Attributes\KeywordArgument.cs" />
     <Compile Include="KOSLisp\Types\Attributes\PositionalArgument.cs" />
     <Compile Include="KOSLisp\Types\Attributes\RestArgument.cs" />
@@ -99,6 +125,7 @@
     <Compile Include="KOSLisp\Parser\Token.cs" />
     <Compile Include="KOSLisp\Parser\LispLexer.cs" />
     <Compile Include="KOSLisp\Types\LispType.cs" />
+    <Compile Include="KOSLisp\Interpreter\LispCompiler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
