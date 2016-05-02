@@ -15,23 +15,6 @@ namespace ZStewart.KOSLisp.Interpreter {
 
   public class CompilerError : Exception {}
 
-  /// <summary>
-  /// The base, or global context. No symbols are ever bound in this context.
-  /// </summary>
-  public class GlobalContext : Context {
-    private ModuleType module;
-    public GlobalContext(ModuleType module) {
-      this.module = module;
-    }
-    public virtual AstBinding GetBinding(SymbolType symbol) {
-      return AddBinding(symbol);
-    }
-
-    public virtual AstBinding AddBinding(SymbolType symbol) {
-      return Ast.BindGlobal(module, symbol);
-    }
-  }
-
   public class ScopedContext : Context {
     private readonly Context parentScope;
     protected readonly Dictionary<SymbolType, AstBinding> bindings =
