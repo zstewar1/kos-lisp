@@ -26,9 +26,11 @@ namespace ZStewart.KOSLisp.Compiler {
       this.module = module;
     }
 
+    // TODO(zstewar1): Raise errors for non-self-evaluating symbols.
     /// <summary>
     /// Return an AstGlobalBinding that binds the given symbol in this binding's module.
-    /// Always returns a new AstGlobalBinding, never null.
+    /// GlobalContext does not do any caching and always returns a new AstGlobalBinding
+    /// for ever Get attempt.
     /// </summary>
     public AstBinding GetBinding(SymbolType symbol) {
       return AddBinding(symbol);

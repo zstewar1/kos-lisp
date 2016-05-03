@@ -15,52 +15,6 @@ namespace ZStewart.KOSLisp.Interpreter {
 
   public class CompilerError : Exception {}
 
-  public class ScopedContext : Context {
-    private readonly Context parentScope;
-    protected readonly Dictionary<SymbolType, AstBinding> bindings =
-      new Dictionary<SymbolType, AstBinding>();
-
-    public ScopedContext(Context parentScope, IEnumerable<SymbolType> newBindings) {
-      this.parentScope = parentScope;
-
-      foreach (var symbol in newBindings) {
-        if (bindings.ContainsKey(symbol)) {
-          // TODO(zstewar1): Better error messages
-          throw new CompilerError();
-        }
-        bindings.Add(symbol, Ast.BindLocal(symbol));
-      }
-    }
-
-    public ScopedContext(Context parentScope, params SymbolType[] newBindings)
-        : this(parentScope, (IEnumerable<SymbolType>)newBindings) {}
-
-    public virtual AstBinding GetBinding(SymbolType symbol) {
-      var local = GetLocalBinding(symbol);
-      if (local == null) return GetParentBinding(symbol);
-      return local;
-    }
-
-    public virtual AstBinding AddBinding(SymbolType symbol) {
-      AstBinding newbind = GetLocalBinding(symbol);
-      if (newbind != null) return newbind;
-      newbind = Ast.BindLocal(symbol);
-      bindings.Add(symbol, newbind);
-      return newbind;
-    }
-
-    protected virtual AstBinding GetLocalBinding(SymbolType symbol) {
-      AstBinding binding;
-      bindings.TryGetValue(symbol, out binding);
-      // Return a binding or null if unbound. (default(binding) is null).
-      return binding;
-    }
-
-    protected virtual AstBinding GetParentBinding(SymbolType symbol) {
-      return parentScope.GetBinding(symbol);
-    }
-  }
-
   public class ClosuredScopedContext : ScopedContext {
     public ClosuredScopedContext(Context parentScope, IEnumerable<SymbolType> newBindings)
         : base(parentScope, newBindings) {}

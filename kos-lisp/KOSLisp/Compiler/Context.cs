@@ -26,10 +26,9 @@ namespace ZStewart.KOSLisp.Compiler {
     /// Retrieves the AstBinding which is bound to the given symbol in the current
     /// context. In derived classes this may be a variable directly on the current context
     /// or a variable from a parent context.
+    ///
+    /// If the given variable is not bound, this method should throw an exception.
     /// </summary>
-    /// <returns>
-    /// The AstBinding if the symbol is bound, or null if the symbol is not bound.
-    /// </returns>
     AstBinding GetBinding(SymbolType symbol);
 
     /// <summary>
@@ -39,8 +38,10 @@ namespace ZStewart.KOSLisp.Compiler {
     /// binding. Otherwise add a new binding for that symbol to this context and return
     /// it.
     ///
-    /// Not that simply AddBinding a symbol is not sufficient for it to be bound correctly
-    /// for some AstBinding types. See the documentation for the Context interface.
+    /// Note that simply AddBinding a symbol is not sufficient for it to be bound
+    /// correctly for some AstBinding types. See the documentation for the Context
+    /// interface.
+    /// </summary>
     AstBinding AddBinding(SymbolType symbol);
   }
 }
