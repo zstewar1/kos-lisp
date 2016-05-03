@@ -131,6 +131,24 @@ namespace ZStewart.KOSLisp.Types {
         return _notImplemented;
       }
     }
+
+    private static LispType _syntaxError;
+    public static LispType SyntaxError {
+      get {
+        if (_syntaxError != null) return _notImplemented;
+
+        _syntaxError = new LispType {
+          __name__ = "SyntaxError",
+        };
+        _syntaxError.__class__ = LispType.Type;
+        _syntaxError.__bases__ = IConsType.ToLispTuple(Exception);
+        _syntaxError.__mro__ = IConsType.ToLispTuple(
+          _syntaxError, Exception, LispObject.Object);
+        _syntaxError = LispType.ConfigureType(_notImplemented);
+        if (_syntaxError == null) throw new InvalidOperationException();
+        return _syntaxError;
+      }
+    }
     #endregion
 
     #region Static Helper Methods
@@ -212,6 +230,18 @@ namespace ZStewart.KOSLisp.Types {
 
     public static ExceptionWrapper ThrowNotImplemented(string message, params object[] args) {
       throw new ExceptionWrapper(CreateNotImplemented(message, args));
+    }
+
+    public static ExceptionType CreateSyntaxError(
+        string message, params object[] args) {
+      return new ExceptionType {
+        __class__ = SyntaxError,
+        message = string.Format(message, args),
+      };
+    }
+
+    public static ExceptionWrapper ThrowSyntaxError(string message, params object[] args) {
+      throw new ExceptionWrapper(CreateSyntaxError(message, args));
     }
 
     public static bool Check(ExceptionType ex, LispType type) {
