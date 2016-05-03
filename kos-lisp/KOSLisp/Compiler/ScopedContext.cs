@@ -23,6 +23,10 @@ namespace ZStewart.KOSLisp.Compiler {
     public ScopedContext(Context parentScope, IEnumerable<SymbolType> newBindings) {
       ParentScope = parentScope;
       foreach (var symbol in newBindings) {
+        if (SymbolType.IsSelfEvaluating(symbol)) {
+          throw ExceptionType.ThrowSyntaxError(
+            "cannot bind self evaluating symbol {0}", symbol);
+        }
         // Make sure to only add one copy of each symbol.
         if (!bindings.ContainsKey(symbol)) {
           bindings.Add(symbol, Ast.BindLocal(symbol));
@@ -33,7 +37,6 @@ namespace ZStewart.KOSLisp.Compiler {
     public ScopedContext(Context parentScope, params SymbolType[] newBindings)
         : this(parentScope, (IEnumerable<SymbolType>)newBindings) {}
 
-    // TODO(zstewar1): Raise errors for non-self-evaluating symbols.
     /// <summary>
     /// Get the binding for the given symbol, either in the current context or one of its
     /// parents.
@@ -51,6 +54,10 @@ namespace ZStewart.KOSLisp.Compiler {
     /// Does not check for bindings in parent contexts.
     /// </summary>
     public virtual AstBinding AddBinding(SymbolType symbol) {
+      if (SymbolType.IsSelfEvaluating(symbol)) {
+        throw ExceptionType.ThrowSyntaxError(
+          "cannot bind self evaluating symbol {0}", symbol);
+      }
       // Check the existing binding.
       var oldbind = GetLocalBinding(symbol);
       if (oldbind != null) return oldbind;
