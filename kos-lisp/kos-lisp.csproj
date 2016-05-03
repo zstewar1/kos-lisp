@@ -56,6 +56,7 @@
     <Compile Include="KOSLisp\Compiler\Context.cs" />
     <Compile Include="KOSLisp\Compiler\GlobalContext.cs" />
     <Compile Include="KOSLisp\Compiler\ScopedContext.cs" />
+    <Compile Include="KOSLisp\Compiler\ClosuredScopedContext.cs" />
     <Compile Include="KOSLisp\Compiler\AST\Ast.cs" />
     <Compile Include="KOSLisp\Compiler\AST\AstOp.cs" />
     <Compile Include="KOSLisp\Compiler\AST\AstBinding.cs" />

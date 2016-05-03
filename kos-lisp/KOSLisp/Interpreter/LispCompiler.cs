@@ -15,20 +15,6 @@ namespace ZStewart.KOSLisp.Interpreter {
 
   public class CompilerError : Exception {}
 
-  public class ClosuredScopedContext : ScopedContext {
-    public ClosuredScopedContext(Context parentScope, IEnumerable<SymbolType> newBindings)
-        : base(parentScope, newBindings) {}
-    public ClosuredScopedContext(Context parentScope, params SymbolType[] newBindings)
-        : this(parentScope, (IEnumerable<SymbolType>)newBindings) {}
-
-    protected override AstBinding GetParentBinding(SymbolType symbol) {
-      var b = base.GetParentBinding(symbol);
-      if (b != null)
-        b.HasClosure = true;
-      return b;
-    }
-  }
-
   public interface SpecialForm {
     // TODO(zstewar1): an operation that handles a special form.
     AstOp ExpressionToIntermediate(LispObject expression, Context context);

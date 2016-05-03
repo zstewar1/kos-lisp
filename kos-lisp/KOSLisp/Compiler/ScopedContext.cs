@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 using ZStewart.KOSLisp.Compiler.AST;
 using ZStewart.KOSLisp.Types;
@@ -21,9 +20,6 @@ namespace ZStewart.KOSLisp.Compiler {
     protected readonly Dictionary<SymbolType, AstBinding> bindings =
       new Dictionary<SymbolType, AstBinding>();
 
-    public ScopedContext(Context parentScope)
-        : this(parentScope, Enumerable.Empty<SymbolType>()) {}
-
     public ScopedContext(Context parentScope, IEnumerable<SymbolType> newBindings) {
       ParentScope = parentScope;
       foreach (var symbol in newBindings) {
@@ -33,6 +29,9 @@ namespace ZStewart.KOSLisp.Compiler {
         }
       }
     }
+
+    public ScopedContext(Context parentScope, params SymbolType[] newBindings)
+        : this(parentScope, (IEnumerable<SymbolType>)newBindings) {}
 
     // TODO(zstewar1): Raise errors for non-self-evaluating symbols.
     /// <summary>
