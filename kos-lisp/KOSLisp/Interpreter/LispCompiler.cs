@@ -9,6 +9,7 @@ using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Compiler;
 using ZStewart.KOSLisp.Compiler.AST;
+using ZStewart.KOSLisp.Compiler.Contexts;
 using ZStewart.KOSLisp.Compiler.Generators.CSharp;
 
 namespace ZStewart.KOSLisp.Interpreter {

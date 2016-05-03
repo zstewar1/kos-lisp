@@ -6,6 +6,7 @@ using System.Reflection;
 
 using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Compiler;
+using ZStewart.KOSLisp.Compiler.Contexts;
 using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Parser;
 

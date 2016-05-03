@@ -53,10 +53,10 @@
   <ItemGroup>
     <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
     <Compile Include="KOSLisp\Interpreter\Errors.cs" />
-    <Compile Include="KOSLisp\Compiler\Context.cs" />
-    <Compile Include="KOSLisp\Compiler\GlobalContext.cs" />
-    <Compile Include="KOSLisp\Compiler\ScopedContext.cs" />
-    <Compile Include="KOSLisp\Compiler\ClosuredScopedContext.cs" />
+    <Compile Include="KOSLisp\Compiler\Contexts\Context.cs" />
+    <Compile Include="KOSLisp\Compiler\Contexts\GlobalContext.cs" />
+    <Compile Include="KOSLisp\Compiler\Contexts\ScopedContext.cs" />
+    <Compile Include="KOSLisp\Compiler\Contexts\ClosuredScopedContext.cs" />
     <Compile Include="KOSLisp\Compiler\AST\Ast.cs" />
     <Compile Include="KOSLisp\Compiler\AST\AstOp.cs" />
     <Compile Include="KOSLisp\Compiler\AST\AstBinding.cs" />

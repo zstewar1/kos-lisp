@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ZStewart.KOSLisp.Compiler.AST;
 using ZStewart.KOSLisp.Types;
 
-namespace ZStewart.KOSLisp.Compiler {
+namespace ZStewart.KOSLisp.Compiler.Contexts {
   /// <summary>
   /// A type of scoped context which is a closure over its parent context, e.g. a function
   /// body or lambda which can reference variables from the parent context even after they

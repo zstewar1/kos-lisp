@@ -1,7 +1,7 @@
 using ZStewart.KOSLisp.Compiler.AST;
 using ZStewart.KOSLisp.Types;
 
-namespace ZStewart.KOSLisp.Compiler {
+namespace ZStewart.KOSLisp.Compiler.Contexts {
   /// <summary>
   /// A context represents the state of the available variables while converting
   /// s-expressions to AST. Contexts are used to figure out where variables are bound, and

@@ -1,7 +1,7 @@
 using ZStewart.KOSLisp.Compiler.AST;
 using ZStewart.KOSLisp.Types;
 
-namespace ZStewart.KOSLisp.Compiler {
+namespace ZStewart.KOSLisp.Compiler.Contexts {
   /// <summary>
   /// A context which causes variable references to implicitly reference attributes on a
   /// module.

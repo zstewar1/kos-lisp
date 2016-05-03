@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ZStewart.KOSLisp.Compiler.AST;
 using ZStewart.KOSLisp.Types;
 
-namespace ZStewart.KOSLisp.Compiler {
+namespace ZStewart.KOSLisp.Compiler.Contexts {
   /// <summary>
   /// A context which can refer to variables defined by itself and by a parent context.
   ///
