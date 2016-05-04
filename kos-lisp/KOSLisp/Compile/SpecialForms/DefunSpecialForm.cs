@@ -1,10 +1,13 @@
+using System.Collections.Generic;
+
 using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Compile.Contexts;
 using ZStewart.KOSLisp.Types;
+using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Compile.SpecialForms {
   /// <summary>
-  ///
+  /// Special form that represents declaring a named function and binding it to a symbol.
   /// </summary>
   public class DefunSpecialForm : LambdaSpecialForm {
     /// <summary>
@@ -20,7 +23,41 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// <param name="compiler">
     /// The Lisp compiler, which this special form can use to parse sub-expressions.
     /// </param>
-    public AstOp ToAst(LispObject expression, Context context, Compiler compiler) {
+    public override AstOp ToAst(LispObject expression, Context context, Compiler compiler) {
+      int len;
+      try {
+        len = ListOperations.Count(expression);
+      } catch (ExceptionWrapper ex) {
+        throw ExceptionType.ThrowSyntaxError(
+          ex, "function definition expression must be a proper list");
+      }
+      if (len < 2) {
+        throw ExceptionType.ThrowSyntaxError(
+          "named function definition expression requires at least a function name and " +
+          "args list");
+      }
+
+      var nameObj = ListOperations.GetCar(expression);
+      if (!(nameObj is SymbolType)) {
+        throw ExceptionType.ThrowSyntaxError(
+          "function name must be a symbol, got {0}", nameObj.__class__);
+      }
+      var name = (SymbolType)nameObj;
+      if (SymbolType.IsSelfEvaluating(name)) {
+        throw ExceptionType.ThrowSyntaxError(
+          "cannot declare function with self-evaluating name {0}", name);
+      }
+
+      // Add a binding for the function name to the outer context befoe parsing. This
+      // allows functions to reference their own name and recurse.
+      var binding = context.AddBinding(name);
+
+      var rest = ListOperations.GetCdr(expression);
+      IEnumerable<AstBinding> args;
+      IEnumerable<AstOp> forms;
+      ParseArgsAndForms(rest, context, compiler, out args, out forms);
+
+      return Ast.Defun(binding, args, forms);
     }
   }
 }

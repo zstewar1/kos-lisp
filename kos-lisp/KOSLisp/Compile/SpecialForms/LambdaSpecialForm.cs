@@ -1,17 +1,16 @@
 using System.Collections.Generic;
+using System.Linq;
 
 using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Compile.Contexts;
 using ZStewart.KOSLisp.Types;
+using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Compile.SpecialForms {
   /// <summary>
   /// A form that parses an unnamed function definition.
   /// </summary>
   public class LambdaSpecialForm : PrognSpecialForm {
-    // The type of this expression.
-    protected override string formName { get { return "lambda"; } }
-
     /// <summary>
     /// Convert the given expression to an AST.
     /// </summary>
@@ -41,15 +40,17 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     protected void ParseArgsAndForms(
         LispObject expression, Context context, Compiler compiler,
         out IEnumerable<AstBinding> args, out IEnumerable<AstOp> forms) {
+      int len;
       try {
-        var len = ListOperations.Count(expression);
+        len = ListOperations.Count(expression);
       } catch (ExceptionWrapper ex) {
         throw ExceptionType.ThrowSyntaxError(
-          ex, "{0} expression must be a proper list", formName);
+          ex, "lambda expression must be a proper list");
       }
 
       if (len < 1) {
-        throw ExceptionType.ThrowSyntaxError("{0} requires argument list", formName);
+        throw ExceptionType.ThrowSyntaxError(
+          "function definition requires argument list");
       }
 
       // Get the list of bindings (for now this just means position arguments), however:
@@ -69,10 +70,10 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// Convert from the arglist to an enumerable of the symbols which we'll want to add
     /// bindings for.
     /// </summary>
-    protected IEnumerable<SymbolType> ParesArgumentList(LispObject arglist) {
+    protected IEnumerable<SymbolType> ParseArgumentList(LispObject arglist) {
       // TODO(zstewar1): handle the more complicated argument lists which we actually want
       // to support (this requries AST and Generator changes as well).
-      var bindings = List<SymbolType>();
+      var bindings = new List<SymbolType>();
       foreach (var newbind in ListOperations.IterList(arglist)) {
         if (!(newbind is SymbolType)) {
           throw ExceptionType.ThrowSyntaxError(

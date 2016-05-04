@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Compile.Contexts;
 using ZStewart.KOSLisp.Types;
+using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Compile.SpecialForms {
   /// <summary>
@@ -11,8 +12,6 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
   /// variable bindings.
   /// </summary>
   public class LetSpecialForm : PrognSpecialForm {
-    protected override string formName { get { return "let"; } }
-
     /// <summary>
     /// Convert the given expression to an AST.
     /// </summary>
@@ -31,8 +30,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       try {
         len = ListOperations.Count(expression);
       } catch (ExceptionWrapper ex) {
-        throw ExceptionType.ThrowSyntaxError(
-          ex, "{0} expression must be a proper list", formName);
+        throw ExceptionType.ThrowSyntaxError(ex, "let expression must be a proper list");
       }
 
       // Empty let expression evaluates to nil.
@@ -44,7 +42,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       var rest = ListOperations.GetCdr(expression);
 
       Context innerContext;
-      var bindings = ParseBindingList(bindingsList, context, compiler, out innerContext);
+      var bindings = ParseBindingList(bindingList, context, compiler, out innerContext);
       var forms = ParseForms(rest, innerContext, compiler);
 
       return Ast.Let(bindings, forms);
@@ -83,7 +81,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
           try {
             len = ListOperations.Count(newbind);
           } catch (ExceptionWrapper ex) {
-            throw ExceptionType.ThrowSyntaxError("binding must be a proper list");
+            throw ExceptionType.ThrowSyntaxError(ex, "binding must be a proper list");
           }
           // Should never get len < 1 because only Nil has len < 1, and Nil is covered
           // under SymbolType.
@@ -111,7 +109,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
           // yet have an assigned value), but later bindings can access earlier bindings.
           var boundValue = compiler.ToAst(value, innerContext);
           var binding = innerContext.AddBinding((SymbolType)symb);
-          bindings.Add(Tuple.Create(bidning, boundValue));
+          bindings.Add(Tuple.Create(binding, boundValue));
         }
       }
       return bindings;

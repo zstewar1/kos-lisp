@@ -4,18 +4,13 @@ using System.Linq;
 using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Compile.Contexts;
 using ZStewart.KOSLisp.Types;
+using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Compile.SpecialForms {
   /// <summary>
   /// A special form that allows you to do multiple things in sequence.
   /// </summary>
   public class PrognSpecialForm : SpecialForm {
-    /// <summary>
-    /// The type of form that this SpecialForm represents. Used to override some error
-    /// messages in derived classes.
-    /// </summary>
-    protected virtual string formName { get { return "progn"; } }
-
     /// <summary>
     /// Convert the given expression to an AST.
     /// </summary>
@@ -43,7 +38,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
         LispObject forms, Context context, Compiler compiler) {
       if (!ListOperations.Proper(forms)) {
         throw ExceptionType.ThrowSyntaxError(
-          "the forms to {0} must be a proper list", formName);
+          "progn forms list must be a proper list");
       }
 
       return ListOperations.IterList(forms).Select(form => compiler.ToAst(form, context));

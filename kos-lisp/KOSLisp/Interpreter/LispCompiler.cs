@@ -28,28 +28,7 @@ namespace ZStewart.KOSLisp.Interpreter {
     }
   }
 
-  public class DefunSpecialForm : LambdaSpecialForm {
-    public override AstOp ToAst(
-        LispObject expression, Context context) {
-      var len = ListOperations.Count(expression);
-      if (len < 2) throw new CompilerError();
-
-      var nameObj = ListOperations.GetCar(expression);
-      if (!(nameObj is SymbolType) || SymbolType.IsSelfEvaluating((SymbolType)nameObj))
-        throw new CompilerError();
-      var name = (SymbolType)nameObj;
-      var rest = ListOperations.GetCdr(expression);
-
-      var binding = context.AddBinding(name);
-
-      List<AstBinding> args;
-      List<AstOp> forms;
-      ParseArgsAndForms(rest, context, out args, out forms);
-      return Ast.Defun(binding, args, forms);
-    }
-  }
-
-  public static class LispCompiler {
+  public class LispCompiler {
 
     private static readonly ImmutableDictionary<SymbolType, SpecialForm> specialForms;
 

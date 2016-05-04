@@ -63,6 +63,7 @@
     <Compile Include="KOSLisp\Compile\SpecialForms\PrognSpecialForm.cs" />
     <Compile Include="KOSLisp\Compile\SpecialForms\LetSpecialForm.cs" />
     <Compile Include="KOSLisp\Compile\SpecialForms\LambdaSpecialForm.cs" />
+    <Compile Include="KOSLisp\Compile\SpecialForms\DefunSpecialForm.cs" />
     <Compile Include="KOSLisp\Compile\AST\Ast.cs" />
     <Compile Include="KOSLisp\Compile\AST\AstOp.cs" />
     <Compile Include="KOSLisp\Compile\AST\AstBinding.cs" />
