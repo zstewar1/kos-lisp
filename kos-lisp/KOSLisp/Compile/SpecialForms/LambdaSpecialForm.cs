@@ -60,7 +60,9 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       // Create a scoped context for the new variables.
       var innerContext = new ClosuredScopedContext(context);
       // Bind all of the parsed symbols in that context.
-      args = symargs.Select(s => innerContext.AddBinding(s));
+      // Note: run ToList() on it to force it to be evaluated immediately, otherwise the
+      // bindings will not exist when we parse the forms.
+      args = symargs.Select(s => innerContext.AddBinding(s)).ToList();
 
       // Parse the forms in the context of the new bindings.
       forms = ParseForms(ListOperations.GetCdr(expression), innerContext, compiler);
