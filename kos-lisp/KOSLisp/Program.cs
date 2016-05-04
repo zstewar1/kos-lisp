@@ -2,11 +2,14 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Compile;
+using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Compile.Contexts;
+using ZStewart.KOSLisp.Compile.Generators.CSharp;
 using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Parser;
 
@@ -73,12 +76,18 @@ namespace ZStewart.KOSLisp {
 
       var mainModule = ModuleType.Create(
         SymbolType.Create(name), LispInterpreter.Builtins);
-      Context context = new GlobalContext(mainModule);
+      var context = new GlobalContext(mainModule);
+      var compiler = new DefaultCompiler();
+      var generatorFactory = new CSharpGeneratorFactory();
       for(;;) {
         try {
           var parsed = parser.Parse();
           if (parsed == null) break;
-          var func = LispCompiler.CompileExpression(parsed, context);
+          var ast = compiler.ToAst(parsed, context);
+          Console.WriteLine(ast);
+          var generator = generatorFactory.Create(ast);
+          var expression = generator.Emit();
+          var func = Expression.Lambda<Func<LispObject>>(expression).Compile();
           Console.WriteLine(func());
         } catch (ParserError e) {
           Console.WriteLine("Exception while Parsing:");
