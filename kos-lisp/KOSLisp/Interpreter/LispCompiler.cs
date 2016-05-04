@@ -7,19 +7,15 @@ using System.Linq.Expressions;
 
 using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Types.Helpers;
-using ZStewart.KOSLisp.Compiler;
-using ZStewart.KOSLisp.Compiler.AST;
-using ZStewart.KOSLisp.Compiler.Contexts;
-using ZStewart.KOSLisp.Compiler.Generators.CSharp;
+using ZStewart.KOSLisp.Compile;
+using ZStewart.KOSLisp.Compile.AST;
+using ZStewart.KOSLisp.Compile.Contexts;
+using ZStewart.KOSLisp.Compile.Generators.CSharp;
+using ZStewart.KOSLisp.Compile.SpecialForms;
 
 namespace ZStewart.KOSLisp.Interpreter {
 
   public class CompilerError : Exception {}
-
-  public interface SpecialForm {
-    // TODO(zstewar1): an operation that handles a special form.
-    AstOp ExpressionToIntermediate(LispObject expression, Context context);
-  }
 
   public class DelegateSpecialForm : SpecialForm {
     private Func<LispObject, Context, AstOp> intermediateConverter;
@@ -27,139 +23,13 @@ namespace ZStewart.KOSLisp.Interpreter {
       this.intermediateConverter = intermediateConverter;
     }
 
-    public AstOp ExpressionToIntermediate(LispObject expression, Context context) {
+    public AstOp ToAst(LispObject expression, Context context) {
       return intermediateConverter(expression, context);
     }
   }
 
-  public class IfSpecialForm : SpecialForm {
-    public virtual AstOp ExpressionToIntermediate(
-        LispObject expression, Context context) {
-      var len = ListOperations.Count(expression);
-      if (len < 2) throw new CompilerError();
-      if (len > 3) throw new CompilerError();
-
-      var cond = ListOperations.GetCar(expression);
-      expression = ListOperations.GetCdr(expression);
-      var ifTrue = ListOperations.GetCar(expression);
-      expression = ListOperations.GetCdr(expression);
-      if (len == 3) {
-        // Expression will be used for value-if-false. If the list was < 3, this is Nil.
-        // If it is 3, we take it from the car of the third cons.
-        expression = ListOperations.GetCar(expression);
-      }
-
-      var astcond = LispCompiler.ExpressionToIntermediate(cond, context);
-      if (astcond is AstConst) {
-        LispObject b = null;
-        try {
-          b = BoolType.From(((AstConst)astcond).Value);
-        } catch (ExceptionWrapper) {}
-        if (b == BoolType.T) return LispCompiler.ExpressionToIntermediate(ifTrue, context);
-        if (b == BoolType.F)
-          return LispCompiler.ExpressionToIntermediate(expression, context);
-      }
-
-      return Ast.If(
-        astcond,
-        LispCompiler.ExpressionToIntermediate(ifTrue, context),
-        LispCompiler.ExpressionToIntermediate(expression, context));
-    }
-  }
-
-  public class PrognSpecialForm : SpecialForm {
-
-    public virtual AstOp ExpressionToIntermediate(
-        LispObject expression, Context context) {
-      return Ast.Progn(ParseForms(expression, context));
-    }
-
-    protected virtual List<AstOp> ParseForms(LispObject forms, Context context) {
-      if (!ListOperations.Proper(forms)) throw new CompilerError();
-      return ListOperations.IterList(forms)
-        .Select(form => LispCompiler.ExpressionToIntermediate(form, context))
-        .ToList();
-    }
-  }
-
-  public class LetSpecialForm : PrognSpecialForm {
-    public override AstOp ExpressionToIntermediate(
-        LispObject expression, Context context) {
-      var len = ListOperations.Count(expression);
-      if (len < 1) throw new CompilerError();
-      var bindinglist = ListOperations.GetCar(expression);
-      var rest = ListOperations.GetCdr(expression);
-
-      List<Tuple<AstBinding, AstOp>> bindings;
-      var innerContext = ParseBindingList(bindinglist, context, out bindings);
-      var forms = ParseForms(rest, innerContext);
-      return Ast.Let(bindings, forms);
-    }
-
-    protected virtual Context ParseBindingList(
-        LispObject bindinglist, Context outerContext,
-        out List<Tuple<AstBinding, AstOp>> bindings) {
-      bindings = new List<Tuple<AstBinding, AstOp>>();
-      Context context = new ScopedContext(outerContext);
-      foreach (var newbind in ListOperations.IterList(bindinglist)) {
-        if (newbind is SymbolType) {
-          if (SymbolType.IsSelfEvaluating((SymbolType)newbind))
-            throw new CompilerError();
-          var binding = context.AddBinding((SymbolType)newbind);
-          bindings.Add(Tuple.Create<AstBinding, AstOp>(binding, Ast.Const(NilType.Nil)));
-        } else {
-          var len = ListOperations.Count(newbind);
-          if (len == 0) throw new CompilerError();
-          if (len > 2) throw new CompilerError();
-          var symb = ListOperations.GetCar(newbind);
-          if (!(symb is SymbolType) || SymbolType.IsSelfEvaluating((SymbolType)symb))
-            throw new CompilerError();
-          LispObject value = NilType.Nil;
-          if (len == 2) {
-            value = ListOperations.GetCar(ListOperations.GetCdr(newbind));
-          }
-          var binding = context.AddBinding((SymbolType)symb);
-          var boundValue = LispCompiler.ExpressionToIntermediate(value, context);
-          bindings.Add(Tuple.Create(binding, boundValue));
-        }
-      }
-      return context;
-    }
-  }
-
-  public class LambdaSpecialForm : PrognSpecialForm {
-    public override AstOp ExpressionToIntermediate(
-        LispObject expression, Context context) {
-      List<AstBinding> args;
-      List<AstOp> forms;
-      ParseArgsAndForms(expression, context, out args, out forms);
-      return Ast.Lambda(args, forms);
-    }
-
-    protected void ParseArgsAndForms(
-        LispObject expression, Context context,
-        out List<AstBinding> args, out List<AstOp> forms) {
-      var len = ListOperations.Count(expression);
-      if (len < 1) throw new CompilerError();
-      var arglist = ListOperations.GetCar(expression);
-      var rest = ListOperations.GetCdr(expression);
-
-      var symargs = ParseArgumentList(arglist);
-      var innerContext = new ClosuredScopedContext(context, symargs);
-      args = symargs.Select(s => innerContext.GetBinding(s)).ToList();
-      forms = ParseForms(rest, innerContext);
-    }
-
-    protected virtual List<SymbolType> ParseArgumentList(LispObject arglist) {
-      // TODO(zstewar1): We'll require a more advanced notation (for both definition and
-      // calling) once we start supporting keyword arguments.
-      if (!ListOperations.Proper(arglist)) throw new CompilerError();
-      return ListOperations.IterList<SymbolType>(arglist).ToList();
-    }
-  }
-
   public class DefunSpecialForm : LambdaSpecialForm {
-    public override AstOp ExpressionToIntermediate(
+    public override AstOp ToAst(
         LispObject expression, Context context) {
       var len = ListOperations.Count(expression);
       if (len < 2) throw new CompilerError();
@@ -186,9 +56,9 @@ namespace ZStewart.KOSLisp.Interpreter {
     private static SpecialForm functionForm = new DelegateSpecialForm((exp, ctx) => {
       // TODO(zstewar1): Better error message.
       if (!ListOperations.Proper(exp)) throw new CompilerError();
-      var fn = ExpressionToIntermediate(ListOperations.GetCar(exp), ctx);
+      var fn = ToAst(ListOperations.GetCar(exp), ctx);
       var args = ListOperations.IterList(ListOperations.GetCdr(exp))
-        .Select(arg => ExpressionToIntermediate(arg, ctx))
+        .Select(arg => ToAst(arg, ctx))
         .ToList();
       return Ast.Call(fn, args);
     });
@@ -218,7 +88,7 @@ namespace ZStewart.KOSLisp.Interpreter {
       specialForms = db.ToImmutable();
     }
 
-    public static AstOp ExpressionToIntermediate(LispObject expression, Context context) {
+    public static AstOp ToAst(LispObject expression, Context context) {
       // TODO(zstewar1): macroexpand the expression first.
       if (expression is ConsType) {
         var op = ListOperations.GetCar(expression);
@@ -226,18 +96,18 @@ namespace ZStewart.KOSLisp.Interpreter {
           SpecialForm sf;
           if (specialForms.TryGetValue((SymbolType)op, out sf)) {
             var args = ListOperations.GetCdr(expression);
-            return sf.ExpressionToIntermediate(args, context);
+            return sf.ToAst(args, context);
           }
         }
-        return functionForm.ExpressionToIntermediate(expression, context);
+        return functionForm.ToAst(expression, context);
       } else {
-        return plainPrimitiveForm.ExpressionToIntermediate(expression, context);
+        return plainPrimitiveForm.ToAst(expression, context);
       }
     }
 
     public static Func<LispObject> CompileExpression(
         LispObject expression, Context context) {
-      var ast = ExpressionToIntermediate(expression, context);
+      var ast = ToAst(expression, context);
       Console.WriteLine(ast);
       var expressionGenerator = new CSharpGeneratorFactory().Create(ast);
       var compiler = Expression.Lambda<Func<LispObject>>(expressionGenerator.Emit());
