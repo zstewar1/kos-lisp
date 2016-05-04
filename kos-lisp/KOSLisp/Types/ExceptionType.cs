@@ -144,7 +144,7 @@ namespace ZStewart.KOSLisp.Types {
         _syntaxError.__bases__ = IConsType.ToLispTuple(Exception);
         _syntaxError.__mro__ = IConsType.ToLispTuple(
           _syntaxError, Exception, LispObject.Object);
-        _syntaxError = LispType.ConfigureType(_notImplemented);
+        _syntaxError = LispType.ConfigureType(_syntaxError);
         if (_syntaxError == null) throw new InvalidOperationException();
         return _syntaxError;
       }
