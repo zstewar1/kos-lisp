@@ -152,97 +152,197 @@ namespace ZStewart.KOSLisp.Types {
     #endregion
 
     #region Static Helper Methods
-    public static ExceptionType CreateException(string message, params object[] args) {
+    #region Exception
+    public static ExceptionType CreateException(
+        ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = Exception,
         message = string.Format(message, args),
+        __cause__ = cause,
       };
     }
 
-    public static void ThrowException(string message, params object[] args) {
-      throw new ExceptionWrapper(CreateException(message, args));
+    public static ExceptionType CreateException(string message, params object[] args) {
+      return CreateException(null, message, args);
     }
 
-    public static ExceptionType CreateTypeError(string message, params object[] args) {
+    public static ExceptionWrapper ThrowException(
+        ExceptionType cause, string message, params object[] args) {
+      throw new ExceptionWrapper(CreateException(cause, message, args));
+    }
+
+    public static ExceptionWrapper ThrowException(string message, params object[] args) {
+      throw new ExceptionWrapper(CreateException(message, args));
+    }
+    #endregion Exception
+
+    #region TypeError
+    public static ExceptionType CreateTypeError(
+        ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = TypeError,
         message = string.Format(message, args),
+        __cause__ = cause,
       };
+    }
+
+    public static ExceptionType CreateTypeError(string message, params object[] args) {
+      return CreateTypeError(null, message, args);
+    }
+
+    public static ExceptionWrapper ThrowTypeError(
+        ExceptionType cause, string message, params object[] args) {
+      throw new ExceptionWrapper(CreateTypeError(cause, message, args));
     }
 
     public static ExceptionWrapper ThrowTypeError(string message, params object[] args) {
       throw new ExceptionWrapper(CreateTypeError(message, args));
     }
+    #endregion TypeError
 
-    public static ExceptionType CreateValueError(string message, params object[] args) {
+    #region ValueError
+    public static ExceptionType CreateValueError(
+        ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = ValueError,
         message = string.Format(message, args),
+        __cause__ = cause,
       };
+    }
+
+    public static ExceptionType CreateValueError(string message, params object[] args) {
+      return CreateValueError(null, message, args);
+    }
+
+    public static ExceptionWrapper ThrowValueError(
+        ExceptionType cause, string message, params object[] args) {
+      throw new ExceptionWrapper(CreateValueError(cause, message, args));
     }
 
     public static ExceptionWrapper ThrowValueError(string message, params object[] args) {
       throw new ExceptionWrapper(CreateValueError(message, args));
     }
+    #endregion ValueError
 
+    #region AttributeError
     public static ExceptionType CreateAttributeError(
-        string message, params object[] args) {
+        ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = AttributeError,
         message = string.Format(message, args),
+        __cause__ = cause,
       };
+    }
+
+    public static ExceptionType CreateAttributeError(string message, params object[] args) {
+      return CreateAttributeError(null, message, args);
     }
 
     public static ExceptionWrapper ThrowAttributeError(
-        string message, params object[] args) {
-      throw new ExceptionWrapper(CreateAttributeError(message, args));
+        ExceptionType cause, string message, params object[] args) {
+      throw new ExceptionWrapper(CreateAttributeError(cause, message, args));
     }
 
-    public static ExceptionType CreateNameError(string message, params object[] args) {
+    public static ExceptionWrapper ThrowAttributeError(string message, params object[] args) {
+      throw new ExceptionWrapper(CreateAttributeError(message, args));
+    }
+    #endregion AttributeError
+
+    #region NameError
+    public static ExceptionType CreateNameError(
+        ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = NameError,
         message = string.Format(message, args),
+        __cause__ = cause,
       };
+    }
+
+    public static ExceptionType CreateNameError(string message, params object[] args) {
+      return CreateNameError(null, message, args);
+    }
+
+    public static ExceptionWrapper ThrowNameError(
+        ExceptionType cause, string message, params object[] args) {
+      throw new ExceptionWrapper(CreateNameError(cause, message, args));
     }
 
     public static ExceptionWrapper ThrowNameError(string message, params object[] args) {
       throw new ExceptionWrapper(CreateNameError(message, args));
     }
+    #endregion NameError
 
-    public static ExceptionType CreateKeyError(string message, params object[] args) {
+    #region KeyError
+    public static ExceptionType CreateKeyError(
+        ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = KeyError,
         message = string.Format(message, args),
+        __cause__ = cause,
       };
+    }
+
+    public static ExceptionType CreateKeyError(string message, params object[] args) {
+      return CreateKeyError(null, message, args);
+    }
+
+    public static ExceptionWrapper ThrowKeyError(
+        ExceptionType cause, string message, params object[] args) {
+      throw new ExceptionWrapper(CreateKeyError(cause, message, args));
     }
 
     public static ExceptionWrapper ThrowKeyError(string message, params object[] args) {
       throw new ExceptionWrapper(CreateKeyError(message, args));
     }
+    #endregion KeyError
 
+    #region NotImplemented
     public static ExceptionType CreateNotImplemented(
-        string message, params object[] args) {
+        ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = NotImplemented,
         message = string.Format(message, args),
+        __cause__ = cause,
       };
+    }
+
+    public static ExceptionType CreateNotImplemented(string message, params object[] args) {
+      return CreateNotImplemented(null, message, args);
+    }
+
+    public static ExceptionWrapper ThrowNotImplemented(
+        ExceptionType cause, string message, params object[] args) {
+      throw new ExceptionWrapper(CreateNotImplemented(cause, message, args));
     }
 
     public static ExceptionWrapper ThrowNotImplemented(string message, params object[] args) {
       throw new ExceptionWrapper(CreateNotImplemented(message, args));
     }
+    #endregion NotImplemented
 
+    #region SyntaxError
     public static ExceptionType CreateSyntaxError(
-        string message, params object[] args) {
+        ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = SyntaxError,
         message = string.Format(message, args),
+        __cause__ = cause,
       };
+    }
+
+    public static ExceptionType CreateSyntaxError(string message, params object[] args) {
+      return CreateSyntaxError(null, message, args);
+    }
+
+    public static ExceptionWrapper ThrowSyntaxError(
+        ExceptionType cause, string message, params object[] args) {
+      throw new ExceptionWrapper(CreateSyntaxError(cause, message, args));
     }
 
     public static ExceptionWrapper ThrowSyntaxError(string message, params object[] args) {
       throw new ExceptionWrapper(CreateSyntaxError(message, args));
     }
+    #endregion SyntaxError
 
     public static bool Check(ExceptionType ex, LispType type) {
       return LispType.IsInstance(ex, type);
