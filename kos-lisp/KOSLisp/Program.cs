@@ -84,10 +84,6 @@ namespace ZStewart.KOSLisp {
           Console.WriteLine("Exception while Parsing:");
           Console.WriteLine(e);
           if (!interactive) break;
-        } catch (CompilerError e) {
-          Console.WriteLine("Exception while compiling:");
-          Console.WriteLine(e);
-          if (!interactive) break;
         } catch (ExceptionWrapper ex) {
           Console.WriteLine("Exception while executing:");
           Console.WriteLine(ex.LispException);

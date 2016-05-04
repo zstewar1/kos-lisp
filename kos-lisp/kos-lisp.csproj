@@ -64,6 +64,9 @@
     <Compile Include="KOSLisp\Compile\SpecialForms\LetSpecialForm.cs" />
     <Compile Include="KOSLisp\Compile\SpecialForms\LambdaSpecialForm.cs" />
     <Compile Include="KOSLisp\Compile\SpecialForms\DefunSpecialForm.cs" />
+    <Compile Include="KOSLisp\Compile\SpecialForms\FuncCallSpecialForm.cs" />
+    <Compile Include="KOSLisp\Compile\SpecialForms\PrimitiveSpecialForm.cs" />
+    <Compile Include="KOSLisp\Compile\SpecialForms\QuoteSpecialForm.cs" />
     <Compile Include="KOSLisp\Compile\AST\Ast.cs" />
     <Compile Include="KOSLisp\Compile\AST\AstOp.cs" />
     <Compile Include="KOSLisp\Compile\AST\AstBinding.cs" />
