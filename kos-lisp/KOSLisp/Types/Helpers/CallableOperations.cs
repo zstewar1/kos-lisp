@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using ZStewart.KOSLisp.Interpreter;
 
 namespace ZStewart.KOSLisp.Types.Helpers {
   /// <summary>
@@ -15,12 +10,15 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// Call a Lisp object as a function.
     /// </summary>
     /// <param name="callable">The object to call.</param>
-    /// <param name="args">The arguments to the callable.</param>
+    /// <param name="pargs">The positional arguments of the function call.</param>
+    /// <param name="kwargs">The keyword arguments of the function call.</param>
     /// <returns></returns>
-    public static LispObject Call(LispObject callable, LispObject args) {
-      args = IConsType.Copy(args);
+    public static LispObject Call(
+        LispObject callable,
+        List<LispObject> pargs,
+        Dictionary<SymbolType, LispObject> kwargs) {
       return LookupHelpers.Lookup(
-        callable, args,
+        callable, pargs,
         t => t.__call__ != null,
         t => t.__call__,
         PropConsts.Call,

@@ -78,17 +78,20 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// fallback method found in the target type's method resolution order, or null (with
     /// an error set) if no appropriate method is found.
     /// </returns>
-    internal static LispObject Lookup(
+    internal static LispObject Lookup<TArg1>(
         LispObject target,
-        LispObject arg1,
+        TArg1 arg1,
         Predicate<LispType> hasBuiltin,
-        Func<LispType, Func<LispObject, LispObject, LispObject>> getBuiltin,
+        Func<LispType, Func<LispObject, TArg1, LispObject>> getBuiltin,
         LispObject fallbackSymbol,
         Func<ExceptionType> generateError) {
       return InnerLookup(
         target,
-        f => f(target, arg1),
-        () => IConsType.ToLispTuple(arg1),
+        builtin => builtin(target, arg1),
+        fallback => CallableOperations.Call(
+          fallback,
+          new List<LispObject>() {arg1},
+          new Dictionary<SymbolType, LispObject>())
         hasBuiltin,
         getBuiltin,
         fallbackSymbol,

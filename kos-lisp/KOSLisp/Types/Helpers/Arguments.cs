@@ -153,6 +153,20 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         }
       }
 
+      if (destType.IsAssignableFrom(typeof(List<LispObject>))) {
+        return ListOperations.IterList(source).ToList();
+      }
+
+      if (destType.IsAssignableFrom(typeof(Dictionary<LispObject, LispObject>))) {
+        return MappingOperations.IterMap(source).ToDictionary(
+          key => MappingOperations.GetItem(source, key));
+      }
+
+      if (destType.IsAssignableFrom(typeof(Dictionary<SymbolType, LispObject>))) {
+        return MappingOperations.IterMap<SymbolType>(source).ToDictionary(
+          key => MappingOperations.GetItem(source, key));
+      }
+
       // TODO(zstewar1): etc. for string and any other type which are reasonable to
       // convert. (Maybe List?)
 
@@ -171,15 +185,39 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       return (T)Marshal(typeof(T), source);
     }
 
-    public static bool IsMarshalable(Type type) {
-      return type == typeof(double) || type == typeof(bool) || type == typeof(string)
-          || typeof(LispObject).IsAssignableFrom(type);
+    /// <summary>
+    /// Checks if the given destination type can be marshaled to *in general*.
+    ///
+    /// Even if IsMarshalable returns true, Marshal may still fail for particular
+    /// combinations of types and values.
+    /// </summary>
+    public static bool IsMarshalable(Type destType) {
+      return destType == typeof(double)
+        || destType == typeof(bool)
+        || destType == typeof(string)
+        || destType.IsAssignableFrom(typeof(List<LispObject>))
+        || destType.IsAssignableFrom(typeof(Dictionary<LispObject, LispObject))
+        || destType.IsAssignableFrom(typeof(Dictionary<SymbolType, LispObject))
+        || typeof(LispObject).IsAssignableFrom(destType);
     }
 
+    /// <summary>
+    /// Checks if the given destination type can be marshaled to *in general*.
+    ///
+    /// Even if IsMarshalable returns true, Marshal may still fail for particular
+    /// combinations of types and values.
+    /// </summary>
     public static bool IsMarshalable<T>() {
       return IsMarshalable(typeof(T));
     }
 
+    /// <summary>
+    /// Unmarsharl the object. This inverts Marshal.
+    ///
+    /// For dictionary and list types, this accepts anything which is an
+    /// IEnumerable(LispObject) for lists or IDictionary(LispObject, LispObject) or
+    /// IDictionary(SymbolType, LispObject) for dictionaries.
+    /// </summary>
     public static LispObject Unmarshal(object value) {
       if (value == null) {
         return NilType.Nil;
@@ -191,6 +229,12 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           return BoolType.Create((bool)value);
         } else if (type == typeof(string)) {
           return StringType.Create((string)value);
+        } else if (typeof(IEnumerable<LispObject>).IsAsignableFrom(type)) {
+          return ConsType.ToLispList((IEnumerable<LispObject>)value);
+        } else if (typeof(IDictionary<LispObject, LispObject>).IsAssignableFrom(type)) {
+          return DictType.Create((IDictionary<LispObject, LispObject>)value);
+        } else if (typeof(IDictionary<SymbolType, LispObject>).IsAssignableForm(type)) {
+          return DictType.Create((IDictionary<SymbolType, LispObject>)value);
         } else if (typeof(LispObject).IsAssignableFrom(type)) {
           return (LispObject)value;
         } else {

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
-using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
@@ -31,7 +29,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <summary>
     /// Function for calling this type. Inherited.
     /// </summary>
-    public Func<LispObject, LispObject, LispObject> __call__;
+    public Func<LispObject, List<LispObject>, Dictionary<SymbolType, LispObject>, LispObject> __call__;
     /// <summary>
     /// Function to look up a property of this type. Inherited.
     /// </summary>
