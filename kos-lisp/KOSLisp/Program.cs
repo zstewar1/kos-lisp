@@ -72,7 +72,19 @@ namespace ZStewart.KOSLisp {
 
     private static void TEMPRun(
         string name, TextReader reader, bool interactive = false) {
+      bool isExpressionFirstLine = true;
       LispLexer lexer = new LispLexer(name, reader);
+      if (interactive) {
+        lexer.BeforeReadLine += () => {
+          if (isExpressionFirstLine) {
+            isExpressionFirstLine = false;
+            Console.Error.Write("=> ");
+          } else {
+            Console.Error.Write(".. ");
+          }
+        };
+      }
+
       LispParser parser = new LispParser(lexer);
 
       var mainModule = ModuleType.Create(
@@ -83,10 +95,11 @@ namespace ZStewart.KOSLisp {
       for(;;) {
         LispObject parsed;
         try {
+          isExpressionFirstLine = true;
           parsed = parser.ParseNext();
         } catch (ExceptionWrapper ex) {
-          Console.WriteLine("Exception while paring:");
-          Console.WriteLine(ex.LispException);
+          Console.Error.WriteLine("Exception while paring:");
+          Console.Error.WriteLine(ex.LispException);
           if (interactive) {
             lexer.ClearLine();
             continue;
@@ -103,8 +116,8 @@ namespace ZStewart.KOSLisp {
           var expression = generator.Emit();
           func = Expression.Lambda<Func<LispObject>>(expression).Compile();
         } catch (ExceptionWrapper ex) {
-          Console.WriteLine("Exception while compiling:");
-          Console.WriteLine(ex.LispException);
+          Console.Error.WriteLine("Exception while compiling:");
+          Console.Error.WriteLine(ex.LispException);
           if (interactive) {
             continue;
           } else {
@@ -117,8 +130,8 @@ namespace ZStewart.KOSLisp {
             Console.WriteLine(result);
           }
         } catch (ExceptionWrapper ex) {
-          Console.WriteLine("Exception while evaluating:");
-          Console.WriteLine(ex.LispException);
+          Console.Error.WriteLine("Exception while evaluating:");
+          Console.Error.WriteLine(ex.LispException);
         }
       }
     }
