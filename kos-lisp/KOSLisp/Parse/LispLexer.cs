@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ZStewart.KOSLisp.Parser {
+namespace ZStewart.KOSLisp.Parse {
 
   /// <summary>
   /// A lexer definition for lexing kOS Lisp.

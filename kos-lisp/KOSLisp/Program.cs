@@ -11,7 +11,7 @@ using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Compile.Contexts;
 using ZStewart.KOSLisp.Compile.Generators.CSharp;
 using ZStewart.KOSLisp.Types;
-using ZStewart.KOSLisp.Parser;
+using ZStewart.KOSLisp.Parse;
 
 namespace ZStewart.KOSLisp {
 

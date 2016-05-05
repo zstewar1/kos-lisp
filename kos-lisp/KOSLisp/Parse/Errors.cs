@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ZStewart.KOSLisp.Parser {
+namespace ZStewart.KOSLisp.Parse {
   class ParserError : Exception {
 
     /// <summary>

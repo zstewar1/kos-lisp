@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ZStewart.KOSLisp.Parser {
+namespace ZStewart.KOSLisp.Parse {
 
   /// <summary>
   /// Represents a chunk of tokenized input file.

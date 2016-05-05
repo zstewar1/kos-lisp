@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace ZStewart.KOSLisp.Parser {
+namespace ZStewart.KOSLisp.Parse {
   /// <summary>
   /// Provides information about a location within a lisp source file.
   /// </summary>

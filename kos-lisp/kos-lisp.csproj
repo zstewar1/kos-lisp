@@ -51,6 +51,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Options.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="KOSLisp\Program.cs" />
     <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
     <Compile Include="KOSLisp\Compile\Compiler.cs" />
     <Compile Include="KOSLisp\Compile\BaseCompiler.cs" />
@@ -99,24 +102,24 @@
     <Compile Include="KOSLisp\Types\Attributes\PositionalArgument.cs" />
     <Compile Include="KOSLisp\Types\Attributes\RestArgument.cs" />
     <Compile Include="KOSLisp\Types\Attributes\RestKeywordArgument.cs" />
-    <Compile Include="KOSLisp\Types\CallMagic.cs" />
-    <Compile Include="KOSLisp\Types\DictType.cs" />
-    <Compile Include="KOSLisp\Types\ModuleType.cs" />
     <Compile Include="KOSLisp\Types\Helpers\Arguments.cs" />
     <Compile Include="KOSLisp\Types\Helpers\LookupHelpers.cs" />
     <Compile Include="KOSLisp\Types\Helpers\CallableOperations.cs" />
     <Compile Include="KOSLisp\Types\Helpers\DescriptorOperations.cs" />
     <Compile Include="KOSLisp\Types\Helpers\ComparisonOperations.cs" />
     <Compile Include="KOSLisp\Types\Helpers\MappingOperations.cs" />
-    <Compile Include="KOSLisp\Parser\Errors.cs" />
+    <Compile Include="KOSLisp\Types\TypeCategories\ComparisonMethods.cs" />
+    <Compile Include="KOSLisp\Types\TypeCategories\MappingMethods.cs" />
+    <Compile Include="KOSLisp\Types\TypeCategories\ListMethods.cs" />
+    <Compile Include="KOSLisp\Types\TypeCategories\NumberMethods.cs" />
+    <Compile Include="KOSLisp\Types\CallMagic.cs" />
+    <Compile Include="KOSLisp\Types\DictType.cs" />
+    <Compile Include="KOSLisp\Types\ModuleType.cs" />
     <Compile Include="KOSLisp\Types\ConsType.cs" />
     <Compile Include="KOSLisp\Types\Helpers\ListOperations.cs" />
     <Compile Include="KOSLisp\Types\IConsType.cs" />
     <Compile Include="KOSLisp\Types\LispObject.cs" />
-    <Compile Include="KOSLisp\Parser\LispParser.cs" />
-    <Compile Include="KOSLisp\Parser\LispTokens.cs" />
-    <Compile Include="KOSLisp\Program.cs" />
-    <Compile Include="KOSLisp\Parser\SourceInformation.cs" />
+    <Compile Include="KOSLisp\Types\LispType.cs" />
     <Compile Include="KOSLisp\Types\NilType.cs" />
     <Compile Include="KOSLisp\Types\BoolType.cs" />
     <Compile Include="KOSLisp\Types\ExceptionType.cs" />
@@ -130,16 +133,13 @@
     <Compile Include="KOSLisp\Types\PropConsts.cs" />
     <Compile Include="KOSLisp\Types\StringType.cs" />
     <Compile Include="KOSLisp\Types\SymbolType.cs" />
-    <Compile Include="KOSLisp\Types\TypeCategories\ComparisonMethods.cs" />
-    <Compile Include="KOSLisp\Types\TypeCategories\MappingMethods.cs" />
-    <Compile Include="KOSLisp\Types\TypeCategories\ListMethods.cs" />
-    <Compile Include="KOSLisp\Types\TypeCategories\NumberMethods.cs" />
     <Compile Include="KOSLisp\Types\TypeType.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Options.cs" />
-    <Compile Include="KOSLisp\Parser\Token.cs" />
-    <Compile Include="KOSLisp\Parser\LispLexer.cs" />
-    <Compile Include="KOSLisp\Types\LispType.cs" />
+    <Compile Include="KOSLisp\Parse\Errors.cs" />
+    <Compile Include="KOSLisp\Parse\LispParser.cs" />
+    <Compile Include="KOSLisp\Parse\LispTokens.cs" />
+    <Compile Include="KOSLisp\Parse\SourceInformation.cs" />
+    <Compile Include="KOSLisp\Parse\Token.cs" />
+    <Compile Include="KOSLisp\Parse\LispLexer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

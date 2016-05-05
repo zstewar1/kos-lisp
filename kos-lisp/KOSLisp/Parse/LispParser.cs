@@ -4,7 +4,7 @@ using System.Text;
 using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Types.Helpers;
 
-namespace ZStewart.KOSLisp.Parser {
+namespace ZStewart.KOSLisp.Parse {
   /// <summary>
   /// Parses a token stream into s-expressions.
   /// </summary>
