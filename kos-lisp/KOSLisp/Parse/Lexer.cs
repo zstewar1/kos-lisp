@@ -1,8 +1,17 @@
+using System;
+
 namespace ZStewart.KOSLisp.Parse {
   /// <summary>
   /// Type which can be used to get tokens from a text stream.
   /// </summary>
   public interface Lexer<TokType, ModeType> {
+    /// <summary>
+    /// An event which is triggered before the lexer attempts to read a line of input.
+    /// This can be used to trigger, e.g. writing a prompt or prompt continuation before
+    /// user input during interactive mode.
+    /// </summary>
+    event Action BeforeReadLine;
+
     /// <summary>
     /// Read the next token from the input stream, using "mode" to decide what token types
     /// are available.

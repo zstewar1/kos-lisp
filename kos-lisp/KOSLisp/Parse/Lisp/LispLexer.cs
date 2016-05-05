@@ -156,6 +156,11 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
     #endregion Static Setup
 
     #region Instance Properties
+    /// <summary>
+    /// Triggered before reading a line from the source.
+    /// </summary>
+    public event Action BeforeReadLine;
+
     private readonly TextReader source;
     private SourceInformation currentLoc;
 
@@ -220,6 +225,10 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
           throw ExceptionType.ThrowSyntaxError("unexpected end-of-line.");
         LineNumber += 1;
         ColumnIndex = 0;
+        // Copy event before triggering to avoid a race condition where the event becomes
+        // null between when we null check it and when we call it.
+        var beforeReadLine = BeforeReadLine;
+        if (beforeReadLine != null) beforeReadLine();
         Line = source.ReadLine();
         if (Line == null) {
           return true;
