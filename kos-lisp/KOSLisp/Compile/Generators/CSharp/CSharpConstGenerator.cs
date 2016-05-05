@@ -22,7 +22,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// Produce an expression representing the constant value of this expression.
     /// </summary>
     public Expression Emit() {
-      return Expression.Constant(Value);
+      return Expression.Constant(Value, typeof(LispObject));
     }
   }
 }
