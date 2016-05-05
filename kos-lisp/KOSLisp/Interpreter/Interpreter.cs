@@ -33,6 +33,8 @@ namespace ZStewart.KOSLisp.Interpreter {
 
         AddBuiltin(typeof(ListOperations), "GetCar", "car");
         AddBuiltin(typeof(ListOperations), "GetCdr", "cdr");
+        AddBuiltin(typeof(ListOperations), "SetCar", "%setcar");
+        AddBuiltin(typeof(ListOperations), "SetCdr", "%setcdr");
 
         return _builtins;
       }
