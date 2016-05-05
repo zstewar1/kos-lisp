@@ -63,25 +63,27 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     public static LispObject SetCar(
         [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject value) {
-      return LookupHelpers.Lookup(
+      LookupHelpers.Lookup(
         target, value,
         t => t._list_methods != null && t._list_methods.__setcar__ != null,
         t => t._list_methods.__setcar__,
         setcarattr,
         () => ExceptionType.CreateTypeError(
           "cannot set car of \"{0}\" object", target.__class__));
+      return value;
     }
 
     public static LispObject SetCdr(
         [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject value) {
-      return LookupHelpers.Lookup(
+      LookupHelpers.Lookup(
         target, value,
         t => t._list_methods != null && t._list_methods.__setcdr__ != null,
         t => t._list_methods.__setcdr__,
         setcdrattr,
         () => ExceptionType.CreateTypeError(
           "cannot set cdr of \"{0}\" object", target.__class__));
+      return value;
     }
 
     /// <summary>

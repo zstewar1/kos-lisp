@@ -29,13 +29,14 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         [PositionalArgument] LispObject target,
         [PositionalArgument] LispObject key,
         [PositionalArgument] LispObject value) {
-      return LookupHelpers.Lookup(
+      LookupHelpers.Lookup(
         target, key, value,
         t => t._map_methods != null && t._map_methods.__setitem__ != null,
         t => t._map_methods.__setitem__,
         setitemattr,
         () => ExceptionType.CreateTypeError(
           "subscript of \"{0}\" object is not assignable", target.__class__));
+      return value;
     }
 
     public static bool CanSet([PositionalArgument] LispObject target) {

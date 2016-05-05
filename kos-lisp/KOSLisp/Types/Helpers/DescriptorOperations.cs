@@ -37,13 +37,14 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <returns></returns>
     public static LispObject Set(
         LispObject descriptor, LispObject obj, LispObject value) {
-      return LookupHelpers.Lookup(
+      LookupHelpers.Lookup(
         descriptor, obj, value,
         t => t.__set__ != null,
         t => t.__set__,
         PropConsts.Set,
         () => ExceptionType.CreateAttributeError(
           "\"{0}\" object has no attribute __set__", descriptor.__class__));
+      return value;
     }
 
     public static bool IsDescriptor(LispObject descriptor) {
