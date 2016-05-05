@@ -1,4 +1,4 @@
-﻿namespace ZStewart.KOSLisp.Parse {
+﻿namespace ZStewart.KOSLisp.Parse.Lisp {
   /// <summary>
   /// Enumeration of the various types of tokens available in this lisp.
   /// </summary>
@@ -21,13 +21,5 @@
     // String Mode
     ENDSTRING,
     CHARACTER,
-  }
-
-  /// <summary>
-  /// Enumeration of the various matcher modes available in this lisp.
-  /// </summary>
-  public enum LispLexMode {
-    NORMAL,
-    STRING,
   }
 }

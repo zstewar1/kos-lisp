@@ -7,7 +7,7 @@ namespace ZStewart.KOSLisp.Parse {
   public struct SourceInformation {
 
     /// <summary>
-    /// The name of the source location that this input originates from. (i.e. the 
+    /// The name of the source location that this input originates from. (i.e. the
     /// filename).
     /// </summary>
     public string Name { get; set; }
@@ -23,7 +23,7 @@ namespace ZStewart.KOSLisp.Parse {
     public int LineNumber { get; set; }
 
     /// <summary>
-    /// The zero-based index of the column within the line that this source information 
+    /// The zero-based index of the column within the line that this source information
     /// points to.
     /// </summary>
     public int ColumnIndex { get; set; }

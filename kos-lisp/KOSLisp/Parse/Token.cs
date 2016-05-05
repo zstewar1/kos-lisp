@@ -103,29 +103,29 @@ namespace ZStewart.KOSLisp.Parse {
 
     public override string ToString () {
       return string.Format(
-        "[RawToken: RawValue={0}, SourceInfo={1}, TokenType={2}]", 
+        "[RawToken: RawValue={0}, SourceInfo={1}, TokenType={2}]",
         RawValue, SourceInformation, TokenType);
     }
   }
 
   /// <summary>
-  /// Helper class for using static functions of GenericToken(TokType, T) without type 
+  /// Helper class for using static functions of GenericToken(TokType, T) without type
   /// arguments.
   /// </summary>
   public static class GenericToken {
     /// <summary>
-    /// Creates a token creator function which creates generic tokens based on the 
+    /// Creates a token creator function which creates generic tokens based on the
     /// provided parser function.
     /// </summary>
     /// <param name="tokenType">
     /// The type of token that this creator function should create.
     /// </param>
     /// <param name="parseFunc">
-    /// Parse func the function to use to conver the raw token into the token's value 
+    /// Parse func the function to use to conver the raw token into the token's value
     /// type.
     /// </param>
     /// <returns>
-    /// The a new delegate which can be used to create GenericTokens based on the given 
+    /// The a new delegate which can be used to create GenericTokens based on the given
     /// parse function.
     /// </returns>
     public static TokenCreator<TokType> CreateTokenCreator<TokType, T> (
@@ -152,18 +152,18 @@ namespace ZStewart.KOSLisp.Parse {
   /// </summary>
   public class GenericToken<TokType, T> : RawToken<TokType>, Token<TokType, T> {
     /// <summary>
-    /// Creates a token creator function which creates generic tokens based on the 
+    /// Creates a token creator function which creates generic tokens based on the
     /// provided parser function.
     /// </summary>
     /// <param name="type">
     /// The type of token that this creator function should create.
     /// </param>
     /// <param name="parseFunc">
-    /// Parse func the function to use to conver the raw token into the token's value 
+    /// Parse func the function to use to conver the raw token into the token's value
     /// type.
     /// </param>
     /// <returns>
-    /// The a new delegate which can be used to create GenericTokens based on the given 
+    /// The a new delegate which can be used to create GenericTokens based on the given
     /// parse function.
     /// </returns>
     public static TokenCreator<TokType> CreateTokenCreator (
@@ -188,14 +188,14 @@ namespace ZStewart.KOSLisp.Parse {
 
     public T Value { get; }
 
-    protected GenericToken (string rv, SourceInformation si, TokType type, T value) 
+    protected GenericToken (string rv, SourceInformation si, TokType type, T value)
         : base(rv, si, type) {
       Value = value;
     }
 
     public override string ToString () {
       return string.Format(
-        "[GenericToken: Value={0}, RawValue={1}, SourceInformation={2} TokenType={3}]", 
+        "[GenericToken: Value={0}, RawValue={1}, SourceInformation={2} TokenType={3}]",
         Value, RawValue, SourceInformation, TokenType);
     }
   }

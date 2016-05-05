@@ -134,12 +134,14 @@
     <Compile Include="KOSLisp\Types\StringType.cs" />
     <Compile Include="KOSLisp\Types\SymbolType.cs" />
     <Compile Include="KOSLisp\Types\TypeType.cs" />
-    <Compile Include="KOSLisp\Parse\Errors.cs" />
-    <Compile Include="KOSLisp\Parse\LispParser.cs" />
-    <Compile Include="KOSLisp\Parse\LispTokens.cs" />
-    <Compile Include="KOSLisp\Parse\SourceInformation.cs" />
+    <Compile Include="KOSLisp\Parse\Lexer.cs" />
+    <Compile Include="KOSLisp\Parse\Parser.cs" />
     <Compile Include="KOSLisp\Parse\Token.cs" />
-    <Compile Include="KOSLisp\Parse\LispLexer.cs" />
+    <Compile Include="KOSLisp\Parse\SourceInformation.cs" />
+    <Compile Include="KOSLisp\Parse\Lisp\LispLexer.cs" />
+    <Compile Include="KOSLisp\Parse\Lisp\LispParser.cs" />
+    <Compile Include="KOSLisp\Parse\Lisp\LispLexMode.cs" />
+    <Compile Include="KOSLisp\Parse\Lisp\LispTokType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

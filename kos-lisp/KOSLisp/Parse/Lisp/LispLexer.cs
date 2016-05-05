@@ -1,16 +1,18 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Immutable;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Linq;
 
-namespace ZStewart.KOSLisp.Parse {
+using ZStewart.KOSLisp.Types;
+
+namespace ZStewart.KOSLisp.Parse.Lisp {
 
   /// <summary>
   /// A lexer definition for lexing kOS Lisp.
   /// </summary>
-  public class LispLexer {
+  public class LispLexer : Lexer<LispTokType, LispLexMode> {
 
     // Classes for holding configuration data.
     #region Configuration Classes
@@ -102,12 +104,11 @@ namespace ZStewart.KOSLisp.Parse {
               return RawToken.Create(rv, s, LispTokType.DOT);
             if ((rv.StartsWith(".") ? rv.Substring(1) : rv).Split('.')
                 .Any(st => string.IsNullOrEmpty(st)))
-              throw new InvalidIdentifier(
-                "Invalid identifier. Cannot have adjacent dots or end with dot.",
-                s);
+              throw ExceptionType.ThrowSyntaxError(
+                "invalid identifier: cannot have adjacent dots or end with dot");
             if ((rv.StartsWith(":") || rv.StartsWith("&")) && rv.Contains("."))
-              throw new InvalidIdentifier(
-                "Invalid identifier. Keword identifiers cannot contain dot.", s);
+              throw ExceptionType.ThrowSyntaxError(
+                "invalid identifier: keword identifiers cannot contain dot");
             return RawToken.Create(rv, s, LispTokType.IDENTIFIER);
           })
           .AddMatcher(@"\(", RawToken.CreateTokenCreator(LispTokType.OPEN_PAREN))
@@ -154,12 +155,6 @@ namespace ZStewart.KOSLisp.Parse {
     }
     #endregion Static Setup
 
-    #region Static Methods
-    public static LispLexer Lex (string name, TextReader source) {
-      return new LispLexer(name, source);
-    }
-    #endregion Static Methods
-
     #region Instance Properties
     private readonly TextReader source;
     private SourceInformation currentLoc;
@@ -183,14 +178,14 @@ namespace ZStewart.KOSLisp.Parse {
     }
     #endregion Instance Properties
 
-    private LispLexer (string fileName, TextReader source) {
+    public LispLexer (string fileName, TextReader source) {
       if (!(!string.IsNullOrEmpty(fileName))) throw new ArgumentException();
       if (!(source != null)) throw new ArgumentNullException();
       this.source = source;
       currentLoc = new SourceInformation(fileName, "", 0, 0);
     }
 
-    public Token<LispTokType> Next (LispLexMode mode) {
+    public Token<LispTokType> NextToken (LispLexMode mode) {
       var lexConf = tokenizerConf[mode];
 
       retry_match:
@@ -206,23 +201,23 @@ namespace ZStewart.KOSLisp.Parse {
         }
         return val;
       }
-      var loc = currentLoc;
-      // On unrecognized input, advance to the end of the line to ensure that the next
-      // read will try to fetch a new line from the input file. In non-interactive mode,
-      // this shouldn't matter because non-interactive files shouldn't be retried. In
-      // interactive mode, this ensures that we get a new line when the user typed
-      // something invalid.
+      throw ExceptionType.ThrowSyntaxError("unrecognized input");
+    }
+
+    /// <summary>
+    /// Clear the current line for interactive interpreters.
+    /// </summary>
+    public void ClearLine() {
+      // Just set the column to the line length to assure that we read a new line next
+      // time.
       ColumnIndex = Line.Length;
-      throw new UnexpectedInput(
-        string.Format("Unrecognized input"), loc);
     }
 
     private bool AdvanceNextLine(LexerModeConfig lexConf) {
       while (ColumnIndex >= Line.Length) {
         if (!lexConf.AllowLineBreaks)
           // TODO(zstewar1): Better error messaging for this, maybe based on mode?
-          throw new UnexpectedEOLException(
-            "Unexpected end-of-line.", currentLoc);
+          throw ExceptionType.ThrowSyntaxError("unexpected end-of-line.");
         LineNumber += 1;
         ColumnIndex = 0;
         Line = source.ReadLine();

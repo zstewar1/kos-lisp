@@ -12,6 +12,7 @@ using ZStewart.KOSLisp.Compile.Contexts;
 using ZStewart.KOSLisp.Compile.Generators.CSharp;
 using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Parse;
+using ZStewart.KOSLisp.Parse.Lisp;
 
 namespace ZStewart.KOSLisp {
 
@@ -71,7 +72,7 @@ namespace ZStewart.KOSLisp {
 
     private static void TEMPRun(
         string name, TextReader reader, bool interactive = false) {
-      LispLexer lexer = LispLexer.Lex(name, reader);
+      LispLexer lexer = new LispLexer(name, reader);
       LispParser parser = new LispParser(lexer);
 
       var mainModule = ModuleType.Create(
@@ -80,23 +81,44 @@ namespace ZStewart.KOSLisp {
       var compiler = new DefaultCompiler();
       var generatorFactory = new CSharpGeneratorFactory();
       for(;;) {
+        LispObject parsed;
         try {
-          var parsed = parser.Parse();
-          if (parsed == null) break;
+          parsed = parser.ParseNext();
+        } catch (ExceptionWrapper ex) {
+          Console.WriteLine("Exception while paring:");
+          Console.WriteLine(ex.LispException);
+          if (interactive) {
+            lexer.ClearLine();
+            continue;
+          } else {
+            break;
+          }
+        }
+        if (parsed == null) break;
+        // The function that represents evaluating the expression.
+        Func<LispObject> func;
+        try {
           var ast = compiler.ToAst(parsed, context);
-          Console.WriteLine(ast);
           var generator = generatorFactory.Create(ast);
           var expression = generator.Emit();
-          var func = Expression.Lambda<Func<LispObject>>(expression).Compile();
-          Console.WriteLine(func());
-        } catch (ParserError e) {
-          Console.WriteLine("Exception while Parsing:");
-          Console.WriteLine(e);
-          if (!interactive) break;
+          func = Expression.Lambda<Func<LispObject>>(expression).Compile();
         } catch (ExceptionWrapper ex) {
-          Console.WriteLine("Exception while executing:");
+          Console.WriteLine("Exception while compiling:");
           Console.WriteLine(ex.LispException);
-          if (!interactive) break;
+          if (interactive) {
+            continue;
+          } else {
+            break;
+          }
+        }
+        try {
+          var result = func();
+          if (interactive) {
+            Console.WriteLine(result);
+          }
+        } catch (ExceptionWrapper ex) {
+          Console.WriteLine("Exception while evaluating:");
+          Console.WriteLine(ex.LispException);
         }
       }
     }
