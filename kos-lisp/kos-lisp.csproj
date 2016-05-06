@@ -129,6 +129,7 @@
     <Compile Include="KOSLisp\Types\FunctionType.cs" />
     <Compile Include="KOSLisp\Types\BuiltinFunctionType.cs" />
     <Compile Include="KOSLisp\Types\BuiltinDataDescriptorType.cs" />
+    <Compile Include="KOSLisp\Types\BuiltinIterType.cs" />
     <Compile Include="KOSLisp\Types\ObjectType.cs" />
     <Compile Include="KOSLisp\Types\PropConsts.cs" />
     <Compile Include="KOSLisp\Types\StringType.cs" />

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 
-using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
