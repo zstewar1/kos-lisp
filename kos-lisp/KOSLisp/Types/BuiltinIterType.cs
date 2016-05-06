@@ -1,4 +1,5 @@
-using System.Collections.Generic
+using System;
+using System.Collections.Generic;
 
 using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
@@ -33,11 +34,59 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject GetCar (LispObject instance) {
-
+      if (instance is BuiltinIterType) {
+        return (instance as BuiltinIterType).Car;
+      } else {
+        throw ExceptionType.ThrowTypeError(
+          "instance must be of type {0}, was {1}", BuiltinIter, instance.__class__);
+      }
     }
 
     private static LispObject GetCdr (LispObject instance) {
+      if (instance is BuiltinIterType) {
+        return (instance as BuiltinIterType).Cdr;
+      } else {
+        throw ExceptionType.ThrowTypeError(
+          "instance must be of type {0}, was {1}", BuiltinIter, instance.__class__);
+      }
     }
     #endregion Static Type Setup
+
+    #region Static Helper Methods
+    public LispObject Create(IEnumerable<LispObject> enumerable) {
+      return Create(enumerable.GetEnumerator());
+    }
+
+    public LispObject Create(IEnumerator<LispObject> enumerator) {
+      bool ok;
+      try {
+        ok = enumerator.MoveNext();
+      } catch (InvalidOperationException ex) {
+        throw ExceptionType.ThrowRuntimeError(ex.Message);
+      }
+      if (!ok) return NilType.Nil;
+      return new BuiltinIterType(enumerator.Current, enumerator) {
+        __class__ = BuiltinIter,
+      };
+    }
+    #endregion Static Helper Methods
+
+    private BuiltinIterType (LispObject car, IEnumerator<LispObject> enumerator) {
+      Car = car;
+      this.enumerator = enumerator;
+    }
+
+    private IEnumerator<LispObject> enumerator;
+    private LispObject _cdr;
+
+    public LispObject Car { get; }
+    public LispObject Cdr {
+      get {
+        if (_cdr != null) return _cdr;
+
+        _cdr = Create(enumerator);
+        return _cdr;
+      }
+    }
   }
 }
