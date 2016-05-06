@@ -229,12 +229,12 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           return BoolType.Create((bool)value);
         } else if (type == typeof(string)) {
           return StringType.Create((string)value);
-        } else if (typeof(IEnumerable<LispObject>).IsAsignableFrom(type)) {
-          return ConsType.ToLispList((IEnumerable<LispObject>)value);
+        } else if (typeof(IEnumerable<LispObject>).IsAssignableFrom(type)) {
+          return ConsType.ToLispList(((IEnumerable<LispObject>)value).ToList());
         } else if (typeof(IDictionary<LispObject, LispObject>).IsAssignableFrom(type)) {
-          return DictType.Create((IDictionary<LispObject, LispObject>)value);
-        } else if (typeof(IDictionary<SymbolType, LispObject>).IsAssignableForm(type)) {
-          return DictType.Create((IDictionary<SymbolType, LispObject>)value);
+          return DictType.ToLispDict((IDictionary<LispObject, LispObject>)value);
+        } else if (typeof(IDictionary<SymbolType, LispObject>).IsAssignableFrom(type)) {
+          return DictType.ToLispDict((IDictionary<SymbolType, LispObject>)value);
         } else if (typeof(LispObject).IsAssignableFrom(type)) {
           return (LispObject)value;
         } else {

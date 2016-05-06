@@ -29,7 +29,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <summary>
     /// Function for calling this type. Inherited.
     /// </summary>
-    public Func<LispObject, List<LispObject>, Dictionary<SymbolType, LispObject>, LispObject> __call__;
+    public CallFunc __call__;
     /// <summary>
     /// Function to look up a property of this type. Inherited.
     /// </summary>

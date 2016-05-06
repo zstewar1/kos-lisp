@@ -113,6 +113,7 @@
     <Compile Include="KOSLisp\Types\TypeCategories\ListMethods.cs" />
     <Compile Include="KOSLisp\Types\TypeCategories\NumberMethods.cs" />
     <Compile Include="KOSLisp\Types\CallMagic.cs" />
+    <Compile Include="KOSLisp\Types\Delegates.cs" />
     <Compile Include="KOSLisp\Types\DictType.cs" />
     <Compile Include="KOSLisp\Types\ModuleType.cs" />
     <Compile Include="KOSLisp\Types\ConsType.cs" />

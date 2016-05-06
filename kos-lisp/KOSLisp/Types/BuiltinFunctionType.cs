@@ -36,9 +36,12 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
-    private static LispObject Call (LispObject self, LispObject args) {
+    private static LispObject Call (
+        LispObject self,
+        List<LispObject> pargs,
+        Dictionary<SymbolType, LispObject> kwargs) {
       if (self is BuiltinFunctionType) {
-        return ((BuiltinFunctionType)self).caller.Call(args);
+        return ((BuiltinFunctionType)self).caller.Call(pargs, kwargs);
       } else {
         throw ExceptionType.ThrowTypeError("first argument must be a BuiltinFunction");
       }

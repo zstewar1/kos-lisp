@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.Attributes;
@@ -30,9 +31,12 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
-    private static LispObject Call (LispObject self, LispObject args) {
+    private static LispObject Call (
+        LispObject self,
+        List<LispObject> pargs,
+        Dictionary<SymbolType, LispObject> kwargs) {
       if (self is MethodType) {
-        return ((MethodType)self).Call(args);
+        return ((MethodType)self).Call(pargs, kwargs);
       }
       throw ExceptionType.ThrowTypeError("first argument must be a Method");
     }
@@ -70,8 +74,11 @@ namespace ZStewart.KOSLisp.Types {
       this.function = function;
     }
 
-    public LispObject Call(LispObject args) {
-      return CallableOperations.Call(function, IConsType.Create(receiver, args));
+    public LispObject Call(
+        List<LispObject> pargs,
+        Dictionary<SymbolType, LispObject> kwargs) {
+      pargs.Insert(0, receiver);
+      return CallableOperations.Call(function, pargs, kwargs);
     }
   }
 }

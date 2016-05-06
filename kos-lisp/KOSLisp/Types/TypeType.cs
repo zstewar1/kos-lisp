@@ -46,7 +46,10 @@ namespace ZStewart.KOSLisp.Types {
       };
     }
 
-    private static LispObject Call(LispObject receiver, LispObject args) {
+    private static LispObject Call(
+        LispObject receiver,
+        List<LispObject> pargs,
+        Dictionary<SymbolType, LispObject> kwargs) {
       throw ExceptionType.ThrowNotImplemented("");
     }
     #endregion Static Type Setup

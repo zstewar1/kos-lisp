@@ -177,7 +177,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="method">The name of the method to call.</param>
     /// <returns>The result of calling method method of object</returns>
     public static LispObject Call(LispObject obj, string method) {
-      return Call(obj, SymbolType.Create(method), args);
+      return Call(obj, SymbolType.Create(method));
     }
 
     /// <summary>
@@ -187,7 +187,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="method">The name of the method to call.</param>
     /// <returns>The result of calling method method of object</returns>
     public static LispObject Call(LispObject obj, SymbolType method) {
-      return CallableOperations.Call(GetAttribute(obj, method), args);
+      return CallableOperations.Call(GetAttribute(obj, method));
     }
 
     /// <summary>
@@ -198,7 +198,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="args">The positional arguments to pass to the method.</param>
     /// <returns>The result of calling method method of object</returns>
     public static LispObject Call(
-        LispObject obj, string method, IEnumerable<LispObject> args) {
+        LispObject obj, string method, List<LispObject> args) {
       return Call(obj, SymbolType.Create(method), args);
     }
 
@@ -210,7 +210,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="args">The positional arguments to pass to the method.</param>
     /// <returns>The result of calling method method of object</returns>
     public static LispObject Call(
-        LispObject obj, SymbolType method, IEnumerable<LispObject> args) {
+        LispObject obj, SymbolType method, List<LispObject> args) {
       return CallableOperations.Call(GetAttribute(obj, method), args);
     }
 
@@ -223,7 +223,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>The result of calling method method of object</returns>
     public static LispObject Call(
         LispObject obj, string method, params LispObject[] args) {
-      return Call(obj, SymbolType.Create(method), (IEnumerable<LispObject>)args);
+      return Call(obj, SymbolType.Create(method), new List<LispObject>(args));
     }
 
     /// <summary>
@@ -235,7 +235,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>The result of calling method method of object</returns>
     public static LispObject Call(
         LispObject obj, SymbolType method, params LispObject[] args) {
-      return Call(obj, method, (IEnumerable<LispObject>)args);
+      return Call(obj, method, new List<LispObject>(args));
     }
 
     /// <summary>
@@ -248,8 +248,8 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>The result of calling method method of object</returns>
     public static LispObject Call(
         LispObject obj, string method,
-        IEnumerable<LispObject> pargs,
-        IDictionary<SymbolType, LispObject> kwargs) {
+        List<LispObject> pargs,
+        Dictionary<SymbolType, LispObject> kwargs) {
       return Call(obj, SymbolType.Create(method), pargs, kwargs);
     }
 
@@ -263,8 +263,8 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>The result of calling method method of object</returns>
     public static LispObject Call(
         LispObject obj, SymbolType method,
-        IEnumerable<LispObject> pargs,
-        IDictionary<SymbolType, LispObject> kwargs) {
+        List<LispObject> pargs,
+        Dictionary<SymbolType, LispObject> kwargs) {
       return CallableOperations.Call(GetAttribute(obj, method), pargs, kwargs);
     }
     #endregion Method Call Convenience Methods

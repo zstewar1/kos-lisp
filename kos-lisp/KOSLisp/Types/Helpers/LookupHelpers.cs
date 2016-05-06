@@ -91,7 +91,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         getBuiltin,
         builtin => builtin(target, arg1),
         fallbackSymbol,
-        fallback => CallableOperations.Call(fallback, Arguments.Unmarshal(arg1));
+        fallback => CallableOperations.Call(fallback, Arguments.Unmarshal(arg1)),
         generateError);
     }
 
@@ -141,7 +141,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         builtin => builtin(target, arg1, arg2),
         fallbackSymbol,
         fallback => CallableOperations.Call(
-          fallback, Arguments.Unmarshal(arg1), Arguments.Unmarshal(arg2));
+          fallback, Arguments.Unmarshal(arg1), Arguments.Unmarshal(arg2)),
         generateError);
     }
 

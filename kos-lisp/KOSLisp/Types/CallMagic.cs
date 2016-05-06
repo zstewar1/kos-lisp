@@ -101,17 +101,17 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>
     /// The lisp object that results from the call or null if an error occurs.
     /// </returns>
-    public LispObject Call (LispObject args) {
-      List<LispObject> pargs;
-      Dictionary<SymbolType, LispObject> kwargs;
-      Arguments.GetArguments(args, out pargs, out kwargs);
-
+    public LispObject Call (
+        List<LispObject> pargs,
+        Dictionary<SymbolType, LispObject> kwargs) {
       if (pargs.Count < positionalArguments.Count) {
         throw ExceptionType.ThrowTypeError(
           "not enough positional arguments, expected {0}, got {1}",
           positionalArguments.Count, pargs.Count);
       }
 
+      // TODO(zstewar1): flow over into the kwargs. (will require duplicate-kwarg
+      // checking.
       if (pargs.Count > positionalArguments.Count && !rest) {
         throw ExceptionType.ThrowTypeError(
           "too many positional arguments, expected {0}, got {1}",

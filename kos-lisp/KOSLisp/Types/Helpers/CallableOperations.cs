@@ -27,7 +27,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// Call the given callable with only positional arguments.
     /// </summary>
     public static LispObject Call(LispObject callable, params LispObject[] args) {
-      return Call(callable, new List(args));
+      return Call(callable, new List<LispObject>(args));
     }
 
     /// <summary>
@@ -42,9 +42,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         List<LispObject> pargs,
         Dictionary<SymbolType, LispObject> kwargs) {
       return LookupHelpers.Lookup(
-        callable, pargs,
+        callable, pargs, kwargs,
         t => t.__call__ != null,
-        t => t.__call__,
+        t => t.__call__.Invoke,
         PropConsts.Call,
         () => ExceptionType.CreateTypeError(
           "\"{0}\" object is not callable", callable.__class__));
