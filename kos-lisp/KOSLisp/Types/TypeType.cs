@@ -107,8 +107,23 @@ namespace ZStewart.KOSLisp.Types {
       return IConsType.ToLispTuple(linearization);
     }
 
+    /// <summary>
+    /// Take a static function with appropriate positional/keyword argument attributes
+    /// from the given type._instance_type, and add a BuiltinFunction which wraps that
+    /// function to the type's dictionary with the given lisp name.
+    /// </summary>
     public static void AddStatic(
-      LispType type, string staticName, SymbolType lispName) {
+        LispType type, string staticName, string lispName) {
+      AddStatic(type, staticName, SymbolType.Create(lispName));
+    }
+
+    /// <summary>
+    /// Take a static function with appropriate positional/keyword argument attributes
+    /// from the given type._instance_type, and add a BuiltinFunction which wraps that
+    /// function to the type's dictionary with the given lisp name.
+    /// </summary>
+    public static void AddStatic(
+        LispType type, string staticName, SymbolType lispName) {
       MappingOperations.SetItem(
         type.__dict__,
         lispName,

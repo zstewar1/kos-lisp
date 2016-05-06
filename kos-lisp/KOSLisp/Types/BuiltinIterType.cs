@@ -53,11 +53,11 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Type Setup
 
     #region Static Helper Methods
-    public LispObject Create(IEnumerable<LispObject> enumerable) {
+    public static LispObject Create(IEnumerable<LispObject> enumerable) {
       return Create(enumerable.GetEnumerator());
     }
 
-    public LispObject Create(IEnumerator<LispObject> enumerator) {
+    public static LispObject Create(IEnumerator<LispObject> enumerator) {
       bool ok;
       try {
         ok = enumerator.MoveNext();

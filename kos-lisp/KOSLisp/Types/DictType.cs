@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.TypeCategories;
+using ZStewart.KOSLisp.Types.Attributes;
 
 namespace ZStewart.KOSLisp.Types {
   public class DictType : LispObject {
@@ -26,6 +27,11 @@ namespace ZStewart.KOSLisp.Types {
         _dict = LispType.ConfigureType(_dict);
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_dict == null) throw new InvalidOperationException();
+
+        LispType.AddStatic(_dict, "IterKeys", "keys");
+        LispType.AddStatic(_dict, "IterValues", "values");
+        LispType.AddStatic(_dict, "Iter", "iter");
+
         return _dict;
       }
     }
@@ -44,6 +50,18 @@ namespace ZStewart.KOSLisp.Types {
           "dict must be a dictionary or dictionary subtype, was {0}", dict.__class__);
       }
       return ((DictType)dict).SetItem(key, value);
+    }
+
+    private static LispObject IterKeys([PositionalArgument] DictType self) {
+      return BuiltinIterType.Create(self.IterKeys());
+    }
+
+    private static LispObject IterValues([PositionalArgument] DictType self) {
+      return BuiltinIterType.Create(self.IterValues());
+    }
+
+    private static LispObject Iter([PositionalArgument] DictType self) {
+      return BuiltinIterType.Create(self.Iter());
     }
     #endregion Static Type Setup
 
@@ -109,6 +127,20 @@ namespace ZStewart.KOSLisp.Types {
         storage[key] = value;
       }
       return NilType.Nil;
+    }
+
+    protected IEnumerable<LispObject> IterKeys () {
+      return storage.Keys;
+    }
+
+    protected IEnumerable<LispObject> IterValues () {
+      return storage.Values;
+    }
+
+    protected IEnumerable<LispObject> Iter() {
+      foreach (var kvp in storage) {
+        yield return IConsType.Create(kvp.Key, kvp.Value);
+      }
     }
   }
 }
