@@ -60,6 +60,25 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    private static LispType _runtimeError;
+    public static LispType RuntimeError {
+      get {
+        if (_runtimeError != null) return _runtimeError;
+
+        _runtimeError = new LispType {
+          __name__ = "RuntimeError",
+        };
+        _runtimeError.__class__ = LispType.Type;
+        _runtimeError.__bases__ = IConsType.ToLispTuple(Exception);
+        _runtimeError.__mro__ = IConsType.ToLispTuple(
+          _runtimeError, Exception, LispObject.Object);
+        _runtimeError = LispType.ConfigureType(_runtimeError);
+        if (_runtimeError == null) throw new InvalidOperationException();
+        return _runtimeError;
+      }
+    }
+
+
     private static LispType _attributeError;
     public static LispType AttributeError {
       get {
@@ -223,6 +242,30 @@ namespace ZStewart.KOSLisp.Types {
       throw new ExceptionWrapper(CreateValueError(message, args));
     }
     #endregion ValueError
+
+    #region RuntimeError
+    public static ExceptionType CreateRuntimeError(
+        ExceptionType cause, string message, params object[] args) {
+      return new ExceptionType {
+        __class__ = RuntimeError,
+        message = string.Format(message, args),
+        __cause__ = cause,
+      };
+    }
+
+    public static ExceptionType CreateRuntimeError(string message, params object[] args) {
+      return CreateRuntimeError(null, message, args);
+    }
+
+    public static ExceptionWrapper ThrowRuntimeError(
+        ExceptionType cause, string message, params object[] args) {
+      throw new ExceptionWrapper(CreateRuntimeError(cause, message, args));
+    }
+
+    public static ExceptionWrapper ThrowRuntimeError(string message, params object[] args) {
+      throw new ExceptionWrapper(CreateRuntimeError(message, args));
+    }
+    #endregion RuntimeError
 
     #region AttributeError
     public static ExceptionType CreateAttributeError(
