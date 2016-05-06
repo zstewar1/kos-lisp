@@ -42,11 +42,11 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         Func<ExceptionType> generateError) {
       return InnerLookup(
         target,
-        f => f(target),
-        () => IConsType.ToLispTuple(),
         hasBuiltin,
         getBuiltin,
+        builtin => builtin(target),
         fallbackSymbol,
+        fallback => CallableOperations.Call(fallback),
         generateError);
     }
 
@@ -87,14 +87,11 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         Func<ExceptionType> generateError) {
       return InnerLookup(
         target,
-        builtin => builtin(target, arg1),
-        fallback => CallableOperations.Call(
-          fallback,
-          new List<LispObject>() {arg1},
-          new Dictionary<SymbolType, LispObject>())
         hasBuiltin,
         getBuiltin,
+        builtin => builtin(target, arg1),
         fallbackSymbol,
+        fallback => CallableOperations.Call(fallback, Arguments.Unmarshal(arg1));
         generateError);
     }
 
@@ -129,22 +126,22 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// fallback method found in the target type's method resolution order, or null (with
     /// an error set) if no appropriate method is found.
     /// </returns>
-    internal static LispObject Lookup(
+    internal static LispObject Lookup<TArg1, TArg2>(
         LispObject target,
-        LispObject arg1,
-        LispObject arg2,
+        TArg1 arg1,
+        TArg2 arg2,
         Predicate<LispType> hasBuiltin,
-        Func<LispType, Func<LispObject, LispObject, LispObject, LispObject>>
-          getBuiltin,
+        Func<LispType, Func<LispObject, TArg1, TArg2, LispObject>> getBuiltin,
         LispObject fallbackSymbol,
         Func<ExceptionType> generateError) {
       return InnerLookup(
         target,
-        f => f(target, arg1, arg2),
-        () => IConsType.ToLispTuple(arg1, arg2),
         hasBuiltin,
         getBuiltin,
+        builtin => builtin(target, arg1, arg2),
         fallbackSymbol,
+        fallback => CallableOperations.Call(
+          fallback, Arguments.Unmarshal(arg1), Arguments.Unmarshal(arg2));
         generateError);
     }
 
@@ -154,14 +151,6 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="obj">
     /// The object being searched through.
     /// </param>
-    /// <param name="doBuiltinCall">
-    /// A delegate that takes the builtin function and calls it with appropriate
-    /// arguments.
-    /// </param>
-    /// <param name="getFallbackArgs">
-    /// A delegate that takes returns the arguments that should be passed to the fallback
-    /// function call.
-    /// </param>
     /// <param name="hasBuiltin">
     /// A delegate that takes the type object and checks if it has the requested operation
     /// available as a builtin.
@@ -169,9 +158,17 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="getBuiltin">
     /// A delegate that takes the type object and returns the requested builtin operation.
     /// </param>
+    /// <param name="doBuiltinCall">
+    /// A delegate that takes the builtin function and calls it with appropriate
+    /// arguments.
+    /// </param>
     /// <param name="fallbackSymbol">
     /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
     /// returns false
+    /// </param>
+    /// <param name="doFallbackCall">
+    /// Delegate which takes the found fallbakc callable and calls it with appropriate
+    /// arguments.
     /// </param>
     /// <param name="generateError">
     /// A function which returns a formatted error message for when the approprate
@@ -184,11 +181,11 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </returns>
     private static LispObject InnerLookup<T>(
         LispObject obj,
-        Func<T, LispObject> doBuiltinCall,
-        Func<LispObject> getFallbackArgs,
         Predicate<LispType> hasBuiltin,
         Func<LispType, T> getBuiltin,
+        Func<T, LispObject> doBuiltinCall,
         LispObject fallbackSymbol,
+        Func<LispObject, LispObject> doFallbackCall,
         Func<ExceptionType> generateError) {
       foreach (var targetType in ListOperations.IterMro(obj)) {
         if (hasBuiltin(targetType)) {
@@ -202,11 +199,10 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           }
           if (fallback != null) {
             if (!DescriptorOperations.IsDescriptor(fallback)) {
-              return CallableOperations.Call(fallback, getFallbackArgs());
+              return doFallbackCall(fallback);
             } else {
-              return CallableOperations.Call(
-                DescriptorOperations.Get(fallback, obj, obj.__class__),
-                getFallbackArgs());
+              return doFallbackCall(
+                DescriptorOperations.Get(fallback, obj, obj.__class__));
             }
           }
         }

@@ -168,27 +168,106 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Type Setup
 
     #region Static Helper Methods
+
+    #region Method Call Convenience Methods
     /// <summary>
-    /// Call a method on the given object.
+    /// Call a method on the given object, with no arguments.
     /// </summary>
     /// <param name="obj">The object to call a method on.</param>
     /// <param name="method">The name of the method to call.</param>
-    /// <param name="args">The arguments to the method.</param>
     /// <returns>The result of calling method method of object</returns>
-    public static LispObject Call(LispObject obj, string method, LispObject args) {
+    public static LispObject Call(LispObject obj, string method) {
       return Call(obj, SymbolType.Create(method), args);
     }
 
     /// <summary>
-    /// Call a method on the given object.
+    /// Call a method on the given object, with no arguments.
     /// </summary>
     /// <param name="obj">The object to call a method on.</param>
     /// <param name="method">The name of the method to call.</param>
-    /// <param name="args">The arguments to the method.</param>
     /// <returns>The result of calling method method of object</returns>
-    public static LispObject Call(LispObject obj, SymbolType method, LispObject args) {
+    public static LispObject Call(LispObject obj, SymbolType method) {
       return CallableOperations.Call(GetAttribute(obj, method), args);
     }
+
+    /// <summary>
+    /// Call a method on the given object, with only positional arguments.
+    /// </summary>
+    /// <param name="obj">The object to call a method on.</param>
+    /// <param name="method">The name of the method to call.</param>
+    /// <param name="args">The positional arguments to pass to the method.</param>
+    /// <returns>The result of calling method method of object</returns>
+    public static LispObject Call(
+        LispObject obj, string method, IEnumerable<LispObject> args) {
+      return Call(obj, SymbolType.Create(method), args);
+    }
+
+    /// <summary>
+    /// Call a method on the given object, with only position arguments.
+    /// </summary>
+    /// <param name="obj">The object to call a method on.</param>
+    /// <param name="method">The name of the method to call.</param>
+    /// <param name="args">The positional arguments to pass to the method.</param>
+    /// <returns>The result of calling method method of object</returns>
+    public static LispObject Call(
+        LispObject obj, SymbolType method, IEnumerable<LispObject> args) {
+      return CallableOperations.Call(GetAttribute(obj, method), args);
+    }
+
+    /// <summary>
+    /// Call a method on the given object, with only positional arguments.
+    /// </summary>
+    /// <param name="obj">The object to call a method on.</param>
+    /// <param name="method">The name of the method to call.</param>
+    /// <param name="args">The positional arguments to pass to the method.</param>
+    /// <returns>The result of calling method method of object</returns>
+    public static LispObject Call(
+        LispObject obj, string method, params LispObject[] args) {
+      return Call(obj, SymbolType.Create(method), (IEnumerable<LispObject>)args);
+    }
+
+    /// <summary>
+    /// Call a method on the given object, with only position arguments.
+    /// </summary>
+    /// <param name="obj">The object to call a method on.</param>
+    /// <param name="method">The name of the method to call.</param>
+    /// <param name="args">The positional arguments to pass to the method.</param>
+    /// <returns>The result of calling method method of object</returns>
+    public static LispObject Call(
+        LispObject obj, SymbolType method, params LispObject[] args) {
+      return Call(obj, method, (IEnumerable<LispObject>)args);
+    }
+
+    /// <summary>
+    /// Call a method on the given object, with positional and keyword arguments.
+    /// </summary>
+    /// <param name="obj">The object to call a method on.</param>
+    /// <param name="method">The name of the method to call.</param>
+    /// <param name="pargs">The positional arguments to pass to the method.</param>
+    /// <param name="kwargs">The keyword arguments to pass to the method.</param>
+    /// <returns>The result of calling method method of object</returns>
+    public static LispObject Call(
+        LispObject obj, string method,
+        IEnumerable<LispObject> pargs,
+        IDictionary<SymbolType, LispObject> kwargs) {
+      return Call(obj, SymbolType.Create(method), pargs, kwargs);
+    }
+
+    /// <summary>
+    /// Call a method on the given object, with position and keyword arguments.
+    /// </summary>
+    /// <param name="obj">The object to call a method on.</param>
+    /// <param name="method">The name of the method to call.</param>
+    /// <param name="pargs">The positional arguments to pass to the method.</param>
+    /// <param name="kwargs">The keyword arguments to pass to the method.</param>
+    /// <returns>The result of calling method method of object</returns>
+    public static LispObject Call(
+        LispObject obj, SymbolType method,
+        IEnumerable<LispObject> pargs,
+        IDictionary<SymbolType, LispObject> kwargs) {
+      return CallableOperations.Call(GetAttribute(obj, method), pargs, kwargs);
+    }
+    #endregion Method Call Convenience Methods
 
     /// <summary>
     /// Get an attribute of an object using its builtin __getattr__, or --getattribute--

@@ -7,6 +7,30 @@ namespace ZStewart.KOSLisp.Types.Helpers {
   /// </summary>
   public static class CallableOperations {
     /// <summary>
+    /// Call the given callable with no arguments.
+    /// </summary>
+    public static LispObject Call(LispObject callable) {
+      return Call(
+          callable,
+          new List<LispObject>(),
+          new Dictionary<SymbolType, LispObject>());
+    }
+
+    /// <summary>
+    /// Call the given callable with only positional arguments.
+    /// </summary>
+    public static LispObject Call(LispObject callable, List<LispObject> args) {
+      return Call(callable, args, new Dictionary<SymbolType, LispObject>());
+    }
+
+    /// <summary>
+    /// Call the given callable with only positional arguments.
+    /// </summary>
+    public static LispObject Call(LispObject callable, params LispObject[] args) {
+      return Call(callable, new List(args));
+    }
+
+    /// <summary>
     /// Call a Lisp object as a function.
     /// </summary>
     /// <param name="callable">The object to call.</param>

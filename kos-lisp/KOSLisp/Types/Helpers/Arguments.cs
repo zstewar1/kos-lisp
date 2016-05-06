@@ -158,13 +158,13 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       }
 
       if (destType.IsAssignableFrom(typeof(Dictionary<LispObject, LispObject>))) {
-        return MappingOperations.IterMap(source).ToDictionary(
-          key => MappingOperations.GetItem(source, key));
+        return ListOperations.IterList(LispObject.Call(source, "keys"))
+          .ToDictionary(key => MappingOperations.GetItem(source, key));
       }
 
       if (destType.IsAssignableFrom(typeof(Dictionary<SymbolType, LispObject>))) {
-        return MappingOperations.IterMap<SymbolType>(source).ToDictionary(
-          key => MappingOperations.GetItem(source, key));
+        return ListOperations.IterList<SymbolType>(LispObject.Call(source, "keys"))
+          .ToDictionary(key => MappingOperations.GetItem(source, key));
       }
 
       // TODO(zstewar1): etc. for string and any other type which are reasonable to
@@ -196,8 +196,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         || destType == typeof(bool)
         || destType == typeof(string)
         || destType.IsAssignableFrom(typeof(List<LispObject>))
-        || destType.IsAssignableFrom(typeof(Dictionary<LispObject, LispObject))
-        || destType.IsAssignableFrom(typeof(Dictionary<SymbolType, LispObject))
+        || destType.IsAssignableFrom(typeof(Dictionary<LispObject, LispObject>))
+        || destType.IsAssignableFrom(typeof(Dictionary<SymbolType, LispObject>))
         || typeof(LispObject).IsAssignableFrom(destType);
     }
 
