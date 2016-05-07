@@ -57,6 +57,6 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// <param name="compiler">
     /// The Lisp compiler, which this special form can use to parse sub-expressions.
     /// </param>
-    AstOp ToAst(LispObject expression, Context context, Compiler compiler);
+    AstOp ToAst(LispObject expression, Context context, SemanticAnalyzer compiler);
   }
 }

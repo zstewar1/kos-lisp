@@ -25,7 +25,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// The Lisp compiler, which this special form can use to parse sub-expressions.
     /// </param>
     public override AstOp ToAst(
-        LispObject expression, Context context, Compiler compiler) {
+        LispObject expression, Context context, SemanticAnalyzer compiler) {
       IEnumerable<AstBinding> args;
       IEnumerable<AstOp> forms;
       ParseArgsAndForms(expression, context, compiler, out args, out forms);
@@ -38,7 +38,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// derived classes to override the behavior of the lambda.
     /// </summary>
     protected void ParseArgsAndForms(
-        LispObject expression, Context context, Compiler compiler,
+        LispObject expression, Context context, SemanticAnalyzer compiler,
         out IEnumerable<AstBinding> args, out IEnumerable<AstOp> forms) {
       int len;
       try {

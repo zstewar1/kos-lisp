@@ -10,7 +10,7 @@ namespace ZStewart.KOSLisp.Compile {
   /// The default compiler type. This registers the various builtin special form types
   /// under default names.
   /// </summary>
-  public class DefaultCompiler : BaseCompiler {
+  public class DefaultSemanticAnalyzer : BaseSemanticAnalyzer {
     /// <summary>
     /// Create the dictionary of builtin special forms used to parse macroexpanded
     /// expressions.
@@ -30,7 +30,7 @@ namespace ZStewart.KOSLisp.Compile {
       return db.ToImmutable();
     }
 
-    public DefaultCompiler() : base(
+    public DefaultSemanticAnalyzer() : base(
         CreateSpecialFormsDict(),
         new FuncCallSpecialForm(),
         new PrimitiveSpecialForm()) {}

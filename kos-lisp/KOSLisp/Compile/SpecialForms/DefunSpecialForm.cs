@@ -23,7 +23,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// <param name="compiler">
     /// The Lisp compiler, which this special form can use to parse sub-expressions.
     /// </param>
-    public override AstOp ToAst(LispObject expression, Context context, Compiler compiler) {
+    public override AstOp ToAst(LispObject expression, Context context, SemanticAnalyzer compiler) {
       int len;
       try {
         len = ListOperations.Count(expression);

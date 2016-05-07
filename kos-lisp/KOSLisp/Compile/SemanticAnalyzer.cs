@@ -4,10 +4,10 @@ using ZStewart.KOSLisp.Types;
 
 namespace ZStewart.KOSLisp.Compile {
   /// <summary>
-  /// A Compiler can convert the usual LispObject (typically cons-list) representation of
+  /// An analyzer can convert the usual LispObject (typically cons-list) representation of
   /// a code structure to an Abstract Syntax Tree.
   /// </summary>
-  public interface Compiler {
+  public interface SemanticAnalyzer {
     /// <summary>
     /// Convert the given expression to an AST in the provided context.
     /// </summary>

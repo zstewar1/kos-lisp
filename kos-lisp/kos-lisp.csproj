@@ -55,9 +55,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="KOSLisp\Program.cs" />
     <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
-    <Compile Include="KOSLisp\Compile\Compiler.cs" />
-    <Compile Include="KOSLisp\Compile\BaseCompiler.cs" />
-    <Compile Include="KOSLisp\Compile\DefaultCompiler.cs" />
     <Compile Include="KOSLisp\Compile\Contexts\Context.cs" />
     <Compile Include="KOSLisp\Compile\Contexts\GlobalContext.cs" />
     <Compile Include="KOSLisp\Compile\Contexts\ScopedContext.cs" />
@@ -106,6 +103,9 @@
     <Compile Include="KOSLisp\Parse\Lisp\LispParser.cs" />
     <Compile Include="KOSLisp\Parse\Lisp\LispLexMode.cs" />
     <Compile Include="KOSLisp\Parse\Lisp\LispTokType.cs" />
+    <Compile Include="KOSLisp\Compile\SemanticAnalyzer.cs" />
+    <Compile Include="KOSLisp\Compile\BaseSemanticAnalyzer.cs" />
+    <Compile Include="KOSLisp\Compile\DefaultSemanticAnalyzer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

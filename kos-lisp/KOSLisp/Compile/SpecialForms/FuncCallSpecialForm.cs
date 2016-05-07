@@ -23,7 +23,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// <param name="compiler">
     /// The Lisp compiler, which this special form can use to parse sub-expressions.
     /// </param>
-    public AstOp ToAst(LispObject expression, Context context, Compiler compiler) {
+    public AstOp ToAst(LispObject expression, Context context, SemanticAnalyzer compiler) {
       if (!ListOperations.Proper(expression)) {
         throw ExceptionType.ThrowSyntaxError(
           "function call expression must be a proper list");

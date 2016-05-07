@@ -90,7 +90,7 @@ namespace ZStewart.KOSLisp {
       var mainModule = ModuleType.Create(
         SymbolType.Create(name), LispInterpreter.Builtins);
       var context = new GlobalContext(mainModule);
-      var compiler = new DefaultCompiler();
+      var compiler = new DefaultSemanticAnalyzer();
       var generatorFactory = new CSharpGeneratorFactory();
       for(;;) {
         LispObject parsed;

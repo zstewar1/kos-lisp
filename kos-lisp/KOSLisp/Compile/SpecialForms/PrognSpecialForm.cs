@@ -25,7 +25,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// The Lisp compiler, which this special form can use to parse sub-expressions.
     /// </param>
     public virtual AstOp ToAst(
-        LispObject expression, Context context, Compiler compiler) {
+        LispObject expression, Context context, SemanticAnalyzer compiler) {
       return Ast.Progn(ParseForms(expression, context, compiler));
     }
 
@@ -35,7 +35,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// explicitly reference the form-parsing mechanism.
     /// </summary>
     protected IEnumerable<AstOp> ParseForms(
-        LispObject forms, Context context, Compiler compiler) {
+        LispObject forms, Context context, SemanticAnalyzer compiler) {
       if (!ListOperations.Proper(forms)) {
         throw ExceptionType.ThrowSyntaxError(
           "progn forms list must be a proper list");

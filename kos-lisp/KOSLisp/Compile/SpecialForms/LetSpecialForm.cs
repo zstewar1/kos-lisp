@@ -25,7 +25,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// <param name="compiler">
     /// The Lisp compiler, which this special form can use to parse sub-expressions.
     /// </param>
-    public override AstOp ToAst(LispObject expression, Context context, Compiler compiler) {
+    public override AstOp ToAst(LispObject expression, Context context, SemanticAnalyzer compiler) {
       int len;
       try {
         len = ListOperations.Count(expression);
@@ -57,7 +57,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// expresison to evaluate as the value to bind the variable to.
     /// </summary>
     private IEnumerable<Tuple<AstBinding, AstOp>> ParseBindingList(
-        LispObject bindingList, Context context, Compiler compiler,
+        LispObject bindingList, Context context, SemanticAnalyzer compiler,
         out Context innerContext) {
       // Create a list to hold the new bindings and a context to bind them in.
       var bindings = new List<Tuple<AstBinding, AstOp>>();

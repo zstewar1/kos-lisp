@@ -8,13 +8,13 @@ using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Compile {
   /// <summary>
-  /// An ABC for compiler implementations. Provides a method to covert an expression to
+  /// An ABC for analyzer implementations. Provides a method to covert an expression to
   /// AST assuming it has been *sufficiently* macroexpanded. This means that the
   /// expression has been macroexpanded until either it is a constant value or the first
   /// value in the cons list expression is either a symbol designating a special form or
   /// an expression that evaluates to a function to call.
   /// </summary>
-  public abstract class BaseCompiler : Compiler {
+  public abstract class BaseSemanticAnalyzer : SemanticAnalyzer {
     /// <summary>
     /// Dictionary of symbols to special forms. This is what the compiler looks through
     /// while parsing an expression if the first element is a symbol. If the symbol is in
@@ -51,7 +51,7 @@ namespace ZStewart.KOSLisp.Compile {
     /// This is the special form which will be passed the entirety of the expression if
     /// the expression is not a Cons.
     /// </param>
-    protected BaseCompiler(
+    protected BaseSemanticAnalyzer(
         ImmutableDictionary<SymbolType, SpecialForm> namedSpecialForms,
         SpecialForm functionForm,
         SpecialForm primitiveForm) {
