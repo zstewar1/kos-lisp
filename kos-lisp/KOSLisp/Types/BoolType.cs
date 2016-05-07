@@ -61,7 +61,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="obj">The object to convert.</param>
     /// <returns>True if the object's __bool__ is true, false if it is false
     public static BoolType From(LispObject obj) {
-      var b = LispObject.Call(obj, "--bool--", NilType.Nil);
+      var b = LispObject.Call(obj, "--bool--");
       if (b == T) return T;
       if (b == F) return F;
       throw ExceptionType.ThrowTypeError(

@@ -42,16 +42,19 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// Produce an expression representing calling the specified function.
     /// </summary>
     public Expression Emit() {
-      return Expression.Call(
-        typeof(CallableOperations), "Call", null,
-        Function.Emit(),
-        Expression.Call(
-          typeof(IConsType), "ToLispTuple", null,
-          Expression.Convert(
-            Expression.NewArrayInit(
-              typeof(LispObject),
-              Arguments.Select(arg => arg.Emit())),
-            typeof(IReadOnlyList<LispObject>))));
+      var listAdd = typeof(List<LispObject>).GetMethod("Add");
+      var callMethod = typeof(CallableOperations).GetMethod(
+        "Call", new Type[] {typeof(LispObject), typeof(List<LispObject>)});
+
+      var expressions = new List<Expression>(2);
+      expressions.Add(Function.Emit());
+      if (Arguments.Count > 0) {
+        expressions.Add(Expression.ListInit(
+          Expression.New(typeof(List<LispObject>)),
+          Arguments.Select(arg => Expression.ElementInit(listAdd, arg.Emit()))));
+      }
+
+      return Expression.Call(callMethod, expressions);
     }
   }
 }

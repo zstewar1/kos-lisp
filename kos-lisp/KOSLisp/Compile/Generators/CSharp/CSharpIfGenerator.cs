@@ -48,7 +48,8 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
           Expression.Call(typeof(BoolType), "From", null, Condition.Emit()),
           Expression.Constant(BoolType.T)),
         ValueIfTrue.Emit(),
-        ValueIfFalse.Emit());
+        ValueIfFalse.Emit(),
+        typeof(LispObject));
     }
   }
 }

@@ -47,15 +47,19 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// Produce an expression representing executing the specified expressions.
     /// </summary>
     public override Expression Emit() {
-      var argsParameter = Expression.Parameter(typeof(LispObject), "_in-args");
+      var selfFunctionParameter = Expression.Parameter(
+        typeof(LispObject), "--unused-func-self--");
+      var pargsParameter = Expression.Parameter(typeof(List<LispObject>), "--in-pargs--");
+      var kwargsParameter = Expression.Parameter(
+        typeof(Dictionary<SymbolType, LispObject>), "--in-kwargs--");
       return Expression.Call(
         typeof(FunctionType), "Create", null,
         Expression.Constant(GetFunctionName()),
         Expression.Lambda(
-          typeof(Func<LispObject, LispObject>),
-          EmitLambdaBody(argsParameter),
+          typeof(CallFunc),
+          EmitLambdaBody(pargsParameter, kwargsParameter),
           GetFunctionName().Identifier,
-          ImmutableList.Create(argsParameter)));
+          ImmutableList.Create(selfFunctionParameter, pargsParameter, kwargsParameter)));
     }
 
     /// <summary>
@@ -63,11 +67,13 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// and contains two sub-blocks, one is the block that evaluates and assigns the
     /// arguments, the other is the block that evaluates the lambda's code.
     /// </summary>
-    private Expression EmitLambdaBody(ParameterExpression argsParameter) {
+    private Expression EmitLambdaBody(
+        ParameterExpression pargsParameter,
+        ParameterExpression kwargsParameter) {
       return Expression.Block(
         typeof(LispObject),
         Args.Select(b => (ParameterExpression)b.Emit()),
-        EmitBindArgs(argsParameter),
+        EmitBindArgs(pargsParameter, kwargsParameter),
         EmitForms());
     }
 
@@ -79,22 +85,20 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// correct number of arguments were passed, then uses a function to bind those
     /// arguments.
     /// </summary>
-    private Expression EmitBindArgs(ParameterExpression argsParameter) {
-      var argList = Expression.Variable(typeof(List<LispObject>), "Arg List");
+    private Expression EmitBindArgs(
+        ParameterExpression pargsParameter,
+        ParameterExpression kwargsParameter) {
       var argCount = Expression.Variable(typeof(int), "Arg Count");
 
+      // TODO(zstewar1): Check kwargs, pargs wrapping into kwargs, rest, and kwrest
       return Expression.Block(
         typeof(LispObject),
-        ImmutableList.Create(argList, argCount),
-        Expression.Assign(
-          argList,
-          Expression.Call(
-            typeof(Arguments), "GetPositionalArguments", null, argsParameter)),
+        ImmutableList.Create(argCount),
         Expression.Assign(
           argCount,
-          Expression.Property(argList, "Count")),
+          Expression.Property(pargsParameter, "Count")),
         // Check if the list has the correct number of arguments.
-        Expression.Condition(
+        Expression.IfThen(
           Expression.NotEqual(argCount, Expression.Constant(Args.Count)),
           Expression.Throw(
             Expression.Call(
@@ -104,9 +108,8 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
                 Args.Count + " arguments, got {0}"),
               Expression.NewArrayInit(
                 typeof(object),
-                Expression.Convert(argCount, typeof(object))))),
-          Expression.Empty()),
-        EmitInstantiateArgs(argList));
+                Expression.Convert(argCount, typeof(object)))))),
+        EmitInstantiateArgs(pargsParameter, kwargsParameter));
     }
 
     /// <summary>
@@ -114,7 +117,9 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// from a list of arguments. The list of arguments and the number of argument
     /// bindings are assumend to be equal.
     /// </summary>
-    private Expression EmitInstantiateArgs(ParameterExpression argList) {
+    private Expression EmitInstantiateArgs(
+        ParameterExpression pargsParameter,
+        ParameterExpression kwargsParameter) {
       if (Args.Count == 0) return Expression.Constant(NilType.Nil);
 
       var bindExpressions = new List<Expression>(Args.Count);
@@ -123,7 +128,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
       foreach (var arg in Args) {
         bindExpressions.Add(
           arg.EmitSet(
-            Expression.Property(argList, "Item", Expression.Constant(item++))));
+            Expression.Property(pargsParameter, "Item", Expression.Constant(item++))));
       }
 
       return Expression.Block(
