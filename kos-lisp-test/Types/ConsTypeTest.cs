@@ -169,7 +169,7 @@ namespace ZStewart.KOSLisp.Types {
 
       var result = ListOperations.SetCar(cons, n3);
 
-      Assert.AreSame(result, NilType.Nil);
+      Assert.AreSame(n3, result);
       Assert.AreSame(n3, cons.Car);
       Assert.AreSame(n2, cons.Cdr);
     }
@@ -184,7 +184,7 @@ namespace ZStewart.KOSLisp.Types {
 
       var result = ListOperations.SetCdr(cons, n3);
 
-      Assert.AreSame(result, NilType.Nil);
+      Assert.AreSame(n3, result);
       Assert.AreSame(n1, cons.Car);
       Assert.AreSame(n3, cons.Cdr);
     }
