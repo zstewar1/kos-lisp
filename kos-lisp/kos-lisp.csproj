@@ -95,10 +95,6 @@
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpDefunGenerator.cs" />
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpGlobalBindingGenerator.cs" />
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpLocalBindingGenerator.cs" />
-    <Compile Include="KOSLisp\Parse\Lisp\LispLexer.cs" />
-    <Compile Include="KOSLisp\Parse\Lisp\LispParser.cs" />
-    <Compile Include="KOSLisp\Parse\Lisp\LispLexMode.cs" />
-    <Compile Include="KOSLisp\Parse\Lisp\LispTokType.cs" />
     <Compile Include="KOSLisp\Compile\SemanticAnalyzer.cs" />
     <Compile Include="KOSLisp\Compile\BaseSemanticAnalyzer.cs" />
     <Compile Include="KOSLisp\Compile\DefaultSemanticAnalyzer.cs" />
@@ -127,6 +123,10 @@
     <ProjectReference Include="..\ZStewart.KOSLisp.Parse\ZStewart.KOSLisp.Parse.csproj">
       <Project>{213150F8-6AC2-4AF7-A4A9-4EA03651D46A}</Project>
       <Name>ZStewart.KOSLisp.Parse</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Parse.Lisp\ZStewart.KOSLisp.Parse.Lisp.csproj">
+      <Project>{178AE810-F08F-4D73-BE8C-6892432E77F3}</Project>
+      <Name>ZStewart.KOSLisp.Parse.Lisp</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
