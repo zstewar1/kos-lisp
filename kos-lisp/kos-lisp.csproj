@@ -95,10 +95,6 @@
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpDefunGenerator.cs" />
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpGlobalBindingGenerator.cs" />
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpLocalBindingGenerator.cs" />
-    <Compile Include="KOSLisp\Parse\Lexer.cs" />
-    <Compile Include="KOSLisp\Parse\Parser.cs" />
-    <Compile Include="KOSLisp\Parse\Token.cs" />
-    <Compile Include="KOSLisp\Parse\SourceInformation.cs" />
     <Compile Include="KOSLisp\Parse\Lisp\LispLexer.cs" />
     <Compile Include="KOSLisp\Parse\Lisp\LispParser.cs" />
     <Compile Include="KOSLisp\Parse\Lisp\LispLexMode.cs" />
@@ -127,6 +123,10 @@
     <ProjectReference Include="..\ZStewart.KOSLisp.Types\ZStewart.KOSLisp.Types.csproj">
       <Project>{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}</Project>
       <Name>ZStewart.KOSLisp.Types</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Parse\ZStewart.KOSLisp.Parse.csproj">
+      <Project>{213150F8-6AC2-4AF7-A4A9-4EA03651D46A}</Project>
+      <Name>ZStewart.KOSLisp.Parse</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
