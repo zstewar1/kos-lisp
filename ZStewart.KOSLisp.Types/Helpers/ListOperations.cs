@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.Attributes;
 
 namespace ZStewart.KOSLisp.Types.Helpers {

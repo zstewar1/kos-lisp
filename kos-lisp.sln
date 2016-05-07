@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kos-lisp", "kos-lisp\kos-lisp.csproj", "{BE92492D-605F-4527-830A-FC7269C61380}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kos-lisp-test", "kos-lisp-test\kos-lisp-test.csproj", "{023D9138-02A4-4C96-B624-87D3C755EB4E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZStewart.KOSLisp.Types.Test", "ZStewart.KOSLisp.Types.Test\ZStewart.KOSLisp.Types.Test.csproj", "{023D9138-02A4-4C96-B624-87D3C755EB4E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZStewart.KOSLisp.Types", "ZStewart.KOSLisp.Types\ZStewart.KOSLisp.Types.csproj", "{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,6 +21,10 @@ Global
 		{BE92492D-605F-4527-830A-FC7269C61380}.Debug|x86.Build.0 = Debug|x86
 		{BE92492D-605F-4527-830A-FC7269C61380}.Release|x86.ActiveCfg = Release|x86
 		{BE92492D-605F-4527-830A-FC7269C61380}.Release|x86.Build.0 = Release|x86
+		{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}.Debug|x86.Build.0 = Debug|Any CPU
+		{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}.Release|x86.ActiveCfg = Release|Any CPU
+		{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0

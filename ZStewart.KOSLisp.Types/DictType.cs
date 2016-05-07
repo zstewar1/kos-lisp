@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Types.TypeCategories;
 using ZStewart.KOSLisp.Types.Attributes;
 

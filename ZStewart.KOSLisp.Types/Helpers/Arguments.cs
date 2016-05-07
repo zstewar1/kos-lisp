@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using ZStewart.KOSLisp.Interpreter;
-
 namespace ZStewart.KOSLisp.Types.Helpers {
   public static class Arguments {
 

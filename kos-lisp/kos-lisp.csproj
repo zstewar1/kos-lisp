@@ -98,44 +98,6 @@
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpDefunGenerator.cs" />
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpGlobalBindingGenerator.cs" />
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpLocalBindingGenerator.cs" />
-    <Compile Include="KOSLisp\Types\Attributes\KeywordArgument.cs" />
-    <Compile Include="KOSLisp\Types\Attributes\PositionalArgument.cs" />
-    <Compile Include="KOSLisp\Types\Attributes\RestArgument.cs" />
-    <Compile Include="KOSLisp\Types\Attributes\RestKeywordArgument.cs" />
-    <Compile Include="KOSLisp\Types\Helpers\Arguments.cs" />
-    <Compile Include="KOSLisp\Types\Helpers\LookupHelpers.cs" />
-    <Compile Include="KOSLisp\Types\Helpers\CallableOperations.cs" />
-    <Compile Include="KOSLisp\Types\Helpers\DescriptorOperations.cs" />
-    <Compile Include="KOSLisp\Types\Helpers\ComparisonOperations.cs" />
-    <Compile Include="KOSLisp\Types\Helpers\MappingOperations.cs" />
-    <Compile Include="KOSLisp\Types\TypeCategories\ComparisonMethods.cs" />
-    <Compile Include="KOSLisp\Types\TypeCategories\MappingMethods.cs" />
-    <Compile Include="KOSLisp\Types\TypeCategories\ListMethods.cs" />
-    <Compile Include="KOSLisp\Types\TypeCategories\NumberMethods.cs" />
-    <Compile Include="KOSLisp\Types\CallMagic.cs" />
-    <Compile Include="KOSLisp\Types\Delegates.cs" />
-    <Compile Include="KOSLisp\Types\DictType.cs" />
-    <Compile Include="KOSLisp\Types\ModuleType.cs" />
-    <Compile Include="KOSLisp\Types\ConsType.cs" />
-    <Compile Include="KOSLisp\Types\Helpers\ListOperations.cs" />
-    <Compile Include="KOSLisp\Types\IConsType.cs" />
-    <Compile Include="KOSLisp\Types\LispObject.cs" />
-    <Compile Include="KOSLisp\Types\LispType.cs" />
-    <Compile Include="KOSLisp\Types\NilType.cs" />
-    <Compile Include="KOSLisp\Types\BoolType.cs" />
-    <Compile Include="KOSLisp\Types\ExceptionType.cs" />
-    <Compile Include="KOSLisp\Types\ExceptionWrapper.cs" />
-    <Compile Include="KOSLisp\Types\NumberType.cs" />
-    <Compile Include="KOSLisp\Types\MethodType.cs" />
-    <Compile Include="KOSLisp\Types\FunctionType.cs" />
-    <Compile Include="KOSLisp\Types\BuiltinFunctionType.cs" />
-    <Compile Include="KOSLisp\Types\BuiltinDataDescriptorType.cs" />
-    <Compile Include="KOSLisp\Types\BuiltinIterType.cs" />
-    <Compile Include="KOSLisp\Types\ObjectType.cs" />
-    <Compile Include="KOSLisp\Types\PropConsts.cs" />
-    <Compile Include="KOSLisp\Types\StringType.cs" />
-    <Compile Include="KOSLisp\Types\SymbolType.cs" />
-    <Compile Include="KOSLisp\Types\TypeType.cs" />
     <Compile Include="KOSLisp\Parse\Lexer.cs" />
     <Compile Include="KOSLisp\Parse\Parser.cs" />
     <Compile Include="KOSLisp\Parse\Token.cs" />
@@ -160,5 +122,11 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Types\ZStewart.KOSLisp.Types.csproj">
+      <Project>{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}</Project>
+      <Name>ZStewart.KOSLisp.Types</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

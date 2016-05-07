@@ -5,8 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{023D9138-02A4-4C96-B624-87D3C755EB4E}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>ZStewart.KOSLisp</RootNamespace>
-    <AssemblyName>kos-lisp-test</AssemblyName>
+    <RootNamespace>ZStewart.KOSLisp.Types.Test</RootNamespace>
+    <AssemblyName>ZStewart.KOSLisp.Types.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -45,12 +45,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\kos-lisp\kos-lisp.csproj">
-      <Project>{BE92492D-605F-4527-830A-FC7269C61380}</Project>
-      <Name>kos-lisp</Name>
-    </ProjectReference>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+    <ProjectReference Include="..\ZStewart.KOSLisp.Types\ZStewart.KOSLisp.Types.csproj">
+      <Project>{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}</Project>
+      <Name>ZStewart.KOSLisp.Types</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

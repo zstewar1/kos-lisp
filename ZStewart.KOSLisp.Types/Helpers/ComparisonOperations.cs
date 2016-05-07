@@ -1,5 +1,4 @@
-﻿using ZStewart.KOSLisp.Interpreter;
-using ZStewart.KOSLisp.Types.Attributes;
+﻿using ZStewart.KOSLisp.Types.Attributes;
 
 namespace ZStewart.KOSLisp.Types.Helpers {
   public static class ComparisonOperations {

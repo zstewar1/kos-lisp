@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ZStewart.KOSLisp.Types</RootNamespace>
+    <AssemblyName>ZStewart.KOSLisp.Types</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\packages\System.Collections.Immutable.1.1.37\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Attributes\KeywordArgument.cs" />
+    <Compile Include="Attributes\PositionalArgument.cs" />
+    <Compile Include="Attributes\RestArgument.cs" />
+    <Compile Include="Attributes\RestKeywordArgument.cs" />
+    <Compile Include="Helpers\Arguments.cs" />
+    <Compile Include="Helpers\LookupHelpers.cs" />
+    <Compile Include="Helpers\CallableOperations.cs" />
+    <Compile Include="Helpers\DescriptorOperations.cs" />
+    <Compile Include="Helpers\ComparisonOperations.cs" />
+    <Compile Include="Helpers\MappingOperations.cs" />
+    <Compile Include="TypeCategories\ComparisonMethods.cs" />
+    <Compile Include="TypeCategories\MappingMethods.cs" />
+    <Compile Include="TypeCategories\ListMethods.cs" />
+    <Compile Include="TypeCategories\NumberMethods.cs" />
+    <Compile Include="CallMagic.cs" />
+    <Compile Include="Delegates.cs" />
+    <Compile Include="DictType.cs" />
+    <Compile Include="ModuleType.cs" />
+    <Compile Include="ConsType.cs" />
+    <Compile Include="Helpers\ListOperations.cs" />
+    <Compile Include="IConsType.cs" />
+    <Compile Include="LispObject.cs" />
+    <Compile Include="LispType.cs" />
+    <Compile Include="NilType.cs" />
+    <Compile Include="BoolType.cs" />
+    <Compile Include="ExceptionType.cs" />
+    <Compile Include="ExceptionWrapper.cs" />
+    <Compile Include="NumberType.cs" />
+    <Compile Include="MethodType.cs" />
+    <Compile Include="FunctionType.cs" />
+    <Compile Include="BuiltinFunctionType.cs" />
+    <Compile Include="BuiltinDataDescriptorType.cs" />
+    <Compile Include="BuiltinIterType.cs" />
+    <Compile Include="ObjectType.cs" />
+    <Compile Include="PropConsts.cs" />
+    <Compile Include="StringType.cs" />
+    <Compile Include="SymbolType.cs" />
+    <Compile Include="TypeType.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

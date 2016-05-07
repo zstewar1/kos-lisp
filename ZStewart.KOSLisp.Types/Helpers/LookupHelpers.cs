@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-using ZStewart.KOSLisp.Interpreter;
-
 namespace ZStewart.KOSLisp.Types.Helpers {
   /// <summary>
   /// A set of helper functions which make it easier to implement looping lookup

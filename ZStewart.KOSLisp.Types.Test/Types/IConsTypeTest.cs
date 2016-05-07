@@ -3,9 +3,8 @@ using System;
 using System.Collections.Immutable;
 
 using ZStewart.KOSLisp.Types.Helpers;
-using ZStewart.KOSLisp.Interpreter;
 
-namespace ZStewart.KOSLisp.Types {
+namespace ZStewart.KOSLisp.Types.Test {
   [TestFixture]
   public class IConsTypeTest {
     [Test]
