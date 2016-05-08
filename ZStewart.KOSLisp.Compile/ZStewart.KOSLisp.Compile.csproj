@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7CA91E06-D389-453D-9F3E-E9D7DA6199A1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ZStewart.KOSLisp.Compile</RootNamespace>
+    <AssemblyName>ZStewart.KOSLisp.Compile</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\packages\System.Collections.Immutable.1.1.37\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Contexts\Context.cs" />
+    <Compile Include="Contexts\GlobalContext.cs" />
+    <Compile Include="Contexts\ScopedContext.cs" />
+    <Compile Include="Contexts\ClosuredScopedContext.cs" />
+    <Compile Include="SpecialForms\SpecialForm.cs" />
+    <Compile Include="SpecialForms\IfSpecialForm.cs" />
+    <Compile Include="SpecialForms\PrognSpecialForm.cs" />
+    <Compile Include="SpecialForms\LetSpecialForm.cs" />
+    <Compile Include="SpecialForms\LambdaSpecialForm.cs" />
+    <Compile Include="SpecialForms\DefunSpecialForm.cs" />
+    <Compile Include="SpecialForms\FuncCallSpecialForm.cs" />
+    <Compile Include="SpecialForms\PrimitiveSpecialForm.cs" />
+    <Compile Include="SpecialForms\QuoteSpecialForm.cs" />
+    <Compile Include="AST\Ast.cs" />
+    <Compile Include="AST\AstOp.cs" />
+    <Compile Include="AST\AstBinding.cs" />
+    <Compile Include="AST\AstOpBase.cs" />
+    <Compile Include="AST\AstConst.cs" />
+    <Compile Include="AST\AstFuncCall.cs" />
+    <Compile Include="AST\AstIf.cs" />
+    <Compile Include="AST\AstProgn.cs" />
+    <Compile Include="AST\AstLet.cs" />
+    <Compile Include="AST\AstLambda.cs" />
+    <Compile Include="AST\AstDefun.cs" />
+    <Compile Include="AST\AstGlobalBinding.cs" />
+    <Compile Include="AST\AstLocalBinding.cs" />
+    <Compile Include="Generators\GeneratorFactory.cs" />
+    <Compile Include="Generators\CodeGenerator.cs" />
+    <Compile Include="SemanticAnalyzer.cs" />
+    <Compile Include="BaseSemanticAnalyzer.cs" />
+    <Compile Include="DefaultSemanticAnalyzer.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Parse\ZStewart.KOSLisp.Parse.csproj">
+      <Project>{213150F8-6AC2-4AF7-A4A9-4EA03651D46A}</Project>
+      <Name>ZStewart.KOSLisp.Parse</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Types\ZStewart.KOSLisp.Types.csproj">
+      <Project>{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}</Project>
+      <Name>ZStewart.KOSLisp.Types</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

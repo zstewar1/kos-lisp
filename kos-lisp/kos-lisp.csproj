@@ -55,34 +55,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="KOSLisp\Program.cs" />
     <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
-    <Compile Include="KOSLisp\Compile\Contexts\Context.cs" />
-    <Compile Include="KOSLisp\Compile\Contexts\GlobalContext.cs" />
-    <Compile Include="KOSLisp\Compile\Contexts\ScopedContext.cs" />
-    <Compile Include="KOSLisp\Compile\Contexts\ClosuredScopedContext.cs" />
-    <Compile Include="KOSLisp\Compile\SpecialForms\SpecialForm.cs" />
-    <Compile Include="KOSLisp\Compile\SpecialForms\IfSpecialForm.cs" />
-    <Compile Include="KOSLisp\Compile\SpecialForms\PrognSpecialForm.cs" />
-    <Compile Include="KOSLisp\Compile\SpecialForms\LetSpecialForm.cs" />
-    <Compile Include="KOSLisp\Compile\SpecialForms\LambdaSpecialForm.cs" />
-    <Compile Include="KOSLisp\Compile\SpecialForms\DefunSpecialForm.cs" />
-    <Compile Include="KOSLisp\Compile\SpecialForms\FuncCallSpecialForm.cs" />
-    <Compile Include="KOSLisp\Compile\SpecialForms\PrimitiveSpecialForm.cs" />
-    <Compile Include="KOSLisp\Compile\SpecialForms\QuoteSpecialForm.cs" />
-    <Compile Include="KOSLisp\Compile\AST\Ast.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstOp.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstBinding.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstOpBase.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstConst.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstFuncCall.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstIf.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstProgn.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstLet.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstLambda.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstDefun.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstGlobalBinding.cs" />
-    <Compile Include="KOSLisp\Compile\AST\AstLocalBinding.cs" />
-    <Compile Include="KOSLisp\Compile\Generators\GeneratorFactory.cs" />
-    <Compile Include="KOSLisp\Compile\Generators\CodeGenerator.cs" />
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpGeneratorFactory.cs" />
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpGenerator.cs" />
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpBindingGenerator.cs" />
@@ -95,9 +67,6 @@
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpDefunGenerator.cs" />
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpGlobalBindingGenerator.cs" />
     <Compile Include="KOSLisp\Compile\Generators\CSharp\CSharpLocalBindingGenerator.cs" />
-    <Compile Include="KOSLisp\Compile\SemanticAnalyzer.cs" />
-    <Compile Include="KOSLisp\Compile\BaseSemanticAnalyzer.cs" />
-    <Compile Include="KOSLisp\Compile\DefaultSemanticAnalyzer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -127,6 +96,10 @@
     <ProjectReference Include="..\ZStewart.KOSLisp.Parse.Lisp\ZStewart.KOSLisp.Parse.Lisp.csproj">
       <Project>{178AE810-F08F-4D73-BE8C-6892432E77F3}</Project>
       <Name>ZStewart.KOSLisp.Parse.Lisp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Compile\ZStewart.KOSLisp.Compile.csproj">
+      <Project>{7CA91E06-D389-453D-9F3E-E9D7DA6199A1}</Project>
+      <Name>ZStewart.KOSLisp.Compile</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
