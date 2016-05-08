@@ -52,6 +52,8 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         expressions.Add(Expression.ListInit(
           Expression.New(typeof(List<LispObject>)),
           Arguments.Select(arg => Expression.ElementInit(listAdd, arg.Emit()))));
+      } else {
+        expressions.Add(Expression.New(typeof(List<LispObject>)));
       }
 
       return Expression.Call(callMethod, expressions);

@@ -1,9 +1,17 @@
 ;; Woot.
-(defun a (x) (if (cdr x) (a (cdr x)) (car x)))
-(a '(1 2 3))
-(a '(1 2 3 4))
+(defun last (x)
+  (if (cdr x)
+    (progn
+      (print "continue" x)
+      (last (cdr x)))
+    (progn
+      (print "found last" x)
+      (car x))))
 
-(let ((a 3)) a)
+(print '(last '(1 2 3)) (last '(1 2 3)))
+(print '(last '(1 2 3 4)) (last '(1 2 3 4)))
+
+(print '(let ((a 3)) a) (let ((a 3)) a))
 
 (let ((b t))
   (if b 1 2))

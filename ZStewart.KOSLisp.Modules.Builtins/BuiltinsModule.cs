@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using ZStewart.KOSLisp.Types;
+using ZStewart.KOSLisp.Types.Attributes;
 using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Modules.Builtins {
@@ -27,9 +29,22 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         AddBuiltin(typeof(ListOperations), "SetCar", "%setcar");
         AddBuiltin(typeof(ListOperations), "SetCdr", "%setcdr");
 
+        AddBuiltin(typeof(BuiltinsModule), "Print", "print");
+
         return _builtins;
       }
     }
+
+    #region Simple Builtin Functions
+    public static LispObject Print([RestArgument] List<LispObject> thingsToPrint) {
+      foreach(var obj in thingsToPrint) {
+        Console.Write(obj.ToString());
+        Console.Write(" ");
+      }
+      Console.WriteLine();
+      return NilType.Nil;
+    }
+    #endregion Simple Builtin Functions
   }
 }
 

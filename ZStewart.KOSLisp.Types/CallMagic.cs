@@ -32,8 +32,6 @@ namespace ZStewart.KOSLisp.Types {
           pargs.Add(p.ParameterType);
         } else {
           // Next argument is unannotated (as positional).
-          // Decrement so that the next operation gets the same argument.
-          index--;
           break;
         }
       }
@@ -43,7 +41,7 @@ namespace ZStewart.KOSLisp.Types {
         var p = paraminfos[index];
         if (p.GetCustomAttribute<RestArgument>() != null) {
           index++;
-          if (!p.ParameterType.IsAssignableFrom(typeof(IList<LispObject>)))
+          if (!p.ParameterType.IsAssignableFrom(typeof(List<LispObject>)))
             throw new ArgumentException(
               "RestArgument must accept a list of lisp objects.");
           else rest = true;
