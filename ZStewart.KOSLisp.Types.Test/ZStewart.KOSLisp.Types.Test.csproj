@@ -37,8 +37,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Types\IConsTypeTest.cs" />
-    <Compile Include="Types\ConsTypeTest.cs" />
+    <Compile Include="IConsTypeTest.cs" />
+    <Compile Include="ConsTypeTest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
