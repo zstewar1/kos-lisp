@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProjectGuid>{BE92492D-605F-4527-830A-FC7269C61380}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ZStewart</RootNamespace>
+    <RootNamespace>ZStewart.KOSLisp</RootNamespace>
     <AssemblyName>kos-lisp</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -53,8 +53,7 @@
   <ItemGroup>
     <Compile Include="Options.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="KOSLisp\Program.cs" />
-    <Compile Include="KOSLisp\Interpreter\Interpreter.cs" />
+    <Compile Include="Program.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -92,6 +91,10 @@
     <ProjectReference Include="..\ZStewart.KOSLisp.Compile.Generators.CSharp\ZStewart.KOSLisp.Compile.Generators.CSharp.csproj">
       <Project>{E46FD6E2-AA5A-4568-8DC5-26AFE04B55C8}</Project>
       <Name>ZStewart.KOSLisp.Compile.Generators.CSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Modules.Builtins\ZStewart.KOSLisp.Modules.Builtins.csproj">
+      <Project>{E0270882-93E6-444B-AD28-64C033681276}</Project>
+      <Name>ZStewart.KOSLisp.Modules.Builtins</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

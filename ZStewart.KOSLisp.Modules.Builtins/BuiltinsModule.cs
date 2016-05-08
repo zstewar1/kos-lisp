@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Types.Helpers;
 
-namespace ZStewart.KOSLisp.Interpreter {
-  /// <summary>
-  /// Class storing the state of the interpreter as it executes code.
-  ///
-  /// This is a singleton currently.
-  /// </summary>
-  public static class LispInterpreter {
-    #region Builtins Module
+namespace ZStewart.KOSLisp.Modules.Builtins {
+  public static class BuiltinsModule {
     private static void AddBuiltin(Type fromType, string name, string symbol) {
       var sym = SymbolType.Create(symbol);
       MappingOperations.SetItem(
@@ -39,6 +30,6 @@ namespace ZStewart.KOSLisp.Interpreter {
         return _builtins;
       }
     }
-    #endregion
   }
 }
+

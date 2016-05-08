@@ -5,14 +5,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-using ZStewart.KOSLisp.Interpreter;
 using ZStewart.KOSLisp.Compile;
 using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Compile.Contexts;
 using ZStewart.KOSLisp.Compile.Generators.CSharp;
-using ZStewart.KOSLisp.Types;
+using ZStewart.KOSLisp.Modules.Builtins;
 using ZStewart.KOSLisp.Parse;
 using ZStewart.KOSLisp.Parse.Lisp;
+using ZStewart.KOSLisp.Types;
 
 namespace ZStewart.KOSLisp {
 
@@ -88,7 +88,7 @@ namespace ZStewart.KOSLisp {
       LispParser parser = new LispParser(lexer);
 
       var mainModule = ModuleType.Create(
-        SymbolType.Create(name), LispInterpreter.Builtins);
+        SymbolType.Create(name), BuiltinsModule.Builtins);
       var context = new GlobalContext(mainModule);
       var compiler = new DefaultSemanticAnalyzer();
       var generatorFactory = new CSharpGeneratorFactory();
