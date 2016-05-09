@@ -34,7 +34,7 @@ namespace ZStewart.KOSLisp.Types {
         if (_number == null) throw new InvalidOperationException();
 
         LispType.AddStatic(_number, "ToBool", PropConsts.Bool);
-        LispType.AddStatic(_number, "ToStr", PropConsts.Str);
+        LispType.AddStatic(_number, "ToRepr", PropConsts.Repr);
 
         return _number;
       }
@@ -45,7 +45,7 @@ namespace ZStewart.KOSLisp.Types {
       return BoolType.T;
     }
 
-    private static LispObject ToStr([PositionalArgument] double value) {
+    private static LispObject ToRepr([PositionalArgument] double value) {
       return StringType.Create(value.ToString());
     }
     #endregion
@@ -61,9 +61,5 @@ namespace ZStewart.KOSLisp.Types {
 
     private double value;
     public double Value { get { return value; } }
-
-    public override string ToString () {
-      return Value.ToString();
-    }
   }
 }

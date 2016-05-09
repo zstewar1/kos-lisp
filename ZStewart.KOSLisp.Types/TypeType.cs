@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using ZStewart.KOSLisp.Types.Attributes;
 using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Types {
@@ -35,6 +36,9 @@ namespace ZStewart.KOSLisp.Types {
         _type = LispType.ConfigureType(_type);
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_type == null) throw new InvalidOperationException();
+
+        LispType.AddStatic(_type, "ToRepr", PropConsts.Repr);
+
         return _type;
       }
     }
@@ -50,6 +54,10 @@ namespace ZStewart.KOSLisp.Types {
         List<LispObject> pargs,
         Dictionary<SymbolType, LispObject> kwargs) {
       throw ExceptionType.ThrowNotImplemented("");
+    }
+
+    private static LispObject ToRepr([PositionalArgument] LispType type) {
+      return StringType.Format("[type {0}]", type.__name__);
     }
     #endregion Static Type Setup
 

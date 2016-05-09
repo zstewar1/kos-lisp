@@ -36,13 +36,32 @@ namespace ZStewart.KOSLisp.Types {
 
         LispType.AddStatic(_string, "ToBool", PropConsts.Bool);
         LispType.AddStatic(_string, "ToStr", PropConsts.Str);
+        LispType.AddStatic(_string, "ToRepr", PropConsts.Repr);
 
         return _string;
       }
     }
 
+    /// <summary>
+    /// Get the str value of this string. Which is just itself.
+    /// </summary>
     private static LispObject ToStr([PositionalArgument] StringType str) {
       return str;
+    }
+
+    /// <summary>
+    /// Create a representation string of this string, with all quotes appearing escaped,
+    /// and the value wrapped in more quotes.
+    /// </summary>
+    private static LispObject ToRepr([PositionalArgument] StringType str) {
+      return Create(
+        new StringBuilder(str.Value)
+          .Replace("\"", "\\\"")
+          .Replace("\n", "\\n")
+          .Replace("\r", "\\r")
+          .Insert(0, "\"")
+          .Append("\"")
+          .ToString());
     }
 
     private static LispObject ToBool([PositionalArgument] string self) {
@@ -66,19 +85,31 @@ namespace ZStewart.KOSLisp.Types {
         value = value,
       };
     }
+
+    public static StringType Format(string format, params object[] args) {
+      return Create(string.Format(format, args));
+    }
+
+    public static string GetObjectStr(LispObject obj) {
+      var str = Call(obj, "--str--");
+      if (!(str is StringType)) {
+        throw ExceptionType.ThrowTypeError(
+          "result of --str-- must be a str, was {0}", obj.__class__);
+      }
+      return ((StringType)str).Value;
+    }
+
+    public static string GetObjectRepr(LispObject obj) {
+      var repr = Call(obj, "--repr--");
+      if (!(repr is StringType)) {
+        throw ExceptionType.ThrowTypeError(
+          "result of --repr-- must be a str, was {0}", obj.__class__);
+      }
+      return ((StringType)repr).Value;
+    }
     #endregion Static Helper Methods
 
     private string value;
     public string Value { get { return value; } }
-
-    public override string ToString () {
-      return new StringBuilder(Value)
-        .Replace("\"", "\\\"")
-        .Replace("\n", "\\n")
-        .Replace("\r", "\\r")
-        .Insert(0, "\"")
-        .Append("\"")
-        .ToString();
-    }
   }
 }

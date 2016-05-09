@@ -99,7 +99,8 @@ namespace ZStewart.KOSLisp {
           parsed = parser.ParseNext();
         } catch (ExceptionWrapper ex) {
           Console.Error.WriteLine("Exception while paring:");
-          Console.Error.WriteLine(ex.LispException);
+          Console.Error.WriteLine(
+            "{0}: {1}", ex.LispException.__class__.__name__, ex.LispException.ToString());
           if (interactive) {
             lexer.ClearLine();
             continue;
@@ -117,7 +118,8 @@ namespace ZStewart.KOSLisp {
           func = Expression.Lambda<Func<LispObject>>(expression).Compile();
         } catch (ExceptionWrapper ex) {
           Console.Error.WriteLine("Exception while compiling:");
-          Console.Error.WriteLine(ex.LispException);
+          Console.Error.WriteLine(
+            "{0}: {1}", ex.LispException.__class__.__name__, ex.LispException.ToString());
           if (interactive) {
             continue;
           } else {
@@ -127,11 +129,12 @@ namespace ZStewart.KOSLisp {
         try {
           var result = func();
           if (interactive) {
-            Console.WriteLine(result);
+            Console.WriteLine(StringType.GetObjectRepr(result));
           }
         } catch (ExceptionWrapper ex) {
           Console.Error.WriteLine("Exception while evaluating:");
-          Console.Error.WriteLine(ex.LispException);
+          Console.Error.WriteLine(
+            "{0}: {1}", ex.LispException.__class__.__name__, ex.LispException.ToString());
         }
       }
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+using ZStewart.KOSLisp.Types.Attributes;
 using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
@@ -46,6 +47,9 @@ namespace ZStewart.KOSLisp.Types {
         _icons = LispType.ConfigureType(_icons);
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_icons == null) throw new InvalidOperationException();
+
+        LispType.AddStatic(_icons, "ToRepr", PropConsts.Repr);
+
         return _icons;
       }
     }
@@ -74,6 +78,27 @@ namespace ZStewart.KOSLisp.Types {
       }
       throw ExceptionType.ThrowTypeError(
         "instance must be of type {0}, was {1}", ICons, instance.__class__);
+    }
+
+    private static LispObject ToRepr ([PositionalArgument] IConsType self) {
+      StringBuilder val = new StringBuilder("(tuple ");
+      IConsType value = self;
+      while (value != null) {
+        val.Append(StringType.GetObjectRepr(value.Car));
+        LispObject cdr = value.Cdr;
+        if (cdr is IConsType) {
+          value = (IConsType)cdr;
+          val.Append(" ");
+        } else {
+          value = null;
+          if (cdr != NilType.Nil) {
+            val.Append(" . ");
+            val.Append(StringType.GetObjectRepr(cdr));
+          }
+        }
+      }
+      val.Append(")");
+      return StringType.Create(val.ToString());
     }
     #endregion Static Type Setup
 
@@ -140,26 +165,5 @@ namespace ZStewart.KOSLisp.Types {
     /// This is the cdr of the icons.
     /// </summary>
     public LispObject Cdr { get { return cdr; } }
-
-    public override string ToString () {
-      StringBuilder val = new StringBuilder("(tuple ");
-      IConsType value = this;
-      while (value != null) {
-        val.Append(value.Car.ToString());
-        LispObject cdr = value.Cdr;
-        if (cdr is IConsType) {
-          value = (IConsType)cdr;
-          val.Append(" ");
-        } else {
-          value = null;
-          if (cdr != NilType.Nil) {
-            val.Append(" . ");
-            val.Append(cdr.ToString());
-          }
-        }
-      }
-      val.Append(")");
-      return val.ToString();
-    }
   }
 }

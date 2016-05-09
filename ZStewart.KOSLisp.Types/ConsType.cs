@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+using ZStewart.KOSLisp.Types.Attributes;
 using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
@@ -40,6 +41,9 @@ namespace ZStewart.KOSLisp.Types {
         _cons = LispType.ConfigureType(_cons);
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_cons == null) throw new InvalidOperationException();
+
+        LispType.AddStatic(_cons, "ToRepr", PropConsts.Repr);
+
         return _cons;
       }
     }
@@ -122,6 +126,47 @@ namespace ZStewart.KOSLisp.Types {
           "instance must be of type {0}, was {1}", Cons, instance.__class__);
       }
     }
+
+    private static LispObject ToRepr([PositionalArgument] ConsType self) {
+      try {
+        var len = ListOperations.Count(self);
+        if (len == 2 && LispType.IsInstance(self.Car, SymbolType.Symbol)) {
+          if (self.Car == SymbolType.Create("quote")) {
+            return StringType.Create(
+              "'" + StringType.GetObjectRepr(ListOperations.GetCar(self.Cdr)));
+          } else if (self.Car == SymbolType.Create("--backquote--")) {
+            return StringType.Create(
+              "`" + StringType.GetObjectRepr(ListOperations.GetCar(self.Cdr)));
+          } else if (self.Car == SymbolType.Create("--unquote--")) {
+            return StringType.Create(
+              "," + StringType.GetObjectRepr(ListOperations.GetCar(self.Cdr)));
+          } else if (self.Car == SymbolType.Create("--splice--")) {
+            return StringType.Create(
+              ",@" + StringType.GetObjectRepr(ListOperations.GetCar(self.Cdr)));
+          }
+        }
+      } catch (ExceptionWrapper ex) {
+        if (!ExceptionType.Check(ex, ExceptionType.TypeError)) throw;
+      }
+      StringBuilder val = new StringBuilder("(");
+      ConsType value = self;
+      while (value != null) {
+        val.Append(StringType.GetObjectRepr(value.Car));
+        LispObject cdr = value.Cdr;
+        if (cdr is ConsType) {
+          value = (ConsType)cdr;
+          val.Append(" ");
+        } else {
+          value = null;
+          if (cdr != NilType.Nil) {
+            val.Append(" . ");
+            val.Append(StringType.GetObjectRepr(cdr));
+          }
+        }
+      }
+      val.Append(")");
+      return StringType.Create(val.ToString());
+    }
     #endregion Static Type Setup
 
     // Methods to help other C# code interface with the cons type. These bypass the need
@@ -179,44 +224,5 @@ namespace ZStewart.KOSLisp.Types {
     /// The second element of the cons. In a list this is the pointer to the next cons.
     /// </summary>
     public LispObject Cdr { get; set; }
-
-    public override string ToString () {
-      // TODO(zstewar1): This could raise an error. Later we should change these to call
-      // the in-language --str-- method and return the value from that.
-      try {
-        var len = ListOperations.Count(this);
-        if (len == 2 && LispType.IsInstance(Car, SymbolType.Symbol)) {
-          if (Car == SymbolType.Create("quote")) {
-            return "'" + ListOperations.GetCar(Cdr).ToString();
-          } else if (Car == SymbolType.Create("--backquote--")) {
-            return "`" + ListOperations.GetCar(Cdr).ToString();
-          } else if (Car == SymbolType.Create("--unquote--")) {
-            return "," + ListOperations.GetCar(Cdr).ToString();
-          } else if (Car == SymbolType.Create("--splice--")) {
-            return ",@" + ListOperations.GetCar(Cdr).ToString();
-          }
-        }
-      } catch (ExceptionWrapper ex) {
-        if (!ExceptionType.Check(ex, ExceptionType.TypeError)) throw;
-      }
-      StringBuilder val = new StringBuilder("(");
-      ConsType value = this;
-      while (value != null) {
-        val.Append(value.Car.ToString());
-        LispObject cdr = value.Cdr;
-        if (cdr is ConsType) {
-          value = (ConsType)cdr;
-          val.Append(" ");
-        } else {
-          value = null;
-          if (cdr != NilType.Nil) {
-            val.Append(" . ");
-            val.Append(cdr.ToString());
-          }
-        }
-      }
-      val.Append(")");
-      return val.ToString();
-    }
   }
 }

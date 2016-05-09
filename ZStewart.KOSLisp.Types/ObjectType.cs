@@ -38,6 +38,8 @@ namespace ZStewart.KOSLisp.Types {
         if (_object == null) throw new InvalidOperationException();
 
         LispType.AddStatic(_object, "ToBool", PropConsts.Bool);
+        LispType.AddStatic(_object, "ToStr", PropConsts.Str);
+        LispType.AddStatic(_object, "ToRepr", PropConsts.Repr);
 
         return _object;
       }
@@ -163,6 +165,14 @@ namespace ZStewart.KOSLisp.Types {
 
     private static LispObject ToBool([PositionalArgument] LispObject nil) {
       return BoolType.T;
+    }
+
+    private static LispObject ToStr([PositionalArgument] LispObject obj) {
+      return Call(obj, "--repr--");
+    }
+
+    private static LispObject ToRepr([PositionalArgument] LispObject obj) {
+      return StringType.Create(string.Format("[{0} object]", obj.__class__));
     }
     #endregion Static Type Setup
 
@@ -331,5 +341,9 @@ namespace ZStewart.KOSLisp.Types {
       return false;
     }
     #endregion Static Helper Methods
+
+    public override string ToString() {
+      return StringType.GetObjectStr(this);
+    }
   }
 }

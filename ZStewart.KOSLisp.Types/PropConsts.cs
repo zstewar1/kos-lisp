@@ -50,6 +50,10 @@ namespace ZStewart.KOSLisp.Types {
     /// The function used to convert the object to a string.
     /// </summary>
     public static SymbolType Str { get { return SymbolType.Create("--str--"); } }
+    /// <summary>
+    /// The function used to convert the object to a general representation.
+    /// </summary>
+    public static SymbolType Repr { get { return SymbolType.Create("--repr--"); } }
 
     /// <summary>
     /// The name of an object, method, module, etc.

@@ -23,13 +23,13 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_symbol == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_symbol, "ToStr", PropConsts.Str);
+        LispType.AddStatic(_symbol, "ToRepr", PropConsts.Repr);
 
         return _symbol;
       }
     }
 
-    private static LispObject ToStr([PositionalArgument] SymbolType obj) {
+    private static LispObject ToRepr([PositionalArgument] SymbolType obj) {
       return StringType.Create(obj.Identifier);
     }
     // TODO(zstewar1): In language instantiation stuff.
@@ -84,9 +84,5 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     public string Identifier { get; }
-
-    public override string ToString () {
-      return Identifier;
-    }
   }
 }

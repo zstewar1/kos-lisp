@@ -1,5 +1,7 @@
 using System;
 
+using ZStewart.KOSLisp.Types.Attributes;
+
 namespace ZStewart.KOSLisp.Types {
   /// <summary>
   /// The builtin error type. All errors will derive from this.
@@ -20,6 +22,10 @@ namespace ZStewart.KOSLisp.Types {
         _exception.__mro__ = IConsType.ToLispTuple(_exception, LispObject.Object);
         _exception = LispType.ConfigureType(_exception);
         if (_exception == null) throw new InvalidOperationException();
+
+        LispType.AddStatic(_exception, "ToStr", PropConsts.Str);
+        LispType.AddStatic(_exception, "ToRepr", PropConsts.Repr);
+
         return _exception;
       }
     }
@@ -154,7 +160,7 @@ namespace ZStewart.KOSLisp.Types {
     private static LispType _syntaxError;
     public static LispType SyntaxError {
       get {
-        if (_syntaxError != null) return _notImplemented;
+        if (_syntaxError != null) return _syntaxError;
 
         _syntaxError = new LispType {
           __name__ = "SyntaxError",
@@ -168,6 +174,14 @@ namespace ZStewart.KOSLisp.Types {
         return _syntaxError;
       }
     }
+
+    private static LispObject ToRepr([PositionalArgument] ExceptionType self) {
+      return StringType.Format("({0} {1})", self.__class__.__name__, self.Message);
+    }
+
+    private static LispObject ToStr([PositionalArgument] ExceptionType self) {
+      return StringType.Create(self.Message);
+    }
     #endregion
 
     #region Static Helper Methods
@@ -176,7 +190,8 @@ namespace ZStewart.KOSLisp.Types {
         ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = Exception,
-        message = string.Format(message, args),
+        messageFormat = message,
+        formatArgs = args,
         __cause__ = cause,
       };
     }
@@ -200,7 +215,8 @@ namespace ZStewart.KOSLisp.Types {
         ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = TypeError,
-        message = string.Format(message, args),
+        messageFormat = message,
+        formatArgs = args,
         __cause__ = cause,
       };
     }
@@ -224,7 +240,8 @@ namespace ZStewart.KOSLisp.Types {
         ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = ValueError,
-        message = string.Format(message, args),
+        messageFormat = message,
+        formatArgs = args,
         __cause__ = cause,
       };
     }
@@ -248,7 +265,8 @@ namespace ZStewart.KOSLisp.Types {
         ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = RuntimeError,
-        message = string.Format(message, args),
+        messageFormat = message,
+        formatArgs = args,
         __cause__ = cause,
       };
     }
@@ -272,7 +290,8 @@ namespace ZStewart.KOSLisp.Types {
         ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = AttributeError,
-        message = string.Format(message, args),
+        messageFormat = message,
+        formatArgs = args,
         __cause__ = cause,
       };
     }
@@ -296,7 +315,8 @@ namespace ZStewart.KOSLisp.Types {
         ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = NameError,
-        message = string.Format(message, args),
+        messageFormat = message,
+        formatArgs = args,
         __cause__ = cause,
       };
     }
@@ -320,7 +340,8 @@ namespace ZStewart.KOSLisp.Types {
         ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = KeyError,
-        message = string.Format(message, args),
+        messageFormat = message,
+        formatArgs = args,
         __cause__ = cause,
       };
     }
@@ -344,7 +365,8 @@ namespace ZStewart.KOSLisp.Types {
         ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = NotImplemented,
-        message = string.Format(message, args),
+        messageFormat = message,
+        formatArgs = args,
         __cause__ = cause,
       };
     }
@@ -368,7 +390,8 @@ namespace ZStewart.KOSLisp.Types {
         ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
         __class__ = SyntaxError,
-        message = string.Format(message, args),
+        messageFormat = message,
+        formatArgs = args,
         __cause__ = cause,
       };
     }
@@ -395,11 +418,8 @@ namespace ZStewart.KOSLisp.Types {
     public LispObject __cause__ { get; set; }
     public LispObject __context__ { get; set; }
 
-    private string message;
-    public string Message { get { return message; } }
-
-    public override string ToString() {
-      return string.Format("{0}: {1}", __class__.__name__, Message);
-    }
+    private string messageFormat;
+    private object[] formatArgs;
+    public string Message { get { return string.Format(messageFormat, formatArgs); } }
   }
 }
