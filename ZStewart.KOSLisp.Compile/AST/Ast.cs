@@ -17,6 +17,13 @@ namespace ZStewart.KOSLisp.Compile.AST {
     public static AstConst Const(LispObject value) { return new AstConst(value); }
 
     /// <summary>
+    /// Creates an AstOp that sets the given variable to the given value.
+    /// </summary>
+    public static AstSetVar Set(AstBinding variable, AstOp value) {
+      return new AstSetVar(variable, value);
+    }
+
+    /// <summary>
     /// Creates a new AstOp that calls the given function expression with the given
     /// arguments.
     /// </summary>

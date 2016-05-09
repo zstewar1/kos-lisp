@@ -53,6 +53,7 @@
     <Compile Include="AST\AstBinding.cs" />
     <Compile Include="AST\AstOpBase.cs" />
     <Compile Include="AST\AstConst.cs" />
+    <Compile Include="AST\AstSetVar.cs" />
     <Compile Include="AST\AstFuncCall.cs" />
     <Compile Include="AST\AstIf.cs" />
     <Compile Include="AST\AstProgn.cs" />
