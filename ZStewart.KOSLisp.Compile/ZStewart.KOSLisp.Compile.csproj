@@ -40,6 +40,7 @@
     <Compile Include="Contexts\ScopedContext.cs" />
     <Compile Include="Contexts\ClosuredScopedContext.cs" />
     <Compile Include="SpecialForms\SpecialForm.cs" />
+    <Compile Include="SpecialForms\SetVarSpecialForm.cs" />
     <Compile Include="SpecialForms\IfSpecialForm.cs" />
     <Compile Include="SpecialForms\PrognSpecialForm.cs" />
     <Compile Include="SpecialForms\LetSpecialForm.cs" />
