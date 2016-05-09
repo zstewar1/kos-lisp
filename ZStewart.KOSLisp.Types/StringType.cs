@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using ZStewart.KOSLisp.Types.Attributes;
+using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Types {
   public class StringType : LispObject {
@@ -91,19 +92,33 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     public static string GetObjectStr(LispObject obj) {
-      var str = Call(obj, "--str--");
+      var str = LookupHelpers.Lookup(
+        obj,
+        unused => false,
+        unused => { throw new InvalidOperationException(); }, // Should never happen.
+        PropConsts.Str,
+        () => ExceptionType.CreateAttributeError(
+          "{0} object has no method {1}",
+          obj.__class__, PropConsts.Str));
       if (!(str is StringType)) {
         throw ExceptionType.ThrowTypeError(
-          "result of --str-- must be a str, was {0}", obj.__class__);
+          "{0} returned non-string type (type {1})", PropConsts.Str, str.__class__);
       }
       return ((StringType)str).Value;
     }
 
     public static string GetObjectRepr(LispObject obj) {
-      var repr = Call(obj, "--repr--");
+      var repr = LookupHelpers.Lookup(
+        obj,
+        unused => false,
+        unused => { throw new InvalidOperationException(); }, // Should never happen.
+        PropConsts.Repr,
+        () => ExceptionType.CreateAttributeError(
+          "{0} object has no method {1}",
+          obj.__class__, PropConsts.Repr));
       if (!(repr is StringType)) {
         throw ExceptionType.ThrowTypeError(
-          "result of --repr-- must be a str, was {0}", obj.__class__);
+          "{0} returned non-string type (type {1})", PropConsts.Repr, repr.__class__);
       }
       return ((StringType)repr).Value;
     }
