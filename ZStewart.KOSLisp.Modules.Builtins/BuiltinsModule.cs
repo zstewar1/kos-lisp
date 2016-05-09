@@ -17,6 +17,11 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddBuiltin(typeof(T), name, symbol);
     }
 
+    private static void AddType(LispType type) {
+      MappingOperations.SetItem(
+        _builtins.__dict__, SymbolType.Create(type.__name__), type);
+    }
+
     private static ModuleType _builtins;
     public static ModuleType Builtins {
       get {
@@ -30,6 +35,16 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         AddBuiltin(typeof(ListOperations), "SetCdr", "%setcdr");
 
         AddBuiltin(typeof(BuiltinsModule), "Print", "print");
+
+        AddType(LispType.Type);
+        AddType(LispObject.Object);
+        AddType(IConsType.ICons);
+        AddType(ConsType.Cons);
+        AddType(DictType.Dict);
+        AddType(BoolType.Bool);
+        AddType(NumberType.Number);
+        AddType(StringType.String);
+        AddType(SymbolType.Symbol);
 
         return _builtins;
       }
