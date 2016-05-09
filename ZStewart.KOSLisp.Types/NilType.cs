@@ -32,7 +32,6 @@ namespace ZStewart.KOSLisp.Types {
         if (_nilClass == null) throw new InvalidOperationException();
 
         LispType.AddStatic(_nilClass, "ToBool", PropConsts.Bool);
-        LispType.AddStatic(_nilClass, "ToStr", PropConsts.Str);
 
         return _nilClass;
       }
@@ -47,10 +46,6 @@ namespace ZStewart.KOSLisp.Types {
 
     private static LispObject ToBool([PositionalArgument] NilType nil) {
       return BoolType.F;
-    }
-
-    private static LispObject ToStr([PositionalArgument] NilType nil) {
-      return StringType.Empty;
     }
     #endregion Static Type Setup
 

@@ -128,7 +128,7 @@ namespace ZStewart.KOSLisp {
         }
         try {
           var result = func();
-          if (interactive) {
+          if (interactive && result != NilType.Nil) {
             Console.WriteLine(StringType.GetObjectRepr(result));
           }
         } catch (ExceptionWrapper ex) {
