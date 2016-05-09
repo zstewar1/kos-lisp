@@ -27,6 +27,7 @@ namespace ZStewart.KOSLisp.Compile {
       db.Add(SymbolType.Create("let"), new LetSpecialForm());
       db.Add(SymbolType.Create("progn"), new PrognSpecialForm());
       db.Add(SymbolType.Create("if"), new IfSpecialForm());
+      db.Add(SymbolType.Create("%setvar"), new SetVarSpecialForm());
       return db.ToImmutable();
     }
 

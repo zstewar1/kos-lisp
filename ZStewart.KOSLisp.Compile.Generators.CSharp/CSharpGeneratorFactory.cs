@@ -48,6 +48,8 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         return new CSharpLetGenerator((AstLet)op, GetFactoryForConstructor());
       } else if (type == typeof(AstProgn)) {
         return new CSharpPrognGenerator((AstProgn)op, GetFactoryForConstructor());
+      } else if (type == typeof(AstSetVar)) {
+        return new CSharpSetVarGenerator((AstSetVar)op, GetFactoryForConstructor());
       } else if (typeof(AstBinding).IsAssignableFrom(type)) {
         // All binding subtypes can be handled by create binding.
         return CreateFromAstBinding((AstBinding)op);

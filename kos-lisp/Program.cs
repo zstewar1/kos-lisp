@@ -26,12 +26,23 @@ namespace ZStewart.KOSLisp {
     public static void Main (string[] args) {
       bool version = false;
       bool help = false;
+      bool printExpr = false;
+      bool printAst = false;
+      bool alwaysPrint = false;
 
       //string outputFile = null;
 
       var optset = new OptionSet {
         { "version", "Print the version and exit", v => version = v != null },
         { "h|help", "Print this help information and exit", h => help = h != null },
+        { "ast", "Print the AST before evaluating", a => printAst = a != null },
+        { "expr", "Print the Expression before evaluating", e => printExpr = e != null },
+        {
+          "print-all",
+          "Print the evaluation result even if it is nil or the interpreter is not " +
+            "running in interactive mode",
+          p => alwaysPrint = p != null
+        },
         //{ "o|outfile=", "Where to save the output file. Ignored if not compiling", o => outputFile = o },
       };
       var extra = optset.Parse(args);
@@ -63,15 +74,16 @@ namespace ZStewart.KOSLisp {
           String.Join(" ", extra.GetRange(1, extra.Count - 1)));
       } else if (extra.Count == 1) {
         using (var file = File.OpenText(extra[0])) {
-          TEMPRun(extra[0], file);
+          TEMPRun(extra[0], file, printAst, printExpr, alwaysPrint);
         }
       } else {
-        TEMPRun("<stdin>", Console.In, true);
+        TEMPRun("<stdin>", Console.In, printAst, printExpr, alwaysPrint, true);
       }
     }
 
     private static void TEMPRun(
-        string name, TextReader reader, bool interactive = false) {
+        string name, TextReader reader, bool printAst, bool printExpr, bool alwaysPrint,
+        bool interactive = false) {
       bool isExpressionFirstLine = true;
       LispLexer lexer = new LispLexer(name, reader);
       if (interactive) {
@@ -90,13 +102,16 @@ namespace ZStewart.KOSLisp {
       var mainModule = ModuleType.Create(
         SymbolType.Create(name), BuiltinsModule.Builtins);
       var context = new GlobalContext(mainModule);
-      var compiler = new DefaultSemanticAnalyzer();
+      var semantizer = new DefaultSemanticAnalyzer();
       var generatorFactory = new CSharpGeneratorFactory();
       for(;;) {
         LispObject parsed;
         try {
           isExpressionFirstLine = true;
           parsed = parser.ParseNext();
+          if (printExpr && parsed != null) {
+            Console.Error.WriteLine(StringType.GetObjectRepr(parsed));
+          }
         } catch (ExceptionWrapper ex) {
           Console.Error.WriteLine("Exception while paring:");
           Console.Error.WriteLine(
@@ -112,7 +127,10 @@ namespace ZStewart.KOSLisp {
         // The function that represents evaluating the expression.
         Func<LispObject> func;
         try {
-          var ast = compiler.ToAst(parsed, context);
+          var ast = semantizer.ToAst(parsed, context);
+          if (printAst) {
+            Console.Error.WriteLine(ast);
+          }
           var generator = generatorFactory.Create(ast);
           var expression = generator.Emit();
           func = Expression.Lambda<Func<LispObject>>(expression).Compile();
@@ -128,7 +146,7 @@ namespace ZStewart.KOSLisp {
         }
         try {
           var result = func();
-          if (interactive && result != NilType.Nil) {
+          if ((interactive && result != NilType.Nil) || alwaysPrint) {
             Console.WriteLine(StringType.GetObjectRepr(result));
           }
         } catch (ExceptionWrapper ex) {

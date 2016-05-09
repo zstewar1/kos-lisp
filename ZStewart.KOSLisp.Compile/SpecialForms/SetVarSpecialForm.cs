@@ -46,7 +46,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       AstBinding binding = (AstBinding)shouldBeBinding;
 
       AstOp value;
-      if (len == 2) {
+      if (len < 2) {
         value = Ast.Const(NilType.Nil);
       } else {
         value = compiler.ToAst(
