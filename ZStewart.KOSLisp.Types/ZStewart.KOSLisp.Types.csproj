@@ -65,6 +65,7 @@
     <Compile Include="NumberType.cs" />
     <Compile Include="MethodType.cs" />
     <Compile Include="FunctionType.cs" />
+    <Compile Include="MacroType.cs" />
     <Compile Include="BuiltinFunctionType.cs" />
     <Compile Include="BuiltinDataDescriptorType.cs" />
     <Compile Include="BuiltinIterType.cs" />

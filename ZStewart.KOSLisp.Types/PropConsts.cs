@@ -41,6 +41,12 @@ namespace ZStewart.KOSLisp.Types {
     /// The function used to call the given object as a function.
     /// </summary>
     public static SymbolType Call { get { return SymbolType.Create("--call--"); } }
+    /// <summary>
+    /// The function used to call the given object as a macro.
+    /// </summary>
+    public static SymbolType MacroExpand {
+      get { return SymbolType.Create("--macroexpand--"); }
+    }
 
     /// <summary>
     /// The function used to convert the object to a boolean.
