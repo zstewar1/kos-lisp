@@ -172,7 +172,7 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     private static LispObject ToRepr([PositionalArgument] LispObject obj) {
-      return StringType.Create(string.Format("[{0} object]", obj.__class__));
+      return StringType.Create(string.Format("[{0} object]", obj.__class__.__name__));
     }
     #endregion Static Type Setup
 

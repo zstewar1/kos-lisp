@@ -30,6 +30,7 @@ namespace ZStewart.KOSLisp.Types {
         if (_builtinFunction == null) throw new InvalidOperationException();
 
         LispType.AddDataProperty(_builtinFunction, "Name", PropConsts.Name);
+        LispType.AddStatic(_builtinFunction, "ToRepr", PropConsts.Repr);
 
         return _builtinFunction;
       }
@@ -58,6 +59,10 @@ namespace ZStewart.KOSLisp.Types {
       } else {
         return MethodType.Create(((BuiltinFunctionType)self).Name, instance, self);
       }
+    }
+
+    private static LispObject ToRepr([PositionalArgument] BuiltinFunctionType self) {
+      return StringType.Format("[built-in function {0}]", self.Name);
     }
     #endregion Static Type Setup
 
