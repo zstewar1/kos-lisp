@@ -53,14 +53,14 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
     #endregion Static Type Setup
+
+    #region Static Helper Methods
     public static FunctionType Create(
         SymbolType name, CallFunc impl) {
       return new FunctionType(name, impl) {
         __class__ = Function,
       };
     }
-    #region Static Helper Methods
-
     #endregion Static Helper Methods
 
     public SymbolType Name { get; }
