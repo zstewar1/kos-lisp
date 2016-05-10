@@ -13,11 +13,35 @@ namespace ZStewart.KOSLisp.Types {
   /// type conversion and other magic.
   /// </summary>
   public class CallMagic {
+    #region Static Helper Methods
+    /// <summary>
+    /// Shortcut to look up a static, non-public method on the given type.
+    /// </summary>
+    public static MethodInfo FindMethod(Type type, string name) {
+      return type.GetMethod(
+          name,
+          BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static |
+          BindingFlags.FlattenHierarchy);
+    }
+    #endregion Static Helper Methods
+
+    /// <summary>
+    /// Shortcut constructor to do a lookup of a potentially-private static method on the
+    /// given type.
+    /// </summary>
+    public CallMagic(Type type, string name) : this(FindMethod(type, name)) {}
+
+    /// <summary>
+    /// Construct a magic caller for the given static method, which automagically marshals
+    /// arguments and andles rest/keyword arguments.
+    /// </summary>
     public CallMagic(MethodInfo boundMethod) {
       if (!(boundMethod.IsStatic))
         throw new ArgumentException("boundMethod must be static");
-      if (!(typeof(LispObject).IsAssignableFrom(boundMethod.ReturnType)))
-        throw new ArgumentException("boundMethod must return a subclass of LispObject");
+      if (!(Arguments.IsUnmarshalable(boundMethod.ReturnType))) {
+        throw new ArgumentException(
+          "The return type of boundMethod must be unmarshalable.");
+      }
       this.boundMethod = boundMethod;
 
       paraminfos = ImmutableArray.CreateRange(boundMethod.GetParameters());
@@ -157,7 +181,7 @@ namespace ZStewart.KOSLisp.Types {
       }
 
       try {
-        return (LispObject)boundMethod.Invoke(null, arguments);
+        return Arguments.Unmarshal(boundMethod.Invoke(null, arguments));
       } catch (TargetInvocationException ex) {
         // TODO(zstewar1): This loses the stack grace from the inner method. There is no
         // way to keep it directly, so we would like to replace the use of reflection with

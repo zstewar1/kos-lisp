@@ -21,11 +21,11 @@ namespace ZStewart.KOSLisp.Types {
     /// <summary>
     /// Function for creating a new instance of this type. Inherited.
     /// </summary>
-    public Func<LispObject, LispObject, LispObject> __new__;
+    public CallMagic __new__;
     /// <summary>
     /// Function for initializing data in this type. Inherited.
     /// </summary>
-    public Func<LispObject, LispObject, LispObject> __init__;
+    public CallMagic __init__;
     /// <summary>
     /// Function for calling this type. Inherited.
     /// </summary>

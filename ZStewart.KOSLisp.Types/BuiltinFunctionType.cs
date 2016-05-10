@@ -105,12 +105,7 @@ namespace ZStewart.KOSLisp.Types {
     /// </returns>
     public static BuiltinFunctionType Create(
         Type type, string methodName, SymbolType lispName) {
-      return Create(
-        type.GetMethod(
-          methodName,
-          BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static |
-          BindingFlags.FlattenHierarchy),
-        lispName);
+      return Create(CallMagic.FindMethod(type, methodName), lispName);
     }
 
     /// <summary>

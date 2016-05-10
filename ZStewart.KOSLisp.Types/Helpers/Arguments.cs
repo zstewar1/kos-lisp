@@ -184,7 +184,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     }
 
     /// <summary>
-    /// Checks if the given destination type can be marshaled to *in general*.
+    /// Checks if the given destination type can be converted to from a lisp object *in
+    /// general*.
     ///
     /// Even if IsMarshalable returns true, Marshal may still fail for particular
     /// combinations of types and values.
@@ -200,13 +201,34 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     }
 
     /// <summary>
-    /// Checks if the given destination type can be marshaled to *in general*.
+    /// Checks if the given destination type can be convrted to from a lisp object *in
+    /// general*.
     ///
     /// Even if IsMarshalable returns true, Marshal may still fail for particular
     /// combinations of types and values.
     /// </summary>
     public static bool IsMarshalable<T>() {
       return IsMarshalable(typeof(T));
+    }
+
+    /// <summary>
+    /// Checks if unmarshal can convert from the given type to a lisp object in general.
+    /// </summary>
+    public static bool IsUnmarshalable(Type sourceType) {
+      return sourceType == typeof(double)
+        || sourceType == typeof(bool)
+        || sourceType == typeof(string)
+        || typeof(LispObject).IsAssignableFrom(sourceType)
+        || typeof(IEnumerable<LispObject>).IsAssignableFrom(sourceType)
+        || typeof(IDictionary<LispObject, LispObject>).IsAssignableFrom(sourceType)
+        || typeof(IDictionary<SymbolType, LispObject>).IsAssignableFrom(sourceType);
+    }
+
+    /// <summary>
+    /// Checks if unmarshal can convert from the given type to a lisp object in general.
+    /// </summary>
+    public static bool IsUnmarshalable<T>() {
+      return IsUnmarshalable(typeof(T));
     }
 
     /// <summary>
@@ -227,6 +249,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           return BoolType.Create((bool)value);
         } else if (type == typeof(string)) {
           return StringType.Create((string)value);
+        } else if (typeof(LispObject).IsAssignableFrom(type)) {
+          return (LispObject)value;
         } else if (typeof(IEnumerable<LispObject>).IsAssignableFrom(type)) {
           return ConsType.ToLispList(((IEnumerable<LispObject>)value).ToList());
         } else if (typeof(IDictionary<LispObject, LispObject>).IsAssignableFrom(type)) {

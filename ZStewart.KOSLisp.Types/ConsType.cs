@@ -25,8 +25,7 @@ namespace ZStewart.KOSLisp.Types {
 
         _cons = new LispType {
           __name__ = "cons",
-          __new__ = New,
-          __init__ = Init,
+          __new__ = new CallMagic(typeof(ConsType), "New"),
           _instance_type = typeof(ConsType),
           _list_methods = new ListMethods {
             __getcar__ = GetCar,
@@ -48,40 +47,21 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
-    private static LispObject New (LispObject subtype, LispObject args) {
-      // TODO(zstewar1): Check that subtype is really a subtype.
-      var pargs = Arguments.GetPositionalArguments(args);
-      if (!(subtype is LispType)) {
-        throw ExceptionType.ThrowTypeError(
-          "subtype must be a type, was {0}", subtype.__class__);
-      } else if (subtype != Cons && pargs.Count > 0) {
-        throw ExceptionType.ThrowTypeError(
-          "got {0} arguments, expected 1", pargs.Count + 1);
-      } else if (subtype == Cons && pargs.Count != 2) {
-        throw ExceptionType.ThrowTypeError(
-          "got {0} arguments, expected 3", pargs.Count + 1);
+    private static LispObject New(
+        [PositionalArgument] LispType subtype,
+        [PositionalArgument] LispObject car,
+        [PositionalArgument] LispObject cdr) {
+      if (!LispType.IsSubtype(subtype, Cons)) {
+        throw ExceptionType.ThrowSyntaxError("type must be a subtype of cons");
       }
-      var result = new ConsType();
-      result.__class__ = (LispType)subtype;
+      var result = new ConsType() {
+        __class__ = subtype,
+        Car = car,
+        Cdr = cdr,
+      };
       if (subtype != Cons)
         result.__dict__ = DictType.Create();
       return result;
-    }
-
-    private static LispObject Init (LispObject self, LispObject args) {
-      if (!(self is ConsType))
-        throw ExceptionType.ThrowTypeError(
-          "self must be a cons, was {0}", self.__class__);
-
-      var pargs = Arguments.GetPositionalArguments(args);
-      // TODO(zstewar1): subtype argument checking as above.
-      if (pargs.Count != 2)
-        throw ExceptionType.ThrowTypeError(
-          "got {0} arguments, expected 3", pargs.Count + 1);
-
-      ((ConsType)self).Car = pargs[0];
-      ((ConsType)self).Cdr = pargs[1];
-      return NilType.Nil;
     }
 
     private static LispObject GetCar(LispObject instance) {

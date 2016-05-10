@@ -340,6 +340,48 @@ namespace ZStewart.KOSLisp.Types {
       }
       return false;
     }
+
+    [Flags]
+    public enum NewInitDefined {
+      None = 0,
+      New = 1 << 0,
+      Init = 1 << 1,
+      Both = New | Init,
+    }
+
+    /// <summary>
+    /// Checks if the given subtype, or any of its bases before supertype, defines a new
+    /// or init method, and returns a flags enum telling which are defined.
+    /// </summary>
+    public static NewInitDefined DefinesNewOrInit(LispType subtype, LispType supertype) {
+      var def = NewInitDefined.None;
+      foreach(var type in ListOperations.IterList<LispType>(subtype.__mro__)) {
+        if (type == supertype) break;
+
+        if (type.__new__ != null) {
+          def |= NewInitDefined.New;
+        } else {
+          try {
+            MappingOperations.GetItem(type.__dict__, PropConsts.New);
+            def |= NewInitDefined.New;
+          } catch (ExceptionWrapper ex) {
+            if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+          }
+        }
+
+        if (type.__init__ != null) {
+          def |= NewInitDefined.Init;
+        } else {
+          try {
+            MappingOperations.GetItem(type.__dict__, PropConsts.Init);
+            def |= NewInitDefined.Init;
+          } catch (ExceptionWrapper ex) {
+            if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+          }
+        }
+      }
+      return def;
+    }
     #endregion Static Helper Methods
 
     public override string ToString() {

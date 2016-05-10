@@ -49,6 +49,16 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     /// <summary>
+    /// The function used to get a new instance of the given type.
+    /// </summary>
+    public static SymbolType New { get { return SymbolType.Create("--new--"); } }
+    /// <summary>
+    /// The function used to initialize an instance of the given type after it has been
+    /// created.
+    /// </summary>
+    public static SymbolType Init { get { return SymbolType.Create("--init--"); } }
+
+    /// <summary>
     /// The function used to convert the object to a boolean.
     /// </summary>
     public static SymbolType Bool { get { return SymbolType.Create("--bool--"); } }

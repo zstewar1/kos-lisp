@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 using ZStewart.KOSLisp.Types.Attributes;
 
@@ -21,7 +20,7 @@ namespace ZStewart.KOSLisp.Types {
 
         _nilClass = new LispType {
           __name__ = "NilType",
-          __new__ = New,
+          __new__ = new CallMagic(typeof(NilType), "New"),
           _instance_type = typeof(NilType),
         };
         _nilClass.__class__ = LispType.Type;
@@ -37,9 +36,9 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
-    private static LispObject New (LispObject subtype, LispObject args) {
-      if (args != Nil) {
-        throw ExceptionType.ThrowTypeError("{0} takes no arguments.", subtype);
+    private static LispObject New ([PositionalArgument] LispType subtype) {
+      if (subtype != NilClass) {
+        throw ExceptionType.ThrowTypeError("cannot create new instances of Nil");
       }
       return Nil;
     }

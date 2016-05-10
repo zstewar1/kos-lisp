@@ -21,7 +21,7 @@ namespace ZStewart.KOSLisp.Types {
 
         _bool = new LispType {
           __name__ = "bool",
-          __new__ = New,
+          __new__ = new CallMagic(typeof(BoolType), "New"),
           _instance_type = typeof(BoolType),
         };
         _bool.__class__ = LispType.Type;
@@ -37,13 +37,13 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
-    private static LispObject New (LispObject subtype, LispObject args) {
-      // TODO(zstewar1): Allow a single argument, and check if it can be interpreted as a
-      // boolean and return either T or F appropriately.
-      if (args != NilType.Nil) {
-        throw ExceptionType.ThrowTypeError("{0} takes no arguments.", subtype);
+    private static LispObject New(
+        [PositionalArgument] LispType subtype,
+        [PositionalArgument] LispObject value) {
+      if (subtype != Bool) {
+        throw ExceptionType.ThrowTypeError("cannot create new instances of bool");
       }
-      return F;
+      return From(value);
     }
 
     private static LispObject ToBool([PositionalArgument] BoolType obj) {
@@ -60,7 +60,14 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="obj">The object to convert.</param>
     /// <returns>True if the object's __bool__ is true, false if it is false
     public static BoolType From(LispObject obj) {
-      var b = LispObject.Call(obj, "--bool--");
+      var b = LookupHelpers.Lookup(
+        obj,
+        unused => false,
+        unused => { throw new InvalidOperationException(); }, // Should never happen.
+        PropConsts.Bool,
+        () => ExceptionType.CreateAttributeError(
+          "{0} object has no attribute {1}",
+          obj.__class__, PropConsts.Bool));
       if (b == T) return T;
       if (b == F) return F;
       throw ExceptionType.ThrowTypeError(
