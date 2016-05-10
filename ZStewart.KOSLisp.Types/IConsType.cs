@@ -35,6 +35,7 @@ namespace ZStewart.KOSLisp.Types {
         _icons = new LispType {
           __name__ = "icons",
           __new__ = new CallMagic(typeof(IConsType), "New"),
+          __init__ = CallMagic.NOP,
           _instance_type = typeof(IConsType),
           _list_methods = new ListMethods {
             __getcar__ = GetCar,
@@ -60,6 +61,11 @@ namespace ZStewart.KOSLisp.Types {
         [PositionalArgument] LispObject cdr) {
       if (!LispType.IsSubtype(subtype, ICons)) {
         throw ExceptionType.ThrowSyntaxError("type must be a subtype of icons");
+      }
+      if (subtype._instance_type != ICons._instance_type) {
+        throw ExceptionType.ThrowTypeError(
+            "icons.--new-- cannot be used to instantiate object of type {0}",
+            subtype);
       }
       var result = new IConsType(car, cdr) {
         __class__ = subtype,

@@ -26,6 +26,7 @@ namespace ZStewart.KOSLisp.Types {
         _cons = new LispType {
           __name__ = "cons",
           __new__ = new CallMagic(typeof(ConsType), "New"),
+          __init__ = new CallMagic(typeof(ConsType), "Init"),
           _instance_type = typeof(ConsType),
           _list_methods = new ListMethods {
             __getcar__ = GetCar,
@@ -49,19 +50,30 @@ namespace ZStewart.KOSLisp.Types {
 
     private static LispObject New(
         [PositionalArgument] LispType subtype,
-        [PositionalArgument] LispObject car,
-        [PositionalArgument] LispObject cdr) {
+        [RestArgument] List<LispObject> unusedPargs,
+        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {
       if (!LispType.IsSubtype(subtype, Cons)) {
-        throw ExceptionType.ThrowSyntaxError("type must be a subtype of cons");
+        throw ExceptionType.ThrowTypeError("type must be a subtype of cons");
+      }
+      if (subtype._instance_type != Cons._instance_type) {
+        throw ExceptionType.ThrowTypeError(
+            "cons.--new-- cannot be used to instantiate object of type {0}",
+            subtype);
       }
       var result = new ConsType() {
         __class__ = subtype,
-        Car = car,
-        Cdr = cdr,
       };
       if (subtype != Cons)
         result.__dict__ = DictType.Create();
       return result;
+    }
+
+    private static void Init(
+        [PositionalArgument] ConsType self,
+        [PositionalArgument] LispObject car,
+        [PositionalArgument] LispObject cdr) {
+      self.Car = car;
+      self.Cdr = cdr;
     }
 
     private static LispObject GetCar(LispObject instance) {

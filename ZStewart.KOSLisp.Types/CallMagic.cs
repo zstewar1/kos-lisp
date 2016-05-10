@@ -13,6 +13,20 @@ namespace ZStewart.KOSLisp.Types {
   /// type conversion and other magic.
   /// </summary>
   public class CallMagic {
+
+    private static CallMagic _nop;
+    public static CallMagic NOP {
+      get {
+        if (_nop != null) return _nop;
+        _nop = new CallMagic(typeof(CallMagic), "Nop");
+        return _nop;
+      }
+    }
+
+    private static void Nop (
+        [RestArgument] List<LispObject> unusedPargs,
+        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
+
     #region Static Helper Methods
     /// <summary>
     /// Shortcut to look up a static, non-public method on the given type.

@@ -218,6 +218,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       return sourceType == typeof(double)
         || sourceType == typeof(bool)
         || sourceType == typeof(string)
+        // Allow unmarshaling void return types (as Nil)
+        || sourceType == typeof(void)
         || typeof(LispObject).IsAssignableFrom(sourceType)
         || typeof(IEnumerable<LispObject>).IsAssignableFrom(sourceType)
         || typeof(IDictionary<LispObject, LispObject>).IsAssignableFrom(sourceType)

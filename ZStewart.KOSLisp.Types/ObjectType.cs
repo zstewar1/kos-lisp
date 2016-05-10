@@ -25,7 +25,7 @@ namespace ZStewart.KOSLisp.Types {
 
         _object = new LispType {
           __name__ = "object",
-          __new__ = New,
+          __new__ = new CallMagic(typeof(LispObject), "New"),
           __getattr__ = GetAttr,
           __setattr__ = SetAttr,
           _instance_type = typeof(LispObject),
@@ -51,28 +51,40 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="type">The type to instantiate.</param>
     /// <param name="args">The arguments to the __new__ method.</param>
     /// <returns>A created lisp object or null on error.</returns>
-    private static LispObject New(LispObject type, LispObject args) {
+    private static LispObject New(
+        [PositionalArgument] LispType type,
+        [RestArgument] List<LispObject> args) {
       // TODO(zstewar1): Python like rules for "args" here:
       // - No args if doesn't override __init__ or __new__
       // - Ok to pass arbitrary args if overriding __init__ but not __new__
       // - No args if overriding __new__
       // See http://stackoverflow.com/a/19277824/1036501
 
-      // TODO(zstewar1): Check that type is a "type" (Correctly, using isinstance)
-      // (Possibly not necessary, since all types should be LispTypeObject-s)
-      if (type is LispType) {
-        var t = (type as LispType);
-        if (t == Object) {
-          // Check no args.
-          return new LispObject {
-            __class__ = Object,
-          };
-        } else {
-          throw ExceptionType.ThrowNotImplemented("Cannot initialize subtypes yet.");
-          // TODO(zstewar1): Dynamic object.
+      if (type == Object) {
+        if (args.Count > 0) {
+          throw ExceptionType.ThrowTypeError(
+            "--new-- expected 1 argument, got {0}",
+            args.Count + 1);
         }
+        return new LispObject {
+          __class__ = Object,
+        };
+      } else if (type._instance_type != Object._instance_type) {
+        throw ExceptionType.ThrowTypeError(
+          "object.--new-- cannot be used to instantiate object of type {0}",
+          type);
       } else {
-        throw ExceptionType.ThrowTypeError("Argument must be a type");
+        // check that type is a subtype, then check the arguments.
+        var newInit = DefinesNewOrInit(type, Object);
+        if (args.Count > 0 && newInit == NewInitDefined.Init) {
+          return new LispObject {
+            __class__ = type,
+            __dict__ = DictType.Create(),
+          };
+        }
+        throw ExceptionType.ThrowTypeError(
+          "--new-- expected 1 argument, got {0}",
+          args.Count + 1);
       }
     }
 
@@ -352,11 +364,17 @@ namespace ZStewart.KOSLisp.Types {
     /// <summary>
     /// Checks if the given subtype, or any of its bases before supertype, defines a new
     /// or init method, and returns a flags enum telling which are defined.
+    ///
+    /// Raises an error if the given subtype is not a subtype of the given supertype.
     /// </summary>
     public static NewInitDefined DefinesNewOrInit(LispType subtype, LispType supertype) {
+      bool isSubtype = false;
       var def = NewInitDefined.None;
       foreach(var type in ListOperations.IterList<LispType>(subtype.__mro__)) {
-        if (type == supertype) break;
+        if (type == supertype) {
+          isSubtype = true;
+          break;
+        }
 
         if (type.__new__ != null) {
           def |= NewInitDefined.New;
@@ -379,6 +397,11 @@ namespace ZStewart.KOSLisp.Types {
             if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
           }
         }
+      }
+      if (!isSubtype) {
+        throw ExceptionType.ThrowTypeError(
+          "type {0} is not a subtype of {1}",
+          subtype, supertype);
       }
       return def;
     }

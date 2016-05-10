@@ -21,6 +21,7 @@ namespace ZStewart.KOSLisp.Types {
         _nilClass = new LispType {
           __name__ = "NilType",
           __new__ = new CallMagic(typeof(NilType), "New"),
+          __init__ = CallMagic.NOP,
           _instance_type = typeof(NilType),
         };
         _nilClass.__class__ = LispType.Type;

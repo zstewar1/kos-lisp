@@ -22,6 +22,7 @@ namespace ZStewart.KOSLisp.Types {
         _bool = new LispType {
           __name__ = "bool",
           __new__ = new CallMagic(typeof(BoolType), "New"),
+          __init__ = CallMagic.NOP,
           _instance_type = typeof(BoolType),
         };
         _bool.__class__ = LispType.Type;

@@ -26,7 +26,8 @@ namespace ZStewart.KOSLisp.Types {
         // Setup the type.
         _type = new LispType {
           __name__ = "type",
-          __new__ = New,
+          __new__ = new CallMagic(typeof(LispType), "New"),
+          __init__ = new CallMagic(typeof(LispType), "Init"),
           __call__ = Call,
           _instance_type = typeof(LispType),
         };
@@ -43,11 +44,18 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
-    private static LispObject New(LispObject subtype, LispObject args) {
-      return new LispObject {
-        __class__ = Type,
-      };
+    private static LispObject New(
+        [PositionalArgument] LispObject subtype,
+        [RestArgument] List<LispObject> args) {
+      throw ExceptionType.ThrowNotImplemented("can't create new types yet");
     }
+
+    private static LispObject Init(
+        [PositionalArgument] LispObject subtype,
+        [RestArgument] List<LispObject> args) {
+      throw ExceptionType.ThrowNotImplemented("can't init new types yet");
+    }
+
 
     private static LispObject Call(
         LispObject receiver,
