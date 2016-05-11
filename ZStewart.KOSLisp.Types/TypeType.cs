@@ -58,10 +58,41 @@ namespace ZStewart.KOSLisp.Types {
 
 
     private static LispObject Call(
-        LispObject receiver,
+        LispType type,
         List<LispObject> pargs,
         Dictionary<SymbolType, LispObject> kwargs) {
-      throw ExceptionType.ThrowNotImplemented("");
+      LispObject created = null;
+      // Lookup the new method on the type directly, prevent getting the type type's new.
+      foreach (var t in ListOperations.IterList<LispType>(type.__mro__)) {
+        if (t.__new__ != null) {
+          created = t.__new__(type, pargs, kwargs);
+          break;
+        } else {
+          LispObject fallback = null;
+          try {
+            fallback = MappingOperations.GetItem(t.__dict__, PropConsts.New);
+          } catch (ExceptionWrapper ex) {
+            if(!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+          }
+          if (fallback != null) {
+            if (!DescriptorOperations.IsDescriptor(fallback)) {
+              created = CallableOperations.Call(fallback, pargs, kwargs);
+            } else {
+              created = CallableOperations.Call(
+                DescriptorOperations.Get(fallback, NilType.Nil, type),
+                pargs, kwargs);
+            }
+            break;
+          }
+        }
+      }
+      if (create == null) {
+        throw ExceptionType.CreateAttributeError(
+          "type {0} has no attribute {1}", type, PropConsts.New);
+      }
+      if (!IsInstance(created, type)) {
+        return created;
+      }
     }
 
     private static LispObject ToRepr([PositionalArgument] LispType type) {

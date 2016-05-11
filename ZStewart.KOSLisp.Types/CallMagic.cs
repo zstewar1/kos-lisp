@@ -67,6 +67,10 @@ namespace ZStewart.KOSLisp.Types {
       for (; index < paraminfos.Length; index++) {
         var p = paraminfos[index];
         if (p.GetCustomAttribute<PositionalArgument>() != null) {
+          if (!Arguments.IsMarshalable(p.ParameterType)) {
+            throw new ArgumentException(
+              "Positional argument must be marshalable.");
+          }
           pargs.Add(p.ParameterType);
         } else {
           // Next argument is unannotated (as positional).
@@ -91,6 +95,10 @@ namespace ZStewart.KOSLisp.Types {
         var p = paraminfos[index];
         var pattr = p.GetCustomAttribute<KeywordArgument>();
         if (p.GetCustomAttribute<KeywordArgument>() != null) {
+          if (!Arguments.IsMarshalable(p.ParameterType)) {
+            throw new ArgumentException(
+              "Keyword argument must be marshalable.");
+          }
           // Coalesce name from the argument name on the attribute and the name of the
           // parameter.
           var name = SymbolType.Create(pattr.ArgumentName ?? p.Name);
@@ -99,7 +107,6 @@ namespace ZStewart.KOSLisp.Types {
               "Found duplicate keyword argument {0}", name));
           kwargs.Add(Tuple.Create(name, p.ParameterType));
         } else {
-          index--;
           break;
         }
       }
@@ -109,9 +116,9 @@ namespace ZStewart.KOSLisp.Types {
         var p = paraminfos[index];
         if (p.GetCustomAttribute<RestKeywordArgument>() != null) {
           index++;
-          if (!p.ParameterType.IsAssignableFrom(typeof(IDictionary<string, LispObject>)))
+          if (!p.ParameterType.IsAssignableFrom(typeof(Dictionary<SymbolType, LispObject>)))
             throw new ArgumentException(
-              "RestKeywordArgument must accept a dictionary of string->lisp object.");
+              "RestKeywordArgument must accept a dictionary of symbol->lisp object.");
           else restKwargs = true;
         }
       }
@@ -181,6 +188,9 @@ namespace ZStewart.KOSLisp.Types {
         if (kwargs.TryGetValue(keywordArguments[i].Item1, out arg)) {
           arguments[index] = Arguments.Marshal(keywordArguments[i].Item2, arg);
           kwargs.Remove(keywordArguments[i].Item1);
+        } else {
+          // Set other keyword arguments to missing to allow using C# default parameters.
+          arguments[index] = Type.Missing;
         }
       }
 
