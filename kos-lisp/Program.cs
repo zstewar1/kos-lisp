@@ -153,6 +153,11 @@ namespace ZStewart.KOSLisp {
           Console.Error.WriteLine("Exception while evaluating:");
           Console.Error.WriteLine(
             "{0}: {1}", ex.LispException.__class__.__name__, ex.LispException.ToString());
+          if (interactive) {
+            continue;
+          } else {
+            break;
+          }
         }
       }
     }

@@ -59,7 +59,7 @@ namespace ZStewart.KOSLisp.Types {
       if (!LispType.IsSubtype(subtype, ICons)) {
         throw ExceptionType.ThrowSyntaxError("type must be a subtype of icons");
       }
-      if (subtype._instance_type != ICons._instance_type) {
+      if (!IsCorrectInstanceType(subtype, ICons)) {
         throw ExceptionType.ThrowTypeError(
             "icons.--new-- cannot be used to instantiate object of type {0}",
             subtype);

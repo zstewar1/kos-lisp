@@ -52,7 +52,7 @@ namespace ZStewart.KOSLisp.Types {
       if (!LispType.IsSubtype(subtype, Cons)) {
         throw ExceptionType.ThrowTypeError("type must be a subtype of cons");
       }
-      if (subtype._instance_type != Cons._instance_type) {
+      if (!IsCorrectInstanceType(subtype, Cons)) {
         throw ExceptionType.ThrowTypeError(
             "cons.--new-- cannot be used to instantiate object of type {0}",
             subtype);

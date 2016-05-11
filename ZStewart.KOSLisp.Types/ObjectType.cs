@@ -65,7 +65,7 @@ namespace ZStewart.KOSLisp.Types {
         return new LispObject {
           __class__ = Object,
         };
-      } else if (type._instance_type != Object._instance_type) {
+      } else if (!IsCorrectInstanceType(type, Object)) {
         throw ExceptionType.ThrowTypeError(
           "object.--new-- cannot be used to instantiate object of type {0}",
           type);
