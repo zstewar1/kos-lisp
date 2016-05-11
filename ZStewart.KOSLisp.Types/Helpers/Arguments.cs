@@ -5,106 +5,93 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ZStewart.KOSLisp.Types.Helpers {
+
   public static class Arguments {
 
     /// <summary>
-    /// Reads an argument list and extracts a list of arguments and dict of keyword
-    /// arguments.
+    /// Split the given argument list and keyword arguments into rest arguments and
+    /// keyword arguments, given the expected number of positional arguments and the known
+    /// keyword argument names, and how to handle extra positional and keyword arguments.
     /// </summary>
-    /// <param name="args">The lisp object to read arguments from. Must be a lsit.</param>
-    /// <param name="positionalArgs">
-    /// A C# list which will contain the read out positional arguments.
-    /// </param>
-    /// <param name="keywordArgs">
-    /// A C# Dictionary that will contain the positional arguments.
-    /// </param>
-    public static void GetArguments (
-        LispObject args,
-        out List<LispObject> positionalArgs,
-        out Dictionary<SymbolType, LispObject> keywordArgs) {
-      // Change null to an empty set for convenience.
-      var pargs = new List<LispObject>();
-      var kwargs = new Dictionary<SymbolType, LispObject>();
+    public static void SplitArguments(
+        List<LispObject> pargs,
+        Dictionary<SymbolType, LispObject> kwargs,
+        int numPositional,
+        PositionalType hasRest,
+        List<SymbolType> namedKwargs,
+        bool hasRestKwargs,
+        out List<LispObject> pos,
+        out List<LispObject> rest,
+        out List<LispObject> knownKwargs,
+        out Dictionary<SymbolType, LispObject> restKwargs) {
 
-      bool startedKeywords = false;
-      LispObject lastKeyword = null;
+      if (pargs.Count < numPositional) {
+        throw ExceptionType.ThrowTypeError(
+          "expected {0} positional arguments, got {1}", numPositional, pargs.Count);
+      }
+      // Too many arguments if rest are non-capturing and non-ignored and the number of
+      // passed positional arguments is longer than the positional or positional + keyword
+      // lists.
+      if ((hasRest == PositionalType.KeywordOverrun
+            && numPositional + namedKwargs.Count < pargs.Count)
+          || (hasRest == PositionalType.RestIllegal
+            && numPositional < pargs.Count)) {
 
-      while (args != NilType.Nil) {
-        var arg = ListOperations.GetCar(args);
-        if (startedKeywords) {
-          if (lastKeyword != null) {
-            // TODO(zstewar1): Change when actual keywords exist.
-            var keyword = (SymbolType)lastKeyword;
-            if (kwargs.ContainsKey(keyword)) {
-              throw ExceptionType.ThrowTypeError(
-                "got multiple values for keyword argument {0}", lastKeyword);
-              // TODO(zstewar1): Find the current function name somehow, to insert it in
-              // the error message. Maybe read it from the call stack, once we have that.
-            }
-            kwargs.Add(keyword, arg);
-            lastKeyword = null;
-          } else {
-            // TODO(zstewar1): Change to the keyword symbol subclass once implemented.
-            if (LispType.IsInstance(arg, SymbolType.Symbol)) {
-              lastKeyword = arg;
-            } else {
-              // TODO(zstewar1): method name in exception.
-              throw ExceptionType.ThrowTypeError(
-                "positional argument follows keyword argument");
-            }
-          }
-        } else {
-          // TODO(zstewar1): Change to the keyword symbol subclass once implemented.
-          if (false /*TypeType.IsInstance(arg, SymbolType.Symbol)*/) {
-            //lastKeyword = arg;
-            //startedKeywords = true;
-          } else {
-            pargs.Add(arg);
-          }
+      }
+
+      int argIndex = 0;
+      pos = new List<LispObject>(numPositional);
+      for (; argIndex < numPositional; argIndex++) {
+        pos.Add(pargs[argIndex]);
+      }
+
+      if (hasRest == PositionalType.RestCapture) {
+        rest = new List<LispObject>(pargs.Count - argIndex);
+        for (; argIndex < pargs.Count; argIndex++) {
+          rest.Add(pargs[argIndex]);
         }
-        args = ListOperations.GetCdr(args);
+      } else {
+        rest = null;
+        if (hasRest == PositionalType.RestIgnore) {
+          argIndex = pargs.Count;
+        }
       }
-      if (lastKeyword != null) {
-        throw ExceptionType.ThrowTypeError("unmatched keyword argument {0}", lastKeyword);
-        // TODO(zstewar1): Method name in exception.
+
+      knownKwargs = new List<LispObject>(namedKwargs.Count);
+      // If overrun is disabled, rest check will have moved the index, if extra is illeal,
+      // early check will have caught us.
+      for (; argIndex < pargs.Count; argIndex++) {
+        if (kwargs.ContainsKey(namedKwargs[knownKwargs.Count])) {
+          throw ExceptionType.ThrowTypeError(
+            "got duplicated keyword argument {0}", namedKwargs[knownKwargs.Count]);
+        }
+        knownKwargs.Add(pargs[argIndex]);
       }
-      positionalArgs = pargs;
-      keywordArgs = kwargs;
-    }
 
-    public static List<LispObject> GetPositionalArguments(LispObject args) {
-      List<LispObject> pargs;
-      Dictionary<SymbolType, LispObject> kwargs;
-      GetArguments(args, out pargs, out kwargs);
-      if (kwargs.Count > 0) {
-        // TODO(zstewar1): Set method name in exception, and add ability name the
-        // unexpected argument values.
-        throw ExceptionType.ThrowTypeError("unexpected keyword argument");
+      // don't modify argument.
+      kwargs = new Dictionary<SymbolType, LispObject>(kwargs);
+      // Continue filling kwargs from the dictionary argument.
+      for (int i = knownKwargs.Count; i < namedKwargs.Count; i++) {
+        LispObject nextKwarg;
+        if (kwargs.TryGetValue(namedKwargs[i], out nextKwarg)) {
+          kwargs.Remove(namedKwargs[i]);
+          knownKwargs.Add(nextKwarg);
+        } else {
+          knownKwargs.Add(null);
+        }
       }
-      return pargs;
-    }
 
-    /// <summary>
-    /// Reads an argument list and extracts a list of arguments and dict of keyword
-    /// arguments.
-    /// </summary>
-    /// <param name="args">The lisp object to read arguments from. Must be a lsit.</param>
-    /// <param name="positionalArgs">
-    /// A Lisp tuple which will contain the read out positional arguments.
-    /// </param>
-    /// <param name="keywordArgs">
-    /// A Lisp dict that will contain the positional arguments.
-    /// </param>
-    public static void GetArguments (
-        LispObject args,
-        out LispObject positionalArgs,
-        out LispObject keywordArgs) {
-      List<LispObject> pargs;
-      Dictionary<SymbolType, LispObject> kwargs;
-      GetArguments(args, out pargs, out kwargs);
-
-      positionalArgs = IConsType.ToLispTuple(pargs);
-      keywordArgs = DictType.ToLispDict(kwargs);
+      if (!hasRestKwargs) {
+        if(kwargs.Count > 0) {
+          // TODO(zstewar1): be explicit.
+          throw ExceptionType.ThrowTypeError("got unexpected keyword arguments");
+        } else {
+          restKwargs = null;
+        }
+      } else {
+        // assign what's left of the duplicated kwargs dict.
+        restKwargs = kwargs;
+      }
     }
 
     /// <summary>

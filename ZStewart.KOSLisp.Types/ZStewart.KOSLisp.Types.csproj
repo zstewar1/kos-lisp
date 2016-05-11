@@ -50,6 +50,7 @@
     <Compile Include="TypeCategories\MappingMethods.cs" />
     <Compile Include="TypeCategories\ListMethods.cs" />
     <Compile Include="TypeCategories\NumberMethods.cs" />
+    <Compile Include="Enums.cs" />
     <Compile Include="CallMagic.cs" />
     <Compile Include="Delegates.cs" />
     <Compile Include="DictType.cs" />
