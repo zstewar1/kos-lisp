@@ -35,10 +35,6 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_string == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_string, "ToBool", PropConsts.Bool);
-        LispType.AddStatic(_string, "ToStr", PropConsts.Str);
-        LispType.AddStatic(_string, "ToRepr", PropConsts.Repr);
-
         return _string;
       }
     }
@@ -46,6 +42,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <summary>
     /// Get the str value of this string. Which is just itself.
     /// </summary>
+    [BuiltinFunction(Name = "--str--")]
     private static LispObject ToStr([PositionalArgument] StringType str) {
       return str;
     }
@@ -54,6 +51,7 @@ namespace ZStewart.KOSLisp.Types {
     /// Create a representation string of this string, with all quotes appearing escaped,
     /// and the value wrapped in more quotes.
     /// </summary>
+    [BuiltinFunction(Name = "--repr--")]
     private static LispObject ToRepr([PositionalArgument] StringType str) {
       return Create(
         new StringBuilder(str.Value)
@@ -65,6 +63,7 @@ namespace ZStewart.KOSLisp.Types {
           .ToString());
     }
 
+    [BuiltinFunction(Name = "--bool--")]
     private static LispObject ToBool([PositionalArgument] string self) {
       return BoolType.Create(self.Length != 0);
     }

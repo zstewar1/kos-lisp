@@ -14,19 +14,6 @@ namespace ZStewart.KOSLisp.Types {
   /// </summary>
   public class CallMagic {
 
-    private static CallMagic _nop;
-    public static CallMagic NOP {
-      get {
-        if (_nop != null) return _nop;
-        _nop = new CallMagic(typeof(CallMagic), "Nop");
-        return _nop;
-      }
-    }
-
-    private static void Nop (
-        [RestArgument] List<LispObject> unusedPargs,
-        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
-
     #region Static Helper Methods
     /// <summary>
     /// Shortcut to look up a static, non-public method on the given type.
@@ -66,7 +53,7 @@ namespace ZStewart.KOSLisp.Types {
       var pargs = ImmutableList.CreateBuilder<Type>();
       for (; index < paraminfos.Length; index++) {
         var p = paraminfos[index];
-        if (p.GetCustomAttribute<PositionalArgument>() != null) {
+        if (p.GetCustomAttribute<PositionalArgumentAttribute>() != null) {
           if (!Arguments.IsMarshalable(p.ParameterType)) {
             throw new ArgumentException(
               "Positional argument must be marshalable.");
@@ -81,7 +68,7 @@ namespace ZStewart.KOSLisp.Types {
 
       if (index < paraminfos.Length) {
         var p = paraminfos[index];
-        if (p.GetCustomAttribute<RestArgument>() != null) {
+        if (p.GetCustomAttribute<RestArgumentAttribute>() != null) {
           index++;
           if (!p.ParameterType.IsAssignableFrom(typeof(List<LispObject>)))
             throw new ArgumentException(
@@ -93,8 +80,8 @@ namespace ZStewart.KOSLisp.Types {
       var kwargs = ImmutableList.CreateBuilder<Tuple<SymbolType, Type>>();
       for (; index < paraminfos.Length; index++) {
         var p = paraminfos[index];
-        var pattr = p.GetCustomAttribute<KeywordArgument>();
-        if (p.GetCustomAttribute<KeywordArgument>() != null) {
+        var pattr = p.GetCustomAttribute<KeywordArgumentAttribute>();
+        if (pattr != null) {
           if (!Arguments.IsMarshalable(p.ParameterType)) {
             throw new ArgumentException(
               "Keyword argument must be marshalable.");
@@ -114,7 +101,7 @@ namespace ZStewart.KOSLisp.Types {
 
       if (index < paraminfos.Length) {
         var p = paraminfos[index];
-        if (p.GetCustomAttribute<RestKeywordArgument>() != null) {
+        if (p.GetCustomAttribute<RestKeywordArgumentAttribute>() != null) {
           index++;
           if (!p.ParameterType.IsAssignableFrom(typeof(Dictionary<SymbolType, LispObject>)))
             throw new ArgumentException(

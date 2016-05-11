@@ -34,8 +34,6 @@ namespace ZStewart.KOSLisp.Types {
 
         _icons = new LispType {
           __name__ = "icons",
-          __new__ = new CallMagic(typeof(IConsType), "New"),
-          __init__ = CallMagic.NOP,
           _instance_type = typeof(IConsType),
           _list_methods = new ListMethods {
             __getcar__ = GetCar,
@@ -49,12 +47,11 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_icons == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_icons, "ToRepr", PropConsts.Repr);
-
         return _icons;
       }
     }
 
+    [BuiltinFunction(Name = "--new--")]
     private static LispObject New (
         [PositionalArgument] LispType subtype,
         [PositionalArgument] LispObject car,
@@ -97,6 +94,7 @@ namespace ZStewart.KOSLisp.Types {
         "instance must be of type {0}, was {1}", ICons, instance.__class__);
     }
 
+    [BuiltinFunction(Name = "--repr--")]
     private static LispObject ToRepr ([PositionalArgument] IConsType self) {
       StringBuilder val = new StringBuilder("(tuple ");
       IConsType value = self;

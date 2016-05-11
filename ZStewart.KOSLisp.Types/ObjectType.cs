@@ -25,7 +25,6 @@ namespace ZStewart.KOSLisp.Types {
 
         _object = new LispType {
           __name__ = "object",
-          __new__ = new CallMagic(typeof(LispObject), "New"),
           __getattr__ = GetAttr,
           __setattr__ = SetAttr,
           _instance_type = typeof(LispObject),
@@ -37,10 +36,6 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_object == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_object, "ToBool", PropConsts.Bool);
-        LispType.AddStatic(_object, "ToStr", PropConsts.Str);
-        LispType.AddStatic(_object, "ToRepr", PropConsts.Repr);
-
         return _object;
       }
     }
@@ -51,6 +46,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="type">The type to instantiate.</param>
     /// <param name="args">The arguments to the __new__ method.</param>
     /// <returns>A created lisp object or null on error.</returns>
+    [BuiltinFunction(Name = "--new--")]
     private static LispObject New(
         [PositionalArgument] LispType type,
         [RestArgument] List<LispObject> args) {
@@ -175,14 +171,17 @@ namespace ZStewart.KOSLisp.Types {
     }
 
 
+    [BuiltinFunction(Name = "--bool--")]
     private static LispObject ToBool([PositionalArgument] LispObject nil) {
       return BoolType.T;
     }
 
+    [BuiltinFunction(Name = "--str--")]
     private static LispObject ToStr([PositionalArgument] LispObject obj) {
       return Call(obj, "--repr--");
     }
 
+    [BuiltinFunction(Name = "--repr--")]
     private static LispObject ToRepr([PositionalArgument] LispObject obj) {
       return StringType.Create(string.Format("[{0} object]", obj.__class__.__name__));
     }
@@ -376,26 +375,18 @@ namespace ZStewart.KOSLisp.Types {
           break;
         }
 
-        if (type.__new__ != null) {
+        try {
+          GetAttribute(type, PropConsts.New);
           def |= NewInitDefined.New;
-        } else {
-          try {
-            MappingOperations.GetItem(type.__dict__, PropConsts.New);
-            def |= NewInitDefined.New;
-          } catch (ExceptionWrapper ex) {
-            if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
-          }
+        } catch (ExceptionWrapper ex) {
+          if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
         }
 
-        if (type.__init__ != null) {
+        try {
+          GetAttribute(type, PropConsts.Init);
           def |= NewInitDefined.Init;
-        } else {
-          try {
-            MappingOperations.GetItem(type.__dict__, PropConsts.Init);
-            def |= NewInitDefined.Init;
-          } catch (ExceptionWrapper ex) {
-            if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
-          }
+        } catch (ExceptionWrapper ex) {
+          if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
         }
       }
       if (!isSubtype) {
@@ -404,6 +395,15 @@ namespace ZStewart.KOSLisp.Types {
           subtype, supertype);
       }
       return def;
+    }
+
+    public static bool IsCorrectInstanceType(LispType subtype, LispType supertype) {
+      foreach(var type in ListOperations.IterList<LispType>(subtype.__mro__)) {
+        if (type._instance_type != null) {
+          return type._instance_type == supertype._instance_type;
+        }
+      }
+      throw ExceptionType.ThrowTypeError("type {0} has no instance type!", subtype);
     }
     #endregion Static Helper Methods
 

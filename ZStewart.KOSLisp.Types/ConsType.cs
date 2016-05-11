@@ -25,8 +25,6 @@ namespace ZStewart.KOSLisp.Types {
 
         _cons = new LispType {
           __name__ = "cons",
-          __new__ = new CallMagic(typeof(ConsType), "New"),
-          __init__ = new CallMagic(typeof(ConsType), "Init"),
           _instance_type = typeof(ConsType),
           _list_methods = new ListMethods {
             __getcar__ = GetCar,
@@ -42,12 +40,11 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_cons == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_cons, "ToRepr", PropConsts.Repr);
-
         return _cons;
       }
     }
 
+    [BuiltinFunction(Name = "--new--")]
     private static LispObject New(
         [PositionalArgument] LispType subtype,
         [RestArgument] List<LispObject> unusedPargs,
@@ -68,6 +65,7 @@ namespace ZStewart.KOSLisp.Types {
       return result;
     }
 
+    [BuiltinFunction(Name = "--init--")]
     private static void Init(
         [PositionalArgument] ConsType self,
         [PositionalArgument] LispObject car,
@@ -119,6 +117,7 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    [BuiltinFunction(Name = "--repr--")]
     private static LispObject ToRepr([PositionalArgument] ConsType self) {
       try {
         var len = ListOperations.Count(self);

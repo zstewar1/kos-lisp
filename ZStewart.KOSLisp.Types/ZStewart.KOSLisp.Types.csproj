@@ -35,10 +35,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Attributes\KeywordArgument.cs" />
-    <Compile Include="Attributes\PositionalArgument.cs" />
-    <Compile Include="Attributes\RestArgument.cs" />
-    <Compile Include="Attributes\RestKeywordArgument.cs" />
+    <Compile Include="Attributes\KeywordArgumentAttribute.cs" />
+    <Compile Include="Attributes\PositionalArgumentAttribute.cs" />
+    <Compile Include="Attributes\RestArgumentAttribute.cs" />
+    <Compile Include="Attributes\RestKeywordArgumentAttribute.cs" />
+    <Compile Include="Attributes\BuiltinFunctionAttribute.cs" />
     <Compile Include="Helpers\Arguments.cs" />
     <Compile Include="Helpers\LookupHelpers.cs" />
     <Compile Include="Helpers\CallableOperations.cs" />

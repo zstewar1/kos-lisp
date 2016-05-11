@@ -19,14 +19,6 @@ namespace ZStewart.KOSLisp.Types {
     /// </summary>
     public LispObject __bases__;
     /// <summary>
-    /// Function for creating a new instance of this type. Inherited.
-    /// </summary>
-    public CallMagic __new__;
-    /// <summary>
-    /// Function for initializing data in this type. Inherited.
-    /// </summary>
-    public CallMagic __init__;
-    /// <summary>
     /// Function for calling this type. Inherited.
     /// </summary>
     public CallFunc __call__;

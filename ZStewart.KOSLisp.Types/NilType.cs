@@ -20,8 +20,6 @@ namespace ZStewart.KOSLisp.Types {
 
         _nilClass = new LispType {
           __name__ = "NilType",
-          __new__ = new CallMagic(typeof(NilType), "New"),
-          __init__ = CallMagic.NOP,
           _instance_type = typeof(NilType),
         };
         _nilClass.__class__ = LispType.Type;
@@ -31,12 +29,11 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_nilClass == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_nilClass, "ToBool", PropConsts.Bool);
-
         return _nilClass;
       }
     }
 
+    [BuiltinFunction(Name = "--new--")]
     private static LispObject New ([PositionalArgument] LispType subtype) {
       if (subtype != NilClass) {
         throw ExceptionType.ThrowTypeError("cannot create new instances of Nil");
@@ -44,6 +41,7 @@ namespace ZStewart.KOSLisp.Types {
       return Nil;
     }
 
+    [BuiltinFunction(Name = "--bool--")]
     private static LispObject ToBool([PositionalArgument] NilType nil) {
       return BoolType.F;
     }

@@ -26,8 +26,6 @@ namespace ZStewart.KOSLisp.Types {
         // Setup the type.
         _type = new LispType {
           __name__ = "type",
-          __new__ = new CallMagic(typeof(LispType), "New"),
-          __init__ = new CallMagic(typeof(LispType), "Init"),
           __call__ = Call,
           _instance_type = typeof(LispType),
         };
@@ -38,18 +36,18 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_type == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_type, "ToRepr", PropConsts.Repr);
-
         return _type;
       }
     }
 
+    [BuiltinFunction(Name = "--new--")]
     private static LispObject New(
         [PositionalArgument] LispObject subtype,
         [RestArgument] List<LispObject> args) {
       throw ExceptionType.ThrowNotImplemented("can't create new types yet");
     }
 
+    [BuiltinFunction(Name = "--init--")]
     private static LispObject Init(
         [PositionalArgument] LispObject subtype,
         [RestArgument] List<LispObject> args) {
@@ -58,43 +56,22 @@ namespace ZStewart.KOSLisp.Types {
 
 
     private static LispObject Call(
-        LispType type,
+        LispObject instance,
         List<LispObject> pargs,
         Dictionary<SymbolType, LispObject> kwargs) {
-      LispObject created = null;
-      // Lookup the new method on the type directly, prevent getting the type type's new.
-      foreach (var t in ListOperations.IterList<LispType>(type.__mro__)) {
-        if (t.__new__ != null) {
-          created = t.__new__(type, pargs, kwargs);
-          break;
-        } else {
-          LispObject fallback = null;
-          try {
-            fallback = MappingOperations.GetItem(t.__dict__, PropConsts.New);
-          } catch (ExceptionWrapper ex) {
-            if(!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
-          }
-          if (fallback != null) {
-            if (!DescriptorOperations.IsDescriptor(fallback)) {
-              created = CallableOperations.Call(fallback, pargs, kwargs);
-            } else {
-              created = CallableOperations.Call(
-                DescriptorOperations.Get(fallback, NilType.Nil, type),
-                pargs, kwargs);
-            }
-            break;
-          }
-        }
+      if (!(instance is LispType)) {
+        throw ExceptionType.ThrowTypeError(
+          "type must be a lisp type, got {0} object", instance.__class__);
       }
-      if (create == null) {
-        throw ExceptionType.CreateAttributeError(
-          "type {0} has no attribute {1}", type, PropConsts.New);
+      var type = (LispType)instance;
+      var created = LispObject.Call(type, PropConsts.New, pargs, kwargs);
+      if (IsInstance(created, type)) {
+        LispObject.Call(created, PropConsts.Init, pargs, kwargs);
       }
-      if (!IsInstance(created, type)) {
-        return created;
-      }
+      return created;
     }
 
+    [BuiltinFunction(Name = "--repr--")]
     private static LispObject ToRepr([PositionalArgument] LispType type) {
       return StringType.Format("[type {0}]", type.__name__);
     }
@@ -109,6 +86,22 @@ namespace ZStewart.KOSLisp.Types {
       }
       // TODO(zstewar1): Populate dict.
       type.__dict__ = DictType.Create();
+
+      // If the _instance_type is not set, then its value is inherited from the parent
+      // type, and we should not try to load methods into this type, since it will also
+      // inherit them from the parent.
+      if (type._instance_type != null) {
+        foreach (var method in type._instance_type.GetMethods(
+            BindingFlags.NonPublic | BindingFlags.Static)) {
+          var builtin = method.GetCustomAttribute<BuiltinFunctionAttribute>();
+          if (builtin != null) {
+            var name = SymbolType.Create(builtin.Name ?? method.Name);
+            MappingOperations.SetItem(
+              type.__dict__, name, BuiltinFunctionType.Create(method, name));
+          }
+        }
+      }
+
       return type;
     }
 

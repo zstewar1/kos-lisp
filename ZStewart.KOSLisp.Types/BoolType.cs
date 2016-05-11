@@ -21,8 +21,6 @@ namespace ZStewart.KOSLisp.Types {
 
         _bool = new LispType {
           __name__ = "bool",
-          __new__ = new CallMagic(typeof(BoolType), "New"),
-          __init__ = CallMagic.NOP,
           _instance_type = typeof(BoolType),
         };
         _bool.__class__ = LispType.Type;
@@ -32,12 +30,11 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_bool == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_bool, "ToBool", PropConsts.Bool);
-
         return _bool;
       }
     }
 
+    [BuiltinFunction(Name = "--new--")]
     private static LispObject New(
         [PositionalArgument] LispType subtype,
         [PositionalArgument] LispObject value) {
@@ -47,6 +44,7 @@ namespace ZStewart.KOSLisp.Types {
       return From(value);
     }
 
+    [BuiltinFunction(Name = "--bool--")]
     private static LispObject ToBool([PositionalArgument] BoolType obj) {
       return obj;
     }

@@ -33,18 +33,17 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_number == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_number, "ToBool", PropConsts.Bool);
-        LispType.AddStatic(_number, "ToRepr", PropConsts.Repr);
-
         return _number;
       }
     }
 
+    [BuiltinFunction(Name = "--bool--")]
     private static LispObject ToBool([PositionalArgument] double value) {
       if (value == 0) return BoolType.F;
       return BoolType.T;
     }
 
+    [BuiltinFunction(Name = "--repr--")]
     private static LispObject ToRepr([PositionalArgument] double value) {
       return StringType.Create(value.ToString());
     }

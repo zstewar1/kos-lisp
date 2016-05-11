@@ -23,12 +23,11 @@ namespace ZStewart.KOSLisp.Types {
         // TODO(zstewar1): Not sure how to handle errors in "static" setup.
         if (_symbol == null) throw new InvalidOperationException();
 
-        LispType.AddStatic(_symbol, "ToRepr", PropConsts.Repr);
-
         return _symbol;
       }
     }
 
+    [BuiltinFunction(Name = "--repr--")]
     private static LispObject ToRepr([PositionalArgument] SymbolType obj) {
       return StringType.Create(obj.Identifier);
     }
