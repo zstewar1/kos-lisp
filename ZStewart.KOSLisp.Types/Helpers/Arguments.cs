@@ -14,11 +14,11 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// keyword argument names, and how to handle extra positional and keyword arguments.
     /// </summary>
     public static void SplitArguments(
-        List<LispObject> pargs,
-        Dictionary<SymbolType, LispObject> kwargs,
+        IList<LispObject> pargs,
+        IDictionary<SymbolType, LispObject> kwargs,
         int numPositional,
         PositionalType hasRest,
-        List<SymbolType> namedKwargs,
+        IList<SymbolType> namedKwargs,
         bool hasRestKwargs,
         out List<LispObject> pos,
         out List<LispObject> rest,
@@ -69,12 +69,12 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       }
 
       // don't modify argument.
-      kwargs = new Dictionary<SymbolType, LispObject>(kwargs);
+      var kw = new Dictionary<SymbolType, LispObject>(kwargs);
       // Continue filling kwargs from the dictionary argument.
       for (int i = knownKwargs.Count; i < namedKwargs.Count; i++) {
         LispObject nextKwarg;
         if (kwargs.TryGetValue(namedKwargs[i], out nextKwarg)) {
-          kwargs.Remove(namedKwargs[i]);
+          kw.Remove(namedKwargs[i]);
           knownKwargs.Add(nextKwarg);
         } else {
           knownKwargs.Add(null);
@@ -90,7 +90,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         }
       } else {
         // assign what's left of the duplicated kwargs dict.
-        restKwargs = kwargs;
+        restKwargs = kw;
       }
     }
 

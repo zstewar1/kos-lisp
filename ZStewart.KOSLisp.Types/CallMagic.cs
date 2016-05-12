@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 using ZStewart.KOSLisp.Types.Attributes;
@@ -13,6 +14,20 @@ namespace ZStewart.KOSLisp.Types {
   /// type conversion and other magic.
   /// </summary>
   public class CallMagic {
+
+    /// <summary>
+    /// Function used by CallMagic to dispatch the wrapped function. It can assume that
+    /// positionalArguments.Length + (restArguments != null ? 1 : 0) +
+    /// keywordArguments.Length + (restKeywordArguments != null ? 1 : 0)
+    /// is equal to the number of parameters required by the method it wraps.
+    ///
+    /// Some elements of keywordArguments may be null, meaning to use the default value.
+    /// </summary>
+    private delegate LispObject MagicFunction(
+        object[] positionalArguments,
+        List<LispObject> restArguments,
+        object[] keywordArguments,
+        Dictionary<SymbolType, LispObject> restKeywordArguments);
 
     #region Static Helper Methods
     /// <summary>
@@ -43,9 +58,8 @@ namespace ZStewart.KOSLisp.Types {
         throw new ArgumentException(
           "The return type of boundMethod must be unmarshalable.");
       }
-      this.boundMethod = boundMethod;
 
-      paraminfos = ImmutableArray.CreateRange(boundMethod.GetParameters());
+      var paraminfos = boundMethod.GetParameters();
       int index = 0;
       // Read the paraminfos until expended. First postional arguments, then Rest
       // arguments, followed by named keywords, followed by kwargs.
@@ -77,27 +91,29 @@ namespace ZStewart.KOSLisp.Types {
         }
       }
 
-      var kwargs = ImmutableList.CreateBuilder<Tuple<SymbolType, Type>>();
+      var kwargsNames = ImmutableList.CreateBuilder<SymbolType>();
+      var kwargsTypes = ImmutableList.CreateBuilder<Type>();
       for (; index < paraminfos.Length; index++) {
         var p = paraminfos[index];
         var pattr = p.GetCustomAttribute<KeywordArgumentAttribute>();
         if (pattr != null) {
           if (!Arguments.IsMarshalable(p.ParameterType)) {
-            throw new ArgumentException(
-              "Keyword argument must be marshalable.");
+            throw new ArgumentException("Keyword argument must be marshalable.");
           }
           // Coalesce name from the argument name on the attribute and the name of the
           // parameter.
           var name = SymbolType.Create(pattr.ArgumentName ?? p.Name);
-          if (kwargs.Select(t => t.Item1).Contains(name))
+          if (kwargsNames.Contains(name))
             throw new ArgumentException(string.Format(
               "Found duplicate keyword argument {0}", name));
-          kwargs.Add(Tuple.Create(name, p.ParameterType));
+          kwargsNames.Add(name);
+          kwargsTypes.Add(p.ParameterType);
         } else {
           break;
         }
       }
-      keywordArguments = kwargs.ToImmutable();
+      keywordArgumentNames = kwargsNames.ToImmutable();
+      keywordArgumentTypes = kwargsTypes.ToImmutable();
 
       if (index < paraminfos.Length) {
         var p = paraminfos[index];
@@ -113,14 +129,55 @@ namespace ZStewart.KOSLisp.Types {
       if (index < paraminfos.Length)
         throw new ArgumentException(
           "boundMethod had unannotated or illegally anotated parameters.");
+
+
+      // Generate the magic function which this call magic will use to make function
+      // calls.
+      var posParam = Expression.Parameter(typeof(object[]), "pos");
+      var restParam = Expression.Parameter(typeof(List<LispObject>), "rest");
+      var kwParam = Expression.Parameter(typeof(object[]), "kw");
+      var restKwParam = Expression.Parameter(typeof(Dictionary<SymbolType, LispObject>), "restKw");
+
+      var argumentExpressions = new List<Expression>();
+
+      // Positional arguments are marshaled, we just need to cast.
+      for (int i = 0; i < positionalArguments.Count; i++) {
+        argumentExpressions.Add(
+          Expression.Convert(
+            Expression.ArrayAccess(posParam, Expression.Constant(i)),
+            positionalArguments[i]));
+      }
+
+      if (rest) {
+        argumentExpressions.Add(restParam);
+      }
+
+      // Again, just need to cast, already marshaled.
+      for (int i = 0; i < keywordArgumentTypes.Count; i++) {
+        argumentExpressions.Add(
+          Expression.Convert(
+            Expression.ArrayAccess(kwParam, Expression.Constant(i)),
+            keywordArgumentTypes[i]));
+      }
+
+      if (restKwargs) {
+        argumentExpressions.Add(restKwParam);
+      }
+
+      implementation = Expression.Lambda<MagicFunction>(
+        Expression.Call(
+          typeof(Arguments).GetMethod("Unmarshal", new Type[] {typeof(object)}),
+          Expression.Call(boundMethod, argumentExpressions)),
+        string.Format("CallMagic magicFunction wrapping {0}", boundMethod.Name),
+        ImmutableList.Create(posParam, restParam, kwParam, restKwParam)).Compile();
     }
 
-    private readonly MethodInfo boundMethod;
+    private readonly MagicFunction implementation;
 
-    private readonly ImmutableArray<ParameterInfo> paraminfos;
     private readonly ImmutableList<Type> positionalArguments;
     private readonly bool rest;
-    private readonly ImmutableList<Tuple<SymbolType, Type>> keywordArguments;
+    private readonly ImmutableList<SymbolType> keywordArgumentNames;
+    private readonly ImmutableList<Type> keywordArgumentTypes;
     private readonly bool restKwargs;
 
     /// <summary>
@@ -133,72 +190,32 @@ namespace ZStewart.KOSLisp.Types {
     public LispObject Call (
         List<LispObject> pargs,
         Dictionary<SymbolType, LispObject> kwargs) {
-      if (pargs.Count < positionalArguments.Count) {
-        throw ExceptionType.ThrowTypeError(
-          "not enough positional arguments, expected {0}, got {1}",
-          positionalArguments.Count, pargs.Count);
+
+      List<LispObject> pos, restList, kw;
+      Dictionary<SymbolType, LispObject> restKwList;
+      Arguments.SplitArguments(
+          pargs, kwargs,
+          positionalArguments.Count,
+          rest ? PositionalType.RestCapture : PositionalType.RestIllegal,
+          keywordArgumentNames,
+          restKwargs,
+          out pos, out restList, out kw, out restKwList);
+
+      object[] marshaledPos = new object[pos.Count];
+      for (int i = 0; i < pos.Count; i++) {
+        marshaledPos[i] = Arguments.Marshal(positionalArguments[i], pos[i]);
       }
 
-      // TODO(zstewar1): flow over into the kwargs. (will require duplicate-kwarg
-      // checking.
-      if (pargs.Count > positionalArguments.Count && !rest) {
-        throw ExceptionType.ThrowTypeError(
-          "too many positional arguments, expected {0}, got {1}",
-          positionalArguments.Count, pargs.Count);
-      }
-
-      if (!restKwargs) {
-        // Later we may want to optimize the lookup of known keywords -- if necessary.
-        var extraKwargs = kwargs.Keys.Where(
-          k => !keywordArguments.Select(t => t.Item1).Contains(k)).ToList();
-        if (extraKwargs.Count > 0) {
-          throw ExceptionType.ThrowTypeError(
-            "got unexpected keyword arguments: ({0})", string.Join(" ", extraKwargs));
-        }
-      }
-
-      object[] arguments = new object[paraminfos.Length];
-      int index = 0;
-
-      for (int i = 0; i < positionalArguments.Count; i++, index++) {
-        arguments[index] = Arguments.Marshal(positionalArguments[i], pargs[i]);
-      }
-
-      if (rest) {
-        // If there is a rest parameter is may be empty but never null.
-        pargs.RemoveRange(0, positionalArguments.Count);
-        arguments[index++] = pargs;
-      }
-
-      for (int i = 0; i < keywordArguments.Count; i++, index++) {
-        LispObject arg;
-        if (kwargs.TryGetValue(keywordArguments[i].Item1, out arg)) {
-          arguments[index] = Arguments.Marshal(keywordArguments[i].Item2, arg);
-          kwargs.Remove(keywordArguments[i].Item1);
+      object[] marshaledKw = new object[kw.Count];
+      for (int i = 0; i < kw.Count; i++) {
+        if (kw[i] != null) {
+          marshaledKw[i] = Arguments.Marshal(keywordArgumentTypes[i], kw[i]);
         } else {
-          // Set other keyword arguments to missing to allow using C# default parameters.
-          arguments[index] = Type.Missing;
+          marshaledKw[i] = Type.Missing;
         }
       }
 
-      if (restKwargs) {
-        arguments[index++] = kwargs;
-      }
-
-      if (index < arguments.Length) {
-        throw new InvalidOperationException(
-          "After filling all arguments, index was still not at the end of the argument " +
-          "list, which should be impossible.");
-      }
-
-      try {
-        return Arguments.Unmarshal(boundMethod.Invoke(null, arguments));
-      } catch (TargetInvocationException ex) {
-        // TODO(zstewar1): This loses the stack grace from the inner method. There is no
-        // way to keep it directly, so we would like to replace the use of reflection with
-        // runtime function generation through Expressions.
-        throw ex.InnerException;
-      }
+      return implementation(marshaledPos, restList, marshaledKw, restKwList);
     }
   }
 }
