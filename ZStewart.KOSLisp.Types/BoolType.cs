@@ -102,5 +102,7 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     public bool Value { get { return this == T; } }
+
+    public override bool IsSelfEvaluating { get { return true; } }
   }
 }

@@ -23,7 +23,7 @@ namespace ZStewart.KOSLisp.Compile.Contexts {
     public ScopedContext(Context parentScope, IEnumerable<SymbolType> newBindings) {
       ParentScope = parentScope;
       foreach (var symbol in newBindings) {
-        if (SymbolType.IsSelfEvaluating(symbol)) {
+        if (symbol.IsSelfEvaluating) {
           throw ExceptionType.ThrowSyntaxError(
             "cannot bind self evaluating symbol {0}", symbol);
         }
@@ -54,7 +54,7 @@ namespace ZStewart.KOSLisp.Compile.Contexts {
     /// Does not check for bindings in parent contexts.
     /// </summary>
     public virtual AstBinding AddBinding(SymbolType symbol) {
-      if (SymbolType.IsSelfEvaluating(symbol)) {
+      if (symbol.IsSelfEvaluating) {
         throw ExceptionType.ThrowSyntaxError(
           "cannot bind self evaluating symbol {0}", symbol);
       }

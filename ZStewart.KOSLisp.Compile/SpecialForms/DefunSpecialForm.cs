@@ -43,7 +43,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
           "function name must be a symbol, got {0}", nameObj.__class__);
       }
       var name = (SymbolType)nameObj;
-      if (SymbolType.IsSelfEvaluating(name)) {
+      if (name.IsSelfEvaluating) {
         throw ExceptionType.ThrowSyntaxError(
           "cannot declare function with self-evaluating name {0}", name);
       }

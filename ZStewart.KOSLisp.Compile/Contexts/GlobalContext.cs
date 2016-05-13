@@ -40,7 +40,7 @@ namespace ZStewart.KOSLisp.Compile.Contexts {
     /// module.
     /// </summary>
     public AstBinding AddBinding(SymbolType symbol) {
-      if (SymbolType.IsSelfEvaluating(symbol)) {
+      if (symbol.IsSelfEvaluating) {
         throw ExceptionType.ThrowSyntaxError(
           "cannot bind self evaluating symbol {0}", symbol);
       }

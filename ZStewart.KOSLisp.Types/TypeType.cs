@@ -171,10 +171,29 @@ namespace ZStewart.KOSLisp.Types {
     /// </summary>
     public static void AddStatic(
         LispType type, string staticName, SymbolType lispName) {
+      AddStatic(type._instance_type, type, staticName, lispName);
+    }
+
+    /// <summary>
+    /// Add a static function to the given type from an explicitly specified source type.
+    /// </summary>
+    public static void AddStatic(
+        Type sourceType, LispType destTypeObject, string staticName, string lispName) {
+      AddStatic(sourceType, destTypeObject, staticName, SymbolType.Create(lispName));
+    }
+
+    /// <summary>
+    /// Add a static function to the given type from an explicitly specified source type.
+    /// </summary>
+    public static void AddStatic(
+        Type sourceType,
+        LispType destTypeObject,
+        string staticName,
+        SymbolType lispName) {
       MappingOperations.SetItem(
-        type.__dict__,
+        destTypeObject.__dict__,
         lispName,
-        BuiltinFunctionType.Create(type._instance_type, staticName, lispName));
+        BuiltinFunctionType.Create(sourceType, staticName, lispName));
     }
 
     public static void AddDataProperty(

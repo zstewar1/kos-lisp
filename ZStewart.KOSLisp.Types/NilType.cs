@@ -62,5 +62,7 @@ namespace ZStewart.KOSLisp.Types {
         return _nil;
       }
     }
+
+    public override bool IsSelfEvaluating { get { return true; } }
   }
 }

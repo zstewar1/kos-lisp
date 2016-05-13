@@ -26,7 +26,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// </param>
     public AstOp ToAst(LispObject expression, Context context, SemanticAnalyzer compiler) {
       if (!(expression is SymbolType)
-          || SymbolType.IsSelfEvaluating((SymbolType)expression)) {
+          || ((SymbolType)expression).IsSelfEvaluating) {
         return Ast.Const(expression);
       }
       return context.GetBinding((SymbolType)expression);

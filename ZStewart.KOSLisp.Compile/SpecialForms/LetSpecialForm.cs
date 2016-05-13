@@ -69,7 +69,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       foreach (var newbind in ListOperations.IterList(bindingList)) {
         // Check whether the new binding is a symbol or a symbol-value tuple.
         if (newbind is SymbolType) {
-          if (SymbolType.IsSelfEvaluating((SymbolType)newbind)) {
+          if (((SymbolType)newbind).IsSelfEvaluating) {
             throw ExceptionType.ThrowSyntaxError(
               "cannot bind self-evaluating symbol {0}", newbind);
           }
@@ -94,7 +94,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
           if (!(symb is SymbolType)) {
             throw ExceptionType.ThrowSyntaxError(
               "variable to bind must be a symbol, was {0}", symb.__class__);
-          } else if(SymbolType.IsSelfEvaluating((SymbolType)symb)) {
+          } else if(((SymbolType)symb).IsSelfEvaluating) {
             throw ExceptionType.ThrowSyntaxError(
               "cannot bind self-evaluating symbol {0}", symb);
           }

@@ -82,7 +82,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
             "argument binding must be symbol not {0}", newbind.__class__);
         }
         var symb = (SymbolType)newbind;
-        if (SymbolType.IsSelfEvaluating(symb)) {
+        if (symb.IsSelfEvaluating) {
           throw ExceptionType.ThrowSyntaxError(
             "cannot bind self-evaluating symbol {0}", symb);
         } else if (bindings.Contains(symb)) {
