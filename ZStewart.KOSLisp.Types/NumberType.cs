@@ -37,6 +37,57 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    [BuiltinFunction(Name = "--new--")]
+    private static NumberType New(
+        [PositionalArgument] LispType subtype,
+        [RestArgument] List<LispObject> values) {
+      if (values.Count > 1) {
+        throw ExceptionType.ThrowTypeError(
+          "--new-- takes at most 2 arguments, {0} given", values.Count + 1);
+      }
+      if (subtype == Number) {
+        return Create(values.Count == 1 ? GetValue(values[0]) : 0.0);
+      } else {
+        if (!LispType.IsSubtype(subtype, Number)) {
+          throw ExceptionType.ThrowTypeError("type must be a subtype of num");
+        }
+        if (!IsCorrectInstanceType(subtype, Number)) {
+          throw ExceptionType.ThrowTypeError(
+            "num.--new-- cannot be used to instantiate object of type {0}", subtype);
+        }
+        return new NumberType(values.Count == 1 ? GetValue(values[0]) : 0.0) {
+          __class__ = subtype,
+          __dict__ = DictType.Create(),
+        };
+      }
+    }
+
+    [BuiltinFunction(Name = "--init--")]
+    private static void Init(
+        [RestArgument] List<LispObject> unusedPargs,
+        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
+
+    /// <summary>
+    /// Helper method for the --new-- method which gets the numeric value of the argument
+    /// if the argument is a number or string.
+    /// </summary>
+    private static double GetValue(LispObject value) {
+      if (value is NumberType) {
+        return ((NumberType)value).Value;
+      } else if (value is StringType) {
+        double res;
+        if (double.TryParse(((StringType)value).Value, out res)) {
+          return res;
+        } else {
+          throw ExceptionType.ThrowValueError(
+            "could not convert string to number: {0}", value);
+        }
+      } else {
+        throw ExceptionType.ThrowTypeError(
+          "num argument must be a string or number not {0}", value.__class__);
+      }
+    }
+
     [BuiltinFunction(Name = "--bool--")]
     private static LispObject ToBool([PositionalArgument] double value) {
       if (value == 0) return BoolType.F;
@@ -50,15 +101,14 @@ namespace ZStewart.KOSLisp.Types {
     #endregion
 
     #region Static Helper Methods
-    public static LispObject Create(double value) {
-      return new NumberType {
+    public static NumberType Create(double value) {
+      return new NumberType (value) {
         __class__ = Number,
-        value = value,
       };
     }
     #endregion Static Helper Methods
 
-    private double value;
+    private readonly double value;
     public double Value { get { return value; } }
   }
 }

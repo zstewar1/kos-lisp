@@ -61,8 +61,7 @@ namespace ZStewart.KOSLisp.Types {
           throw ExceptionType.ThrowTypeError(
             "str.--new-- cannot be used to instantiate object of type {0}", subtype);
         }
-        var str = values.Count == 1 ? GetStrString(values[0]) : "";
-        return new StringType(str) {
+        return new StringType(values.Count == 1 ? GetStrString(values[0]) : "") {
           __class__ = subtype,
           __dict__ = DictType.Create(),
         };
