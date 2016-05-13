@@ -13,7 +13,7 @@ namespace ZStewart.KOSLisp.Types {
         if (_symbol != null) return _symbol;
 
         _symbol = new LispType {
-          __name__ = "symbol",
+          __name__ = "sym",
           _instance_type = typeof(SymbolType),
         };
         _symbol.__class__ = LispType.Type;
@@ -62,6 +62,11 @@ namespace ZStewart.KOSLisp.Types {
         };
       }
     }
+
+    [BuiltinFunction(Name = "--init--")]
+    private static void Init(
+        [RestArgument] List<LispObject> unusedPargs,
+        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
 
     [BuiltinFunction(Name = "--repr--")]
     private static LispObject ToRepr([PositionalArgument] SymbolType obj) {

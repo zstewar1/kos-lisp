@@ -68,7 +68,6 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
-
     [BuiltinFunction(Name = "--init--")]
     private static void Init(
         [RestArgument] List<LispObject> unusedPargs,
