@@ -35,6 +35,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         AddBuiltin(typeof(ListOperations), "SetCdr", "%setcdr");
 
         AddBuiltin(typeof(BuiltinsModule), "Print", "print");
+        AddBuiltin(typeof(BuiltinsModule), "Repr", "repr");
 
         AddType(LispType.Type);
         AddType(LispObject.Object);
@@ -51,6 +52,9 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
     }
 
     #region Simple Builtin Functions
+    /// <summary>
+    /// Simple builtin function to implement print.
+    /// </summary>
     public static LispObject Print([RestArgument] List<LispObject> thingsToPrint) {
       foreach(var obj in thingsToPrint) {
         Console.Write(obj.ToString());
@@ -58,6 +62,13 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       }
       Console.WriteLine();
       return NilType.Nil;
+    }
+
+    /// <summary>
+    /// Simple function to return the repr of an object.
+    /// </summary>
+    public static LispObject Repr([PositionalArgument] LispObject value) {
+      return StringType.GetRepr(value);
     }
     #endregion Simple Builtin Functions
   }
