@@ -54,9 +54,10 @@ namespace ZStewart.KOSLisp.Types {
     public CallMagic(MethodInfo boundMethod) {
       if (!(boundMethod.IsStatic))
         throw new ArgumentException("boundMethod must be static");
-      if (!(Arguments.IsUnmarshalable(boundMethod.ReturnType))) {
+      if (!(Arguments.IsUnmarshalable(boundMethod.ReturnType)
+            || boundMethod.ReturnType == typeof(void))) {
         throw new ArgumentException(
-          "The return type of boundMethod must be unmarshalable.");
+          "The return type of boundMethod must be unmarshalable or void.");
       }
 
       var paraminfos = boundMethod.GetParameters();
@@ -130,7 +131,6 @@ namespace ZStewart.KOSLisp.Types {
         throw new ArgumentException(
           "boundMethod had unannotated or illegally anotated parameters.");
 
-
       // Generate the magic function which this call magic will use to make function
       // calls.
       var posParam = Expression.Parameter(typeof(object[]), "pos");
@@ -164,11 +164,25 @@ namespace ZStewart.KOSLisp.Types {
         argumentExpressions.Add(restKwParam);
       }
 
+      Expression innerCall = Expression.Call(boundMethod, argumentExpressions);
+
+      Expression lambdaBody;
+      if (boundMethod.ReturnType == typeof(void)) {
+        lambdaBody = Expression.Block(
+          typeof(LispObject),
+          innerCall,
+          Expression.Constant(NilType.Nil));
+      } else {
+        lambdaBody = Expression.Call(
+          typeof(Arguments).GetMethod("Unmarshal", new Type[]{typeof(object)}),
+          innerCall);
+      }
+
       implementation = Expression.Lambda<MagicFunction>(
-        Expression.Call(
-          typeof(Arguments).GetMethod("Unmarshal", new Type[] {typeof(object)}),
-          Expression.Call(boundMethod, argumentExpressions)),
-        string.Format("CallMagic magicFunction wrapping {0}", boundMethod.Name),
+        lambdaBody,
+        string.Format(
+          "CallMagic magicFunction wrapping {0}.{1}",
+          boundMethod.DeclaringType.Name, boundMethod.Name),
         ImmutableList.Create(posParam, restParam, kwParam, restKwParam)).Compile();
     }
 
