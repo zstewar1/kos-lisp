@@ -44,6 +44,11 @@ namespace ZStewart.KOSLisp.Types {
       return From(value);
     }
 
+    [BuiltinFunction(Name = "--init--")]
+    private static void Init(
+        [RestArgument] List<LispObject> unusedPargs,
+        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
+
     [BuiltinFunction(Name = "--bool--")]
     private static LispObject ToBool([PositionalArgument] BoolType obj) {
       return obj;

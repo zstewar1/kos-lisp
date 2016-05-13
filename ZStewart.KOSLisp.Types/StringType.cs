@@ -39,6 +39,42 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    [BuiltinFunction(Name = "--new--")]
+    private static StringType New(
+        [PositionalArgument] LispType subtype,
+        [RestArgument] List<LispObject> values) {
+      if (values.Count > 1) {
+        throw ExceptionType.ThrowTypeError(
+          "--new-- takes at most 2 arguments, {0} given", values.Count + 1);
+      }
+      if (subtype == String) {
+        if (values.Count == 1) {
+          return GetStr(values[0]);
+        } else {
+          return Empty;
+        }
+      } else {
+        if (!LispType.IsSubtype(subtype, String)) {
+          throw ExceptionType.ThrowTypeError("type must be a subtype of str");
+        }
+        if (!IsCorrectInstanceType(subtype, String)) {
+          throw ExceptionType.ThrowTypeError(
+            "str.--new-- cannot be used to instantiate object of type {0}", subtype);
+        }
+        var str = values.Count == 1 ? GetStrString(values[0]) : "";
+        return new StringType(str) {
+          __class__ = subtype,
+          __dict__ = DictType.Create(),
+        };
+      }
+    }
+
+
+    [BuiltinFunction(Name = "--init--")]
+    private static void Init(
+        [RestArgument] List<LispObject> unusedPargs,
+        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
+
     /// <summary>
     /// Get the str value of this string. Which is just itself.
     /// </summary>
@@ -80,9 +116,8 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     public static StringType Create(string value) {
-      return new StringType {
+      return new StringType(value) {
         __class__ = String,
-        value = value,
       };
     }
 
@@ -131,7 +166,7 @@ namespace ZStewart.KOSLisp.Types {
     }
     #endregion Static Helper Methods
 
-    private string value;
+    private readonly string value;
     public string Value { get { return value; } }
   }
 }

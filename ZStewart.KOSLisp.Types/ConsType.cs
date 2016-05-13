@@ -11,7 +11,11 @@ namespace ZStewart.KOSLisp.Types {
   /// Represents the lisp cons type.
   /// </summary>
   public class ConsType : LispObject {
-    protected ConsType () { }
+    protected ConsType () {
+      // Ensure safety by preventing these from ever being read as null.
+      Car = NilType.Nil;
+      Cdr = NilType.Nil;
+    }
 
     // Configuration for the static type object that represents this type.
     #region Static Type Setup
@@ -49,20 +53,25 @@ namespace ZStewart.KOSLisp.Types {
         [PositionalArgument] LispType subtype,
         [RestArgument] List<LispObject> unusedPargs,
         [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {
-      if (!LispType.IsSubtype(subtype, Cons)) {
-        throw ExceptionType.ThrowTypeError("type must be a subtype of cons");
+      // Faster shortcut when it is the base type.
+      if (subtype == Cons) {
+        return new ConsType() {
+          __class__ = Cons,
+        };
+      } else {
+        if (!LispType.IsSubtype(subtype, Cons)) {
+          throw ExceptionType.ThrowTypeError("type must be a subtype of cons");
+        }
+        if (!IsCorrectInstanceType(subtype, Cons)) {
+          throw ExceptionType.ThrowTypeError(
+              "cons.--new-- cannot be used to instantiate object of type {0}",
+              subtype);
+        }
+        return new ConsType() {
+          __class__ = subtype,
+          __dict__ = DictType.Create(),
+        };
       }
-      if (!IsCorrectInstanceType(subtype, Cons)) {
-        throw ExceptionType.ThrowTypeError(
-            "cons.--new-- cannot be used to instantiate object of type {0}",
-            subtype);
-      }
-      var result = new ConsType() {
-        __class__ = subtype,
-      };
-      if (subtype != Cons)
-        result.__dict__ = DictType.Create();
-      return result;
     }
 
     [BuiltinFunction(Name = "--init--")]

@@ -56,21 +56,22 @@ namespace ZStewart.KOSLisp.Types {
         [PositionalArgument] LispType subtype,
         [PositionalArgument] LispObject car,
         [PositionalArgument] LispObject cdr) {
-      if (!LispType.IsSubtype(subtype, ICons)) {
-        throw ExceptionType.ThrowSyntaxError("type must be a subtype of icons");
+      // Faster shortcut when it is the base type.
+      if (subtype == ICons) {
+        return Create(car, cdr);
+      } else {
+        if (!LispType.IsSubtype(subtype, ICons)) {
+          throw ExceptionType.ThrowTypeError("type must be a subtype of icons");
+        }
+        if (!IsCorrectInstanceType(subtype, ICons)) {
+          throw ExceptionType.ThrowTypeError(
+            "icons.--new-- cannot be used to instantiate object of type {0}", subtype);
+        }
+        return new IConsType(car, cdr) {
+          __class__ = subtype,
+          __dict__ = DictType.Create(),
+        };
       }
-      if (!IsCorrectInstanceType(subtype, ICons)) {
-        throw ExceptionType.ThrowTypeError(
-            "icons.--new-- cannot be used to instantiate object of type {0}",
-            subtype);
-      }
-      var result = new IConsType(car, cdr) {
-        __class__ = subtype,
-      };
-      if (subtype != ICons) {
-        result.__dict__ = DictType.Create();
-      }
-      return result;
     }
 
     [BuiltinFunction(Name = "--init--")]
