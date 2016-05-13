@@ -36,7 +36,11 @@ namespace ZStewart.KOSLisp.Types.Helpers {
             && numPositional + namedKwargs.Count < pargs.Count)
           || (hasRest == PositionalType.RestIllegal
             && numPositional < pargs.Count)) {
-
+        throw ExceptionType.ThrowTypeError(
+          "too many arguments: expected at most {0}, got {1}",
+          hasRest == PositionalType.KeywordOverrun ? numPositional + namedKwargs.Count :
+            numPositional,
+          pargs.Count);
       }
 
       int argIndex = 0;
@@ -125,16 +129,14 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       }
 
       if (destType == typeof(string)) {
-        var str = LispObject.Call(source, "--str--", NilType.Nil);
-        if (str is StringType) {
-          return ((StringType)str).Value;
+        if (source is StringType) {
+          return ((StringType)source).Value;
         }
       }
 
       if (destType == typeof(bool)) {
-        var boolean = LispObject.Call(source, "--bool--", NilType.Nil);
-        if (boolean is BoolType) {
-          return ((BoolType)boolean).Value;
+        if (source is BoolType) {
+          return ((BoolType)source).Value;
         }
       }
 
