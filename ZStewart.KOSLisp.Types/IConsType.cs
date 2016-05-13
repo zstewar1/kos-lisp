@@ -73,6 +73,11 @@ namespace ZStewart.KOSLisp.Types {
       return result;
     }
 
+    [BuiltinFunction(Name = "--init--")]
+    private static void Init(
+        [RestArgument] List<LispObject> unusedPargs,
+        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
+
     private static LispObject GetCar (LispObject instance) {
       // TODO(zstewar1): Maybe check isinstance? Maybe not though, all subtypes should
       // have initialized with our New, so instance must be a ConsType. If a subtype, then
@@ -99,7 +104,7 @@ namespace ZStewart.KOSLisp.Types {
       StringBuilder val = new StringBuilder("(tuple ");
       IConsType value = self;
       while (value != null) {
-        val.Append(StringType.GetObjectRepr(value.Car));
+        val.Append(StringType.GetReprString(value.Car));
         LispObject cdr = value.Cdr;
         if (cdr is IConsType) {
           value = (IConsType)cdr;
@@ -108,7 +113,7 @@ namespace ZStewart.KOSLisp.Types {
           value = null;
           if (cdr != NilType.Nil) {
             val.Append(" . ");
-            val.Append(StringType.GetObjectRepr(cdr));
+            val.Append(StringType.GetReprString(cdr));
           }
         }
       }

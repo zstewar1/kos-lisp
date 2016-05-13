@@ -110,7 +110,7 @@ namespace ZStewart.KOSLisp {
           isExpressionFirstLine = true;
           parsed = parser.ParseNext();
           if (printExpr && parsed != null) {
-            Console.Error.WriteLine(StringType.GetObjectRepr(parsed));
+            Console.Error.WriteLine(StringType.GetReprString(parsed));
           }
         } catch (ExceptionWrapper ex) {
           Console.Error.WriteLine("Exception while paring:");
@@ -147,7 +147,7 @@ namespace ZStewart.KOSLisp {
         try {
           var result = func();
           if ((interactive && result != NilType.Nil) || alwaysPrint) {
-            Console.WriteLine(StringType.GetObjectRepr(result));
+            Console.WriteLine(StringType.GetReprString(result));
           }
         } catch (ExceptionWrapper ex) {
           Console.Error.WriteLine("Exception while evaluating:");

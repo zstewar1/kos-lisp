@@ -64,7 +64,12 @@ namespace ZStewart.KOSLisp.Types {
           "type must be a lisp type, got {0} object", instance.__class__);
       }
       var type = (LispType)instance;
-      var created = LispObject.Call(type, PropConsts.New, pargs, kwargs);
+      // Since we're calling new as a staticmethod, we need to insert the extra arguments
+      // (the type) into the argument list.
+      var newPargs = new List<LispObject>(pargs.Count + 1);
+      newPargs.Add(type);
+      newPargs.AddRange(pargs);
+      var created = LispObject.Call(type, PropConsts.New, newPargs, kwargs);
       if (IsInstance(created, type)) {
         LispObject.Call(created, PropConsts.Init, pargs, kwargs);
       }

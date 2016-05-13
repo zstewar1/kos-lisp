@@ -124,16 +124,16 @@ namespace ZStewart.KOSLisp.Types {
         if (len == 2 && LispType.IsInstance(self.Car, SymbolType.Symbol)) {
           if (self.Car == SymbolType.Create("quote")) {
             return StringType.Create(
-              "'" + StringType.GetObjectRepr(ListOperations.GetCar(self.Cdr)));
+              "'" + StringType.GetReprString(ListOperations.GetCar(self.Cdr)));
           } else if (self.Car == SymbolType.Create("--backquote--")) {
             return StringType.Create(
-              "`" + StringType.GetObjectRepr(ListOperations.GetCar(self.Cdr)));
+              "`" + StringType.GetReprString(ListOperations.GetCar(self.Cdr)));
           } else if (self.Car == SymbolType.Create("--unquote--")) {
             return StringType.Create(
-              "," + StringType.GetObjectRepr(ListOperations.GetCar(self.Cdr)));
+              "," + StringType.GetReprString(ListOperations.GetCar(self.Cdr)));
           } else if (self.Car == SymbolType.Create("--splice--")) {
             return StringType.Create(
-              ",@" + StringType.GetObjectRepr(ListOperations.GetCar(self.Cdr)));
+              ",@" + StringType.GetReprString(ListOperations.GetCar(self.Cdr)));
           }
         }
       } catch (ExceptionWrapper ex) {
@@ -142,7 +142,7 @@ namespace ZStewart.KOSLisp.Types {
       StringBuilder val = new StringBuilder("(");
       ConsType value = self;
       while (value != null) {
-        val.Append(StringType.GetObjectRepr(value.Car));
+        val.Append(StringType.GetReprString(value.Car));
         LispObject cdr = value.Cdr;
         if (cdr is ConsType) {
           value = (ConsType)cdr;
@@ -151,7 +151,7 @@ namespace ZStewart.KOSLisp.Types {
           value = null;
           if (cdr != NilType.Nil) {
             val.Append(" . ");
-            val.Append(StringType.GetObjectRepr(cdr));
+            val.Append(StringType.GetReprString(cdr));
           }
         }
       }

@@ -90,7 +90,11 @@ namespace ZStewart.KOSLisp.Types {
       return Create(string.Format(format, args));
     }
 
-    public static string GetObjectStr(LispObject obj) {
+    public static string GetStrString(LispObject obj) {
+      return GetStr(obj).Value;
+    }
+
+    public static StringType GetStr (LispObject obj) {
       var str = LookupHelpers.Lookup(
         obj,
         unused => false,
@@ -103,10 +107,14 @@ namespace ZStewart.KOSLisp.Types {
         throw ExceptionType.ThrowTypeError(
           "{0} returned non-string type (type {1})", PropConsts.Str, str.__class__);
       }
-      return ((StringType)str).Value;
+      return (StringType)str;
     }
 
-    public static string GetObjectRepr(LispObject obj) {
+    public static string GetReprString (LispObject obj) {
+      return GetRepr(obj).Value;
+    }
+
+    public static StringType GetRepr(LispObject obj) {
       var repr = LookupHelpers.Lookup(
         obj,
         unused => false,
@@ -119,7 +127,7 @@ namespace ZStewart.KOSLisp.Types {
         throw ExceptionType.ThrowTypeError(
           "{0} returned non-string type (type {1})", PropConsts.Repr, repr.__class__);
       }
-      return ((StringType)repr).Value;
+      return (StringType)repr;
     }
     #endregion Static Helper Methods
 

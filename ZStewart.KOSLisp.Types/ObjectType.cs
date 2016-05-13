@@ -178,7 +178,7 @@ namespace ZStewart.KOSLisp.Types {
 
     [BuiltinFunction(Name = "--str--")]
     private static LispObject ToStr([PositionalArgument] LispObject obj) {
-      return Call(obj, "--repr--");
+      return StringType.GetRepr(obj);
     }
 
     [BuiltinFunction(Name = "--repr--")]
@@ -408,7 +408,7 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Helper Methods
 
     public override string ToString() {
-      return StringType.GetObjectStr(this);
+      return StringType.GetStrString(this);
     }
   }
 }
