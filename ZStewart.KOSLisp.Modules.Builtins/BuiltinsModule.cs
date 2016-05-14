@@ -47,6 +47,8 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         AddType(StringType.String);
         AddType(SymbolType.Symbol);
 
+        AddType(GenSymType.GenSym);
+
         return _builtins;
       }
     }
@@ -71,19 +73,6 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       return StringType.GetRepr(value);
     }
     #endregion Simple Builtin Functions
-
-    #region Extra Builtin Types
-    private static LispType _gensym;
-    public static LispType GenSym {
-      get {
-        if (_gensym != null) return _gensym;
-
-        _gensym = new LispType {
-          __name__ = "gensym",
-        };
-      }
-    }
-    #endregion Extra Builtin Types
   }
 }
 
