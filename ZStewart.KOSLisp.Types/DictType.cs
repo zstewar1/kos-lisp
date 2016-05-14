@@ -23,9 +23,7 @@ namespace ZStewart.KOSLisp.Types {
         _dict.__class__ = LispType.Type;
         _dict.__bases__ = IConsType.ToLispTuple(LispObject.Object);
         _dict.__mro__ = IConsType.ToLispTuple(_dict, LispObject.Object);
-        _dict = LispType.ConfigureType(_dict);
-        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
-        if (_dict == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_dict);
 
         LispType.AddStatic(_dict, "IterKeys", "keys");
         LispType.AddStatic(_dict, "IterValues", "values");

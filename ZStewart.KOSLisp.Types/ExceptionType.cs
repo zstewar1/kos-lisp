@@ -20,8 +20,7 @@ namespace ZStewart.KOSLisp.Types {
         _exception.__class__ = LispType.Type;
         _exception.__bases__ = IConsType.ToLispTuple(LispObject.Object);
         _exception.__mro__ = IConsType.ToLispTuple(_exception, LispObject.Object);
-        _exception = LispType.ConfigureType(_exception);
-        if (_exception == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_exception);
 
         LispType.AddStatic(_exception, "ToStr", PropConsts.Str);
         LispType.AddStatic(_exception, "ToRepr", PropConsts.Repr);
@@ -42,8 +41,7 @@ namespace ZStewart.KOSLisp.Types {
         _typeError.__bases__ = IConsType.ToLispTuple(Exception);
         _typeError.__mro__ = IConsType.ToLispTuple(
           _typeError, Exception, LispObject.Object);
-        _typeError = LispType.ConfigureType(_typeError);
-        if (_typeError == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_typeError);
         return _typeError;
       }
     }
@@ -60,8 +58,7 @@ namespace ZStewart.KOSLisp.Types {
         _valueError.__bases__ = IConsType.ToLispTuple(Exception);
         _valueError.__mro__ = IConsType.ToLispTuple(
           _valueError, Exception, LispObject.Object);
-        _valueError = LispType.ConfigureType(_valueError);
-        if (_valueError == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_valueError);
         return _valueError;
       }
     }
@@ -78,8 +75,7 @@ namespace ZStewart.KOSLisp.Types {
         _runtimeError.__bases__ = IConsType.ToLispTuple(Exception);
         _runtimeError.__mro__ = IConsType.ToLispTuple(
           _runtimeError, Exception, LispObject.Object);
-        _runtimeError = LispType.ConfigureType(_runtimeError);
-        if (_runtimeError == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_runtimeError);
         return _runtimeError;
       }
     }
@@ -97,8 +93,7 @@ namespace ZStewart.KOSLisp.Types {
         _attributeError.__bases__ = IConsType.ToLispTuple(Exception);
         _attributeError.__mro__ = IConsType.ToLispTuple(
           _attributeError, Exception, LispObject.Object);
-        _attributeError = LispType.ConfigureType(_attributeError);
-        if (_attributeError == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_attributeError);
         return _attributeError;
       }
     }
@@ -115,8 +110,7 @@ namespace ZStewart.KOSLisp.Types {
         _nameError.__bases__ = IConsType.ToLispTuple(Exception);
         _nameError.__mro__ = IConsType.ToLispTuple(
           _nameError, Exception, LispObject.Object);
-        _nameError = LispType.ConfigureType(_nameError);
-        if (_nameError == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_nameError);
         return _nameError;
       }
     }
@@ -133,8 +127,7 @@ namespace ZStewart.KOSLisp.Types {
         _keyError.__bases__ = IConsType.ToLispTuple(Exception);
         _keyError.__mro__ = IConsType.ToLispTuple(
           _keyError, Exception, LispObject.Object);
-        _keyError = LispType.ConfigureType(_keyError);
-        if (_keyError == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_keyError);
         return _keyError;
       }
     }
@@ -151,8 +144,7 @@ namespace ZStewart.KOSLisp.Types {
         _notImplemented.__bases__ = IConsType.ToLispTuple(Exception);
         _notImplemented.__mro__ = IConsType.ToLispTuple(
           _notImplemented, Exception, LispObject.Object);
-        _notImplemented = LispType.ConfigureType(_notImplemented);
-        if (_notImplemented == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_notImplemented);
         return _notImplemented;
       }
     }
@@ -169,8 +161,7 @@ namespace ZStewart.KOSLisp.Types {
         _syntaxError.__bases__ = IConsType.ToLispTuple(Exception);
         _syntaxError.__mro__ = IConsType.ToLispTuple(
           _syntaxError, Exception, LispObject.Object);
-        _syntaxError = LispType.ConfigureType(_syntaxError);
-        if (_syntaxError == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_syntaxError);
         return _syntaxError;
       }
     }

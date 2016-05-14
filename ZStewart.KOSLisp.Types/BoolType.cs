@@ -26,9 +26,7 @@ namespace ZStewart.KOSLisp.Types {
         _bool.__class__ = LispType.Type;
         _bool.__bases__ = IConsType.ToLispTuple(Symbol);
         _bool.__mro__ = IConsType.ToLispTuple(_bool, Symbol, LispObject.Object);
-        _bool = LispType.ConfigureType(_bool);
-        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
-        if (_bool == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_bool);
 
         return _bool;
       }

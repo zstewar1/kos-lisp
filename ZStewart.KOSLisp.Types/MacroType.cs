@@ -20,8 +20,7 @@ namespace ZStewart.KOSLisp.Types {
         _macro.__class__ = LispType.Type;
         _macro.__bases__ = IConsType.ToLispTuple(LispObject.Object);
         _macro.__mro__ = IConsType.ToLispTuple(_macro, LispObject.Object);
-        _macro = LispType.ConfigureType(_macro);
-        if (_macro == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_macro);
 
         LispType.AddDataProperty(_macro, "Name", PropConsts.Name);
         LispType.AddStatic(_macro, "MacroExpand", PropConsts.MacroExpand);

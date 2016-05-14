@@ -21,8 +21,7 @@ namespace ZStewart.KOSLisp.Types {
         _function.__class__ = LispType.Type;
         _function.__bases__ = IConsType.ToLispTuple(LispObject.Object);
         _function.__mro__ = IConsType.ToLispTuple(_function, LispObject.Object);
-        _function = LispType.ConfigureType(_function);
-        if (_function == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_function);
 
         LispType.AddDataProperty(_function, "Name", PropConsts.Name);
 

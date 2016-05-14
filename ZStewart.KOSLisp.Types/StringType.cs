@@ -31,9 +31,7 @@ namespace ZStewart.KOSLisp.Types {
         _string.__class__ = LispType.Type;
         _string.__bases__ = IConsType.ToLispTuple(LispObject.Object);
         _string.__mro__ = IConsType.ToLispTuple(String, LispObject.Object);
-        _string = LispType.ConfigureType(_string);
-        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
-        if (_string == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_string);
 
         return _string;
       }

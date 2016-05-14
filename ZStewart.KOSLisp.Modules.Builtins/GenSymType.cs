@@ -19,8 +19,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         };
         _gensym.__class__ = LispType.Type;
         _gensym.__bases__ = IConsType.ToLispTuple(SymbolType.Symbol);
-        _gensym = LispType.ConfigureType(_gensym);
-        if (_gensym == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_gensym);
 
         return _gensym;
       }

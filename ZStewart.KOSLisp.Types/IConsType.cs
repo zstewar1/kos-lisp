@@ -43,9 +43,7 @@ namespace ZStewart.KOSLisp.Types {
         _icons.__class__ = LispType.Type;
         _icons.__bases__ = ToLispTuple(LispObject.Object);
         _icons.__mro__ = ToLispTuple(_icons, LispObject.Object);
-        _icons = LispType.ConfigureType(_icons);
-        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
-        if (_icons == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_icons);
 
         return _icons;
       }

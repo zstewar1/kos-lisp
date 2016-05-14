@@ -32,9 +32,7 @@ namespace ZStewart.KOSLisp.Types {
         _type.__class__ = _type;
         _type.__bases__ = IConsType.ToLispTuple(LispObject.Object);
         _type.__mro__ = IConsType.ToLispTuple(_type, LispObject.Object);
-        _type = LispType.ConfigureType(_type);
-        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
-        if (_type == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_type);
 
         return _type;
       }
@@ -83,7 +81,7 @@ namespace ZStewart.KOSLisp.Types {
     #region Static Helper Methods
 
     #region Setup Funtionality
-    public static LispType ConfigureType (LispType type) {
+    public static void ConfigureType (LispType type) {
       if (type.__mro__ == null) {
         type.__mro__ = Linearize(type);
       }
@@ -104,8 +102,6 @@ namespace ZStewart.KOSLisp.Types {
           }
         }
       }
-
-      return type;
     }
 
     /// <summary>

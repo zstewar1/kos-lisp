@@ -24,8 +24,7 @@ namespace ZStewart.KOSLisp.Types {
         _builtinDataDescriptor.__bases__ = IConsType.ToLispTuple(LispObject.Object);
         _builtinDataDescriptor.__mro__ = IConsType.ToLispTuple(
           _builtinDataDescriptor, LispObject.Object);
-        _builtinDataDescriptor = LispType.ConfigureType(_builtinDataDescriptor);
-        if (_builtinDataDescriptor == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_builtinDataDescriptor);
 
         LispType.AddDataProperty(_builtinDataDescriptor, "Name", PropConsts.Name);
 

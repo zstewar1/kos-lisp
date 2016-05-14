@@ -26,11 +26,9 @@ namespace ZStewart.KOSLisp.Types {
         _builtinFunction.__bases__ = IConsType.ToLispTuple(LispObject.Object);
         _builtinFunction.__mro__ = IConsType.ToLispTuple(
           _builtinFunction, LispObject.Object);
-        _builtinFunction = LispType.ConfigureType(_builtinFunction);
-        if (_builtinFunction == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_builtinFunction);
 
         LispType.AddDataProperty(_builtinFunction, "Name", PropConsts.Name);
-        LispType.AddStatic(_builtinFunction, "ToRepr", PropConsts.Repr);
 
         return _builtinFunction;
       }
@@ -61,6 +59,7 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    [BuiltinFunction(Name = "--repr--")]
     private static LispObject ToRepr([Required] BuiltinFunctionType self) {
       return StringType.Format("[built-in function {0}]", self.Name);
     }

@@ -26,8 +26,7 @@ namespace ZStewart.KOSLisp.Types {
         _builtinIter.__class__ = LispType.Type;
         _builtinIter.__bases__ = IConsType.ToLispTuple(LispObject.Object);
         _builtinIter.__mro__ = IConsType.ToLispTuple(_builtinIter, LispObject.Object);
-        _builtinIter = LispType.ConfigureType(_builtinIter);
-        if (_builtinIter == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_builtinIter);
 
         return _builtinIter;
       }

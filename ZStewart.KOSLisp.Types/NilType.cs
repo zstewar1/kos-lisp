@@ -25,9 +25,7 @@ namespace ZStewart.KOSLisp.Types {
         _nilClass.__class__ = LispType.Type;
         _nilClass.__bases__ = IConsType.ToLispTuple(Symbol);
         _nilClass.__mro__ = IConsType.ToLispTuple(_nilClass, Symbol, LispObject.Object);
-        _nilClass = LispType.ConfigureType(_nilClass);
-        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
-        if (_nilClass == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_nilClass);
 
         return _nilClass;
       }

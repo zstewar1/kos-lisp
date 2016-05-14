@@ -19,9 +19,7 @@ namespace ZStewart.KOSLisp.Types {
         _symbol.__class__ = LispType.Type;
         _symbol.__bases__ = IConsType.ToLispTuple(LispObject.Object);
         _symbol.__mro__ = IConsType.ToLispTuple(Symbol, LispObject.Object);
-        _symbol = LispType.ConfigureType(_symbol);
-        // TODO(zstewar1): Not sure how to handle errors in "static" setup.
-        if (_symbol == null) throw new InvalidOperationException();
+        LispType.ConfigureType(_symbol);
 
         return _symbol;
       }
