@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using ZStewart.KOSLisp.Types.Attributes;
 
@@ -71,6 +72,14 @@ namespace ZStewart.KOSLisp.Types {
     // TODO(zstewar1): In language instantiation stuff.
     #endregion
 
+    public const string SUBSYMBOL_REGEX = @"[\p{L}@<>=_+!~*^%$/\-\d]";
+    public const string SYMBOL_REGEX = SUBSYMBOL_REGEX + "+";
+    public const RegexOptions SYMBOL_REGEX_OPTIONS =
+      RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase;
+
+    internal static readonly Regex symbolMatcher =
+      new Regex("^" + SYMBOL_REGEX + "$", SYMBOL_REGEX_OPTIONS);
+
     #region Static Helpers
     /// <summary>
     /// String Comparer used for comparing symbols.
@@ -89,13 +98,15 @@ namespace ZStewart.KOSLisp.Types {
       if (comparer.Compare("t", identifier) == 0) return BoolType.T;
       if (comparer.Compare("f", identifier) == 0) return BoolType.F;
 
-      // TODO(zstewar1): Other special symbol subtype cases here. (Initial setup can be
-      // here. If it leads to duplicated logic when __new__ is implemented, we may be able
-      // to simplify and just __call__ the type.
-
-      return new SymbolType(identifier) {
-        __class__ = Symbol,
-      };
+      if (identifier.StartsWith(":") || identifier.StartsWith("&")) {
+        return KeywordSymbolType.Create(identifier);
+      } else if (symbolMatcher.Match(identifier).Success) {
+        return new SymbolType(identifier) {
+          __class__ = Symbol,
+        };
+      } else {
+        throw ExceptionType.ThrowValueError("not a valid symbol name: {0}", identifier);
+      }
     }
     #endregion Static Helpers
 

@@ -62,11 +62,13 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
     #endregion Configuration Classes
 
     #region Static Properties
-    private const string SUBSYMBOL_REGEX = @"[\p{L}@<>=_+!~*^%$/\-\.\d]";
+    private const string DOTTED_SYMBOL_REGEX =
+      @"(\.?" + SymbolType.SYMBOL_REGEX + @"(\." + SymbolType.SYMBOL_REGEX + ")*)";
+    private const string PARTIAL_SYMBOL_REGEX =
+      "(" + DOTTED_SYMBOL_REGEX + "|" + KeywordSymbolType.KEYWORD_SYMBOL_REGEX +
+      @"|\.)";
     private const string SYMBOL_REGEX =
-      @"([&:]|" + SUBSYMBOL_REGEX + ")" + SUBSYMBOL_REGEX + "*" +
-      // Assertion to ensure that a:b is illegal instead of Sym(a) Sym(:b)
-      @"(?!([&:]|" + SUBSYMBOL_REGEX + ")" + SUBSYMBOL_REGEX + "*)";
+      PARTIAL_SYMBOL_REGEX + @"(?!" + PARTIAL_SYMBOL_REGEX + ")";
 
     /// <summary>
     /// The configuration of the Lexer -- this is the set of modes and regexes used for
@@ -75,9 +77,6 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
     private static readonly ImmutableDictionary<LispLexMode, LexerModeConfig>
       tokenizerConf;
 
-    /// <summary>
-    /// Regex mode options to be used in the lexer.
-    /// </summary>
     private static readonly RegexOptions regexOptions =
       RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase;
     #endregion Static Properties
@@ -95,20 +94,8 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
             @"[+-]?[0-9]*\.?[0-9]+(e[+-]?[0-9]+)?(?!" + SYMBOL_REGEX + ")",
             GenericToken.CreateTokenCreator(LispTokType.NUMBER, double.Parse))
           .AddMatcher(SYMBOL_REGEX, (rv, s) => {
-            // We have to combine the rules for things that *could* be identifiers to
-            // prevent certain kinds of parse errors.
-            // If we were to split these rules out:
-            // .A -> DOT IDENTIFIER, should be Error.
-            // A. -> IDENTIFIER DOT, should be Error.
             if (rv == ".")
               return RawToken.Create(rv, s, LispTokType.DOT);
-            if ((rv.StartsWith(".") ? rv.Substring(1) : rv).Split('.')
-                .Any(st => string.IsNullOrEmpty(st)))
-              throw ExceptionType.ThrowSyntaxError(
-                "invalid identifier: cannot have adjacent dots or end with dot");
-            if ((rv.StartsWith(":") || rv.StartsWith("&")) && rv.Contains("."))
-              throw ExceptionType.ThrowSyntaxError(
-                "invalid identifier: keword identifiers cannot contain dot");
             return RawToken.Create(rv, s, LispTokType.IDENTIFIER);
           })
           .AddMatcher(@"\(", RawToken.CreateTokenCreator(LispTokType.OPEN_PAREN))

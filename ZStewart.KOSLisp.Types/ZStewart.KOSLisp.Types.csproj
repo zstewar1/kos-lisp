@@ -73,6 +73,7 @@
     <Compile Include="PropConsts.cs" />
     <Compile Include="StringType.cs" />
     <Compile Include="SymbolType.cs" />
+    <Compile Include="KeywordSymbolType.cs" />
     <Compile Include="TypeType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
