@@ -61,7 +61,7 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
-    private static LispObject ToRepr([PositionalArgument] BuiltinFunctionType self) {
+    private static LispObject ToRepr([Required] BuiltinFunctionType self) {
       return StringType.Format("[built-in function {0}]", self.Name);
     }
     #endregion Static Type Setup

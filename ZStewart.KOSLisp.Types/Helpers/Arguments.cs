@@ -9,93 +9,137 @@ namespace ZStewart.KOSLisp.Types.Helpers {
   public static class Arguments {
 
     /// <summary>
-    /// Split the given argument list and keyword arguments into rest arguments and
-    /// keyword arguments, given the expected number of positional arguments and the known
-    /// keyword argument names, and how to handle extra positional and keyword arguments.
+    /// Collects all of the keyword and positional arguments into a linear list. Creates
+    /// errors for certain types of illegal argument lists, such as keywords duplicating
+    /// positional arguments. Assumes that the passed ArgumentProperties are valid, i.e.
+    /// that they have a valid ordering of keyword and positional arguments.
     /// </summary>
-    public static void SplitArguments(
+    /// <param name="pargs">
+    /// The positional arguments from the interpreter.
+    /// </param>
+    /// <param name="kwargs">
+    /// The keyword arguments from the interpreter.
+    /// </param>
+    /// <param name="arguments">
+    /// ArgumentProperties of the arguments which should be collected. Assumed to be
+    /// ordered in a valid way.
+    /// PositionalOrKeyword(required)*,
+    /// PositionalOrKeyword(optional)*,
+    /// Rest[Capture,Ignore,Block]?,
+    /// Keyword(optional,required)*,
+    /// RestKw[Capture,Ignore]?
+    /// </param>
+    /// <returns>
+    /// An array of collected arguments with the following properties:
+    /// - The value of any required positional/keyword argument is a non-null LispObject.
+    /// - Optional positional/keyword arguments are LispObjects or null if no value was
+    ///   provided
+    /// - Rest[Keyword][Ignore,Block] arguments are always null.
+    /// - RestCapture arguments are always a non-null List(LispObject), but may be empty.
+    /// - RestKwCapture arguments are always a non-null
+    ///   Dictionary(SymbolType, LispObject) but may be empty.
+    /// </returns>
+    public static object[] CollectArguments(
         IList<LispObject> pargs,
         IDictionary<SymbolType, LispObject> kwargs,
-        int numPositional,
-        PositionalType hasRest,
-        IList<SymbolType> namedKwargs,
-        bool hasRestKwargs,
-        out List<LispObject> pos,
-        out List<LispObject> rest,
-        out List<LispObject> knownKwargs,
-        out Dictionary<SymbolType, LispObject> restKwargs) {
-
-      if (pargs.Count < numPositional) {
-        throw ExceptionType.ThrowTypeError(
-          "expected {0} positional arguments, got {1}", numPositional, pargs.Count);
-      }
-      // Too many arguments if rest are non-capturing and non-ignored and the number of
-      // passed positional arguments is longer than the positional or positional + keyword
-      // lists.
-      if ((hasRest == PositionalType.KeywordOverrun
-            && numPositional + namedKwargs.Count < pargs.Count)
-          || (hasRest == PositionalType.RestIllegal
-            && numPositional < pargs.Count)) {
-        throw ExceptionType.ThrowTypeError(
-          "too many arguments: expected at most {0}, got {1}",
-          hasRest == PositionalType.KeywordOverrun ? numPositional + namedKwargs.Count :
-            numPositional,
-          pargs.Count);
-      }
-
-      int argIndex = 0;
-      pos = new List<LispObject>(numPositional);
-      for (; argIndex < numPositional; argIndex++) {
-        pos.Add(pargs[argIndex]);
-      }
-
-      if (hasRest == PositionalType.RestCapture) {
-        rest = new List<LispObject>(pargs.Count - argIndex);
-        for (; argIndex < pargs.Count; argIndex++) {
-          rest.Add(pargs[argIndex]);
+        IList<ArgumentProperties> arguments) {
+      var result = new object[arguments.Count];
+      // Dictionary which will hold the keyword arguments so that we can remove them as we
+      // take assignments from them. This allows us to track which ones are left at the
+      // end to either set them to teh RestKwCapture/Ignore or raise an error.
+      Dictionary<SymbolType, LispObject> restKwargs = null;
+      for (int i = 0; i < result.Length; i++) {
+        var arg = arguments[i];
+        switch (arg.Type) {
+          case ArgumentType.PositionalOrKeyword:
+            {
+              // Assume arguments is valid, so we must not have hit Rest yet.
+              if (i < pargs.Count) {
+                // Just grab the appropriate argument.
+                if (kwargs.ContainsKey(arg.Name)) {
+                  throw ExceptionType.ThrowTypeError(
+                    "got multiple values for argument '{0}", arg.Name);
+                }
+                result[i] = pargs[i];
+              } else {
+                // Setup restKwargs if it hasn't been created yet, since now we know we will
+                // need to do keyword arguments.
+                restKwargs = restKwargs ?? new Dictionary<SymbolType, LispObject>(kwargs);
+                // Out of positional arguments, try to assign from keywords.
+                LispObject value;
+                if (restKwargs.TryGetValue(arg.Name, out value)) {
+                  result[i] = value;
+                  restKwargs.Remove(arg.Name);
+                } else if (!arg.IsOptional) {
+                  throw ExceptionType.ThrowTypeError(
+                    "missing value for required positional argument '{0}", arg.Name);
+                }
+              }
+            }
+            break;
+          case ArgumentType.RestCapture:
+            {
+              // Arguments after this will all be Keyword or RestKw*, so we don't have
+              // to worry about doing anything with pargs (like clearing it).
+              var rest = new List<LispObject>(pargs.Count - i);
+              for (int j = i; j < pargs.Count; j++) {
+                rest.Add(pargs[j]);
+              }
+              result[i] = rest;
+            }
+            break;
+          case ArgumentType.RestIgnore:
+            {
+              // ignore just puts in a null in that slot.
+              result[i] = null;
+            }
+            break;
+          case ArgumentType.RestBlock:
+            {
+              // block checks and errors if there are kwargs left.
+              if (i < pargs.Count) {
+                throw ExceptionType.ThrowTypeError(
+                  "expected at most {0} positional arguments, but {1} were given",
+                  i, pargs.Count);
+              }
+              result[i] = null;
+            }
+            break;
+          case ArgumentType.Keyword:
+            {
+              restKwargs = restKwargs ?? new Dictionary<SymbolType, LispObject>(kwargs);
+              LispObject value;
+              if (restKwargs.TryGetValue(arg.Name, out value)) {
+                result[i] = value;
+                restKwargs.Remove(arg.Name);
+              } else if (!arg.IsOptional) {
+                throw ExceptionType.ThrowTypeError(
+                  "missing value for required keyword argument '{0}", arg.Name);
+              }
+            }
+            break;
+          case ArgumentType.RestKwCapture:
+            {
+              restKwargs = restKwargs ?? new Dictionary<SymbolType, LispObject>(kwargs);
+              result[i] = restKwargs;
+              restKwargs = null;
+            }
+            break;
+          case ArgumentType.RestKwIgnore:
+            {
+              // Ensure that restKwargs output is null.
+              restKwargs = null;
+              result[i] = null;
+            }
+            break;
+          default:
+            throw new InvalidOperationException("This should be impossible.");
         }
-      } else {
-        rest = null;
-        if (hasRest == PositionalType.RestIgnore) {
-          argIndex = pargs.Count;
-        }
       }
-
-      knownKwargs = new List<LispObject>(namedKwargs.Count);
-      // If overrun is disabled, rest check will have moved the index, if extra is illeal,
-      // early check will have caught us.
-      for (; argIndex < pargs.Count; argIndex++) {
-        if (kwargs.ContainsKey(namedKwargs[knownKwargs.Count])) {
-          throw ExceptionType.ThrowTypeError(
-            "got duplicated keyword argument {0}", namedKwargs[knownKwargs.Count]);
-        }
-        knownKwargs.Add(pargs[argIndex]);
+      if (restKwargs != null && restKwargs.Count > 0) {
+        throw ExceptionType.ThrowTypeError("got unexpected additional keyword arguments");
       }
-
-      // don't modify argument.
-      var kw = new Dictionary<SymbolType, LispObject>(kwargs);
-      // Continue filling kwargs from the dictionary argument.
-      for (int i = knownKwargs.Count; i < namedKwargs.Count; i++) {
-        LispObject nextKwarg;
-        if (kwargs.TryGetValue(namedKwargs[i], out nextKwarg)) {
-          kw.Remove(namedKwargs[i]);
-          knownKwargs.Add(nextKwarg);
-        } else {
-          knownKwargs.Add(null);
-        }
-      }
-
-      if (!hasRestKwargs) {
-        if(kwargs.Count > 0) {
-          // TODO(zstewar1): be explicit.
-          throw ExceptionType.ThrowTypeError("got unexpected keyword arguments");
-        } else {
-          restKwargs = null;
-        }
-      } else {
-        // assign what's left of the duplicated kwargs dict.
-        restKwargs = kw;
-      }
+      return result;
     }
 
     /// <summary>

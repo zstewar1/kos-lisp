@@ -93,7 +93,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
     /// <summary>
     /// Simple builtin function to implement print.
     /// </summary>
-    public static LispObject Print([RestArgument] List<LispObject> thingsToPrint) {
+    public static LispObject Print([RestCapture] List<LispObject> thingsToPrint) {
       foreach(var obj in thingsToPrint) {
         Console.Write(obj.ToString());
         Console.Write(" ");
@@ -105,7 +105,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
     /// <summary>
     /// Simple function to return the repr of an object.
     /// </summary>
-    public static LispObject Repr([PositionalArgument] LispObject value) {
+    public static LispObject Repr([Required] LispObject value) {
       return StringType.GetRepr(value);
     }
     #endregion Simple Builtin Functions

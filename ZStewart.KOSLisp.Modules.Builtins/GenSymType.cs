@@ -28,8 +28,8 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
 
     [BuiltinFunction(Name = "--new--")]
     private static GenSymType New(
-        [PositionalArgument] LispType subtype,
-        [RestArgument] List<LispObject> values) {
+        [Required] LispType subtype,
+        [RestCapture] List<LispObject> values) {
       if (subtype != GenSym) {
         throw ExceptionType.ThrowTypeError(
           "gensym can only be used to instantiate new gensyms");

@@ -53,9 +53,11 @@ namespace ZStewart.KOSLisp.Types {
 
     [BuiltinFunction(Name = "--new--")]
     private static LispObject New (
-        [PositionalArgument] LispType subtype,
-        [PositionalArgument] LispObject car,
-        [PositionalArgument] LispObject cdr) {
+        [Required] LispType subtype,
+        [Required] LispObject car,
+        [Optional(null)] LispObject cdr) {
+      // Default cdr to nil.
+      cdr = cdr ?? NilType.Nil;
       // Faster shortcut when it is the base type.
       if (subtype == ICons) {
         return Create(car, cdr);
@@ -75,9 +77,7 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     [BuiltinFunction(Name = "--init--")]
-    private static void Init(
-        [RestArgument] List<LispObject> unusedPargs,
-        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
+    private static void Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {}
 
     private static LispObject GetCar (LispObject instance) {
       // TODO(zstewar1): Maybe check isinstance? Maybe not though, all subtypes should
@@ -101,7 +101,7 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     [BuiltinFunction(Name = "--repr--")]
-    private static LispObject ToRepr ([PositionalArgument] IConsType self) {
+    private static LispObject ToRepr ([Required] IConsType self) {
       StringBuilder val = new StringBuilder("(tuple ");
       IConsType value = self;
       while (value != null) {
@@ -157,7 +157,7 @@ namespace ZStewart.KOSLisp.Types {
     /// </summary>
     /// <param name="list">The list to convert.</param>
     /// <returns>A lisp tuple with the same contents as the original list.</returns>
-    public static LispObject ToLispTuple([RestArgument] IReadOnlyList<LispObject> list) {
+    public static LispObject ToLispTuple([RestCapture] IReadOnlyList<LispObject> list) {
       LispObject res = NilType.Nil;
       for(int i = list.Count - 1; i >= 0; i--) {
         res = Create(list[i], res);

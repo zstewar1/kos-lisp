@@ -50,9 +50,8 @@ namespace ZStewart.KOSLisp.Types {
 
     [BuiltinFunction(Name = "--new--")]
     private static LispObject New(
-        [PositionalArgument] LispType subtype,
-        [RestArgument] List<LispObject> unusedPargs,
-        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {
+        [Required] LispType subtype,
+        [RestIgnore] byte ri, [RestKwIgnore] byte rki) {
       // Faster shortcut when it is the base type.
       if (subtype == Cons) {
         return new ConsType() {
@@ -76,11 +75,11 @@ namespace ZStewart.KOSLisp.Types {
 
     [BuiltinFunction(Name = "--init--")]
     private static void Init(
-        [PositionalArgument] ConsType self,
-        [PositionalArgument] LispObject car,
-        [PositionalArgument] LispObject cdr) {
+        [Required] ConsType self,
+        [Required] LispObject car,
+        [Optional(null)] LispObject cdr) {
       self.Car = car;
-      self.Cdr = cdr;
+      self.Cdr = cdr ?? NilType.Nil;
     }
 
     private static LispObject GetCar(LispObject instance) {
@@ -127,7 +126,7 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     [BuiltinFunction(Name = "--repr--")]
-    private static LispObject ToRepr([PositionalArgument] ConsType self) {
+    private static LispObject ToRepr([Required] ConsType self) {
       try {
         var len = ListOperations.Count(self);
         if (len == 2 && LispType.IsInstance(self.Car, SymbolType.Symbol)) {
@@ -198,7 +197,7 @@ namespace ZStewart.KOSLisp.Types {
     /// </summary>
     /// <param name="list">The list to convert.</param>
     /// <returns>A lisp list with the same contents as the original list.</returns>
-    public static LispObject ToLispList([RestArgument] IReadOnlyList<LispObject> list) {
+    public static LispObject ToLispList([RestCapture] IReadOnlyList<LispObject> list) {
       LispObject res = NilType.Nil;
       for(int i = list.Count - 1; i >= 0; i--) {
         res = Create(list[i], res);

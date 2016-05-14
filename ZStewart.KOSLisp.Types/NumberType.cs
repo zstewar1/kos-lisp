@@ -39,14 +39,10 @@ namespace ZStewart.KOSLisp.Types {
 
     [BuiltinFunction(Name = "--new--")]
     private static NumberType New(
-        [PositionalArgument] LispType subtype,
-        [RestArgument] List<LispObject> values) {
-      if (values.Count > 1) {
-        throw ExceptionType.ThrowTypeError(
-          "--new-- takes at most 2 arguments, {0} given", values.Count + 1);
-      }
+        [Required] LispType subtype,
+        [Optional(null)] LispObject value) {
       if (subtype == Number) {
-        return Create(values.Count == 1 ? GetValue(values[0]) : 0.0);
+        return Create(value != null ? GetValue(value) : 0.0);
       } else {
         if (!LispType.IsSubtype(subtype, Number)) {
           throw ExceptionType.ThrowTypeError("type must be a subtype of num");
@@ -55,7 +51,7 @@ namespace ZStewart.KOSLisp.Types {
           throw ExceptionType.ThrowTypeError(
             "num.--new-- cannot be used to instantiate object of type {0}", subtype);
         }
-        return new NumberType(values.Count == 1 ? GetValue(values[0]) : 0.0) {
+        return new NumberType(value != null ? GetValue(value) : 0.0) {
           __class__ = subtype,
           __dict__ = DictType.Create(),
         };
@@ -63,9 +59,7 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     [BuiltinFunction(Name = "--init--")]
-    private static void Init(
-        [RestArgument] List<LispObject> unusedPargs,
-        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
+    private static void Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {}
 
     /// <summary>
     /// Helper method for the --new-- method which gets the numeric value of the argument
@@ -89,13 +83,13 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     [BuiltinFunction(Name = "--bool--")]
-    private static LispObject ToBool([PositionalArgument] double value) {
+    private static LispObject ToBool([Required] double value) {
       if (value == 0) return BoolType.F;
       return BoolType.T;
     }
 
     [BuiltinFunction(Name = "--repr--")]
-    private static LispObject ToRepr([PositionalArgument] double value) {
+    private static LispObject ToRepr([Required] double value) {
       return StringType.Create(value.ToString());
     }
     #endregion

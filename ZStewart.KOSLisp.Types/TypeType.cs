@@ -42,15 +42,13 @@ namespace ZStewart.KOSLisp.Types {
 
     [BuiltinFunction(Name = "--new--")]
     private static LispObject New(
-        [PositionalArgument] LispObject subtype,
-        [RestArgument] List<LispObject> args) {
+        [Required] LispObject subtype,
+        [RestIgnore] byte ri, [RestKwIgnore] byte rki) {
       throw ExceptionType.ThrowNotImplemented("can't create new types yet");
     }
 
     [BuiltinFunction(Name = "--init--")]
-    private static LispObject Init(
-        [PositionalArgument] LispObject subtype,
-        [RestArgument] List<LispObject> args) {
+    private static LispObject Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {
       throw ExceptionType.ThrowNotImplemented("can't init new types yet");
     }
 
@@ -77,7 +75,7 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     [BuiltinFunction(Name = "--repr--")]
-    private static LispObject ToRepr([PositionalArgument] LispType type) {
+    private static LispObject ToRepr([Required] LispType type) {
       return StringType.Format("[type {0}]", type.__name__);
     }
     #endregion Static Type Setup
@@ -213,7 +211,9 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>
     /// True if instance is of type type, false if it is not
     /// </returns>
-    public static bool IsInstance(LispObject instance, LispObject type) {
+    public static bool IsInstance(
+        [Required] LispObject instance,
+        [Required] LispObject type) {
       if (!(type is LispType)) {
         throw ExceptionType.ThrowTypeError(
           "Second argument must be a type, got {0}", type);
@@ -233,8 +233,8 @@ namespace ZStewart.KOSLisp.Types {
     /// True if subtype is a subtype of parentType, false if it is not.
     /// </returns>
     public static bool IsSubtype(
-        [PositionalArgument] LispType subtype,
-        [PositionalArgument] LispType parentType) {
+        [Required] LispType subtype,
+        [Required] LispType parentType) {
       foreach (var t in ListOperations.IterList<LispType>(subtype.__mro__)) {
         if (t ==  parentType) return true;
       }

@@ -10,7 +10,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     private static readonly LispObject setcarattr = SymbolType.Create("--setcar--");
     private static readonly LispObject setcdrattr = SymbolType.Create("--setcdr--");
 
-    public static LispObject GetCar([PositionalArgument] LispObject target) {
+    public static LispObject GetCar([Required] LispObject target) {
       LispType targetType = target.__class__;
       // __class__ should be the first element of __mro__, but we can't use IterMro in
       // this method, because IterMro depends on being able to call GetCar, so trying to
@@ -46,7 +46,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       }
     }
 
-    public static LispObject GetCdr([PositionalArgument] LispObject target) {
+    public static LispObject GetCdr([Required] LispObject target) {
       // It should be possible to iterate over the MRO of the target this way because
       // GetCdr is not called inside of the iterator until MoveNext is called for the
       // first time, so this method shouldn't produce an infinite recursion.
@@ -60,8 +60,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     }
 
     public static LispObject SetCar(
-        [PositionalArgument] LispObject target,
-        [PositionalArgument] LispObject value) {
+        [Required] LispObject target,
+        [Required] LispObject value) {
       LookupHelpers.Lookup(
         target, value,
         t => t._list_methods != null && t._list_methods.__setcar__ != null,
@@ -73,8 +73,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     }
 
     public static LispObject SetCdr(
-        [PositionalArgument] LispObject target,
-        [PositionalArgument] LispObject value) {
+        [Required] LispObject target,
+        [Required] LispObject value) {
       LookupHelpers.Lookup(
         target, value,
         t => t._list_methods != null && t._list_methods.__setcdr__ != null,

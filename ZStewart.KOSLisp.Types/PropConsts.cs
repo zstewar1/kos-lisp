@@ -1,6 +1,7 @@
 namespace ZStewart.KOSLisp.Types {
   public static class PropConsts {
     // TODO(zstewar1): maybe save these values?
+    #region Attribute Access
     /// <summary>
     /// The function used to get a fallback attribute if --getattribute-- raises
     /// AttributeError.
@@ -18,6 +19,18 @@ namespace ZStewart.KOSLisp.Types {
     /// The function used to set an attribute on an object.
     /// </summary>
     public static SymbolType SetAttr { get { return SymbolType.Create("--setattr--"); } }
+    #endregion Attribute Access
+
+    #region Mapping Protocol
+    /// <summary>
+    /// The function used to retrieve items from a dictionary.
+    /// </summary>
+    public static SymbolType GetItem { get { return SymbolType.Create("--getitem--"); } }
+    /// <summary>
+    /// The function used to set items in a dictionary.
+    /// </summary>
+    public static SymbolType SetItem { get { return SymbolType.Create("--setitem--"); } }
+    #endregion
 
     /// <summary>
     /// The member which contains the builtins object.
@@ -28,6 +41,7 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    #region Descriptor Protocol
     /// <summary>
     /// The function used to get an underlying value in the [data] descriptor protocol.
     /// </summary>
@@ -36,6 +50,7 @@ namespace ZStewart.KOSLisp.Types {
     /// The function used to set an underlying value in the data descriptor protocol.
     /// </summary>
     public static SymbolType Set { get { return SymbolType.Create("--set--"); } }
+    #endregion
 
     /// <summary>
     /// The function used to call the given object as a function.

@@ -15,8 +15,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Eq(
-        [PositionalArgument] LispObject target,
-        [PositionalArgument] LispObject other) {
+        [Required] LispObject target,
+        [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
         t => t._comparison_methods != null && t._comparison_methods.__eq__ != null,
@@ -34,8 +34,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Le(
-        [PositionalArgument] LispObject target,
-        [PositionalArgument] LispObject other) {
+        [Required] LispObject target,
+        [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
         t => t._comparison_methods != null && t._comparison_methods.__le__ != null,
@@ -53,8 +53,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Lt(
-        [PositionalArgument] LispObject target,
-        [PositionalArgument] LispObject other) {
+        [Required] LispObject target,
+        [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
         t => t._comparison_methods != null && t._comparison_methods.__lt__ != null,
@@ -72,8 +72,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Gt(
-        [PositionalArgument] LispObject target,
-        [PositionalArgument] LispObject other) {
+        [Required] LispObject target,
+        [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
         t => t._comparison_methods != null && t._comparison_methods.__gt__ != null,
@@ -91,8 +91,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Ge(
-        [PositionalArgument] LispObject target,
-        [PositionalArgument] LispObject other) {
+        [Required] LispObject target,
+        [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
         t => t._comparison_methods != null && t._comparison_methods.__ge__ != null,

@@ -34,7 +34,7 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     [BuiltinFunction(Name = "--new--")]
-    private static LispObject New ([PositionalArgument] LispType subtype) {
+    private static LispObject New ([Required] LispType subtype) {
       if (subtype != NilClass) {
         throw ExceptionType.ThrowTypeError("cannot create new instances of Nil");
       }
@@ -42,12 +42,10 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     [BuiltinFunction(Name = "--init--")]
-    private static void Init(
-        [RestArgument] List<LispObject> unusedPargs,
-        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
+    private static void Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {}
 
     [BuiltinFunction(Name = "--bool--")]
-    private static LispObject ToBool([PositionalArgument] NilType nil) {
+    private static LispObject ToBool([Required] NilType nil) {
       return BoolType.F;
     }
     #endregion Static Type Setup

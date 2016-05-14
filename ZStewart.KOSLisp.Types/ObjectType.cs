@@ -48,8 +48,8 @@ namespace ZStewart.KOSLisp.Types {
     /// <returns>A created lisp object or null on error.</returns>
     [BuiltinFunction(Name = "--new--")]
     private static LispObject New(
-        [PositionalArgument] LispType type,
-        [RestArgument] List<LispObject> args) {
+        [Required] LispType type,
+        [RestCapture] List<LispObject> args) {
       // TODO(zstewar1): Python like rules for "args" here:
       // - No args if doesn't override __init__ or __new__
       // - Ok to pass arbitrary args if overriding __init__ but not __new__
@@ -172,17 +172,17 @@ namespace ZStewart.KOSLisp.Types {
 
 
     [BuiltinFunction(Name = "--bool--")]
-    private static LispObject ToBool([PositionalArgument] LispObject nil) {
+    private static LispObject ToBool([Required] LispObject nil) {
       return BoolType.T;
     }
 
     [BuiltinFunction(Name = "--str--")]
-    private static LispObject ToStr([PositionalArgument] LispObject obj) {
+    private static LispObject ToStr([Required] LispObject obj) {
       return StringType.GetRepr(obj);
     }
 
     [BuiltinFunction(Name = "--repr--")]
-    private static LispObject ToRepr([PositionalArgument] LispObject obj) {
+    private static LispObject ToRepr([Required] LispObject obj) {
       return StringType.Create(string.Format("[{0} object]", obj.__class__.__name__));
     }
     #endregion Static Type Setup

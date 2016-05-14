@@ -41,15 +41,11 @@ namespace ZStewart.KOSLisp.Types {
 
     [BuiltinFunction(Name = "--new--")]
     private static StringType New(
-        [PositionalArgument] LispType subtype,
-        [RestArgument] List<LispObject> values) {
-      if (values.Count > 1) {
-        throw ExceptionType.ThrowTypeError(
-          "--new-- takes at most 2 arguments, {0} given", values.Count + 1);
-      }
+        [Required] LispType subtype,
+        [Optional(null)] LispObject value) {
       if (subtype == String) {
-        if (values.Count == 1) {
-          return GetStr(values[0]);
+        if (value != null) {
+          return GetStr(value);
         } else {
           return Empty;
         }
@@ -61,7 +57,7 @@ namespace ZStewart.KOSLisp.Types {
           throw ExceptionType.ThrowTypeError(
             "str.--new-- cannot be used to instantiate object of type {0}", subtype);
         }
-        return new StringType(values.Count == 1 ? GetStrString(values[0]) : "") {
+        return new StringType(value != null ? GetStrString(value) : "") {
           __class__ = subtype,
           __dict__ = DictType.Create(),
         };
@@ -69,15 +65,13 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     [BuiltinFunction(Name = "--init--")]
-    private static void Init(
-        [RestArgument] List<LispObject> unusedPargs,
-        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
+    private static void Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {}
 
     /// <summary>
     /// Get the str value of this string. Which is just itself.
     /// </summary>
     [BuiltinFunction(Name = "--str--")]
-    private static LispObject ToStr([PositionalArgument] StringType str) {
+    private static LispObject ToStr([Required] StringType str) {
       return str;
     }
 
@@ -86,7 +80,7 @@ namespace ZStewart.KOSLisp.Types {
     /// and the value wrapped in more quotes.
     /// </summary>
     [BuiltinFunction(Name = "--repr--")]
-    private static LispObject ToRepr([PositionalArgument] StringType str) {
+    private static LispObject ToRepr([Required] StringType str) {
       return Create(
         new StringBuilder(str.Value)
           .Replace("\"", "\\\"")
@@ -98,7 +92,7 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     [BuiltinFunction(Name = "--bool--")]
-    private static LispObject ToBool([PositionalArgument] string self) {
+    private static LispObject ToBool([Required] string self) {
       return BoolType.Create(self.Length != 0);
     }
     #endregion

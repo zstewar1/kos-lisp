@@ -51,15 +51,15 @@ namespace ZStewart.KOSLisp.Types {
       return ((DictType)dict).SetItem(key, value);
     }
 
-    private static LispObject IterKeys([PositionalArgument] DictType self) {
+    private static LispObject IterKeys([Required] DictType self) {
       return BuiltinIterType.Create(self.IterKeys());
     }
 
-    private static LispObject IterValues([PositionalArgument] DictType self) {
+    private static LispObject IterValues([Required] DictType self) {
       return BuiltinIterType.Create(self.IterValues());
     }
 
-    private static LispObject Iter([PositionalArgument] DictType self) {
+    private static LispObject Iter([Required] DictType self) {
       return BuiltinIterType.Create(self.Iter());
     }
     #endregion Static Type Setup

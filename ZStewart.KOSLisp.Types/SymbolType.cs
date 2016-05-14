@@ -29,8 +29,8 @@ namespace ZStewart.KOSLisp.Types {
 
     [BuiltinFunction(Name = "--new--")]
     private static SymbolType New(
-        [PositionalArgument] LispType subtype,
-        [PositionalArgument] LispObject value) {
+        [Required] LispType subtype,
+        [Required] LispObject value) {
       if (subtype == Symbol) {
           if (value is SymbolType) {
             return (SymbolType)value;
@@ -64,12 +64,10 @@ namespace ZStewart.KOSLisp.Types {
     }
 
     [BuiltinFunction(Name = "--init--")]
-    private static void Init(
-        [RestArgument] List<LispObject> unusedPargs,
-        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
+    private static void Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {}
 
     [BuiltinFunction(Name = "--repr--")]
-    private static LispObject ToRepr([PositionalArgument] SymbolType obj) {
+    private static LispObject ToRepr([Required] SymbolType obj) {
       return StringType.Create(obj.Identifier);
     }
     // TODO(zstewar1): In language instantiation stuff.

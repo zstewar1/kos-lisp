@@ -36,21 +36,19 @@ namespace ZStewart.KOSLisp.Types {
 
     [BuiltinFunction(Name = "--new--")]
     private static LispObject New(
-        [PositionalArgument] LispType subtype,
-        [PositionalArgument] LispObject value) {
+        [Required] LispType subtype,
+        [Optional(null)] LispObject value) {
       if (subtype != Bool) {
         throw ExceptionType.ThrowTypeError("cannot create new instances of bool");
       }
-      return From(value);
+      return value == null ? F : From(value);
     }
 
     [BuiltinFunction(Name = "--init--")]
-    private static void Init(
-        [RestArgument] List<LispObject> unusedPargs,
-        [RestKeywordArgument] Dictionary<SymbolType, LispObject> unusedKwargs) {}
+    private static void Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {}
 
     [BuiltinFunction(Name = "--bool--")]
-    private static LispObject ToBool([PositionalArgument] BoolType obj) {
+    private static LispObject ToBool([Required] BoolType obj) {
       return obj;
     }
     #endregion Static Type Setup

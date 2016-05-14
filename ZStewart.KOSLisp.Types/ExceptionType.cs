@@ -175,11 +175,11 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
-    private static LispObject ToRepr([PositionalArgument] ExceptionType self) {
+    private static LispObject ToRepr([Required] ExceptionType self) {
       return StringType.Format("({0} {1})", self.__class__.__name__, self.Message);
     }
 
-    private static LispObject ToStr([PositionalArgument] ExceptionType self) {
+    private static LispObject ToStr([Required] ExceptionType self) {
       return StringType.Create(self.Message);
     }
     #endregion
