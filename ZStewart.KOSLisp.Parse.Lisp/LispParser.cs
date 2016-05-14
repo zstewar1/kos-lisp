@@ -70,7 +70,7 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
         case LispTokType.STARTSTRING:
           return ParseString();
         case LispTokType.IDENTIFIER:
-          return SymbolType.Create(tok.RawValue);
+          return ParseIdentifier();
         case LispTokType.NUMBER:
           return NumberType.Create((tok as GenericToken<LispTokType, double>).Value);
         case LispTokType.QUOTE:
@@ -166,6 +166,35 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
             "unexpected token type {0} while parsing string.", tok.TokenType);
         }
       }
+    }
+
+    LispObject ParseIdentifier() {
+      if (!(tok.TokenType == LispTokType.IDENTIFIER))
+        throw new InvalidOperationException();
+      if (!tok.RawValue.Contains(".")) {
+        return SymbolType.Create(tok.RawValue);
+      }
+      var split = tok.RawValue.Split('.');
+      // lexer should guarantee split has at least one element
+      LispObject result;
+      if (split[0] == "") {
+        // ident begins with a dot, meaning load from next item.
+        tok = lexer.NextToken(LispLexMode.NORMAL);
+        result = ParseExpression();
+        if (result == null) {
+          throw ExceptionType.ThrowSyntaxError(
+            "unexpected end of input while reading prefix-dotted identifier.");
+        }
+      } else {
+        // begins with ident, meaning load from this variable.
+        result = SymbolType.Create(split[0]);
+      }
+      for (int i = 1; i < split.Length; i++) {
+        // This assumes that the getattr function is named getattr.
+        result = ConsType.ToLispList(
+          SymbolType.Create("getattr"), result, SymbolType.Create(split[i]));
+      }
+      return result;
     }
 
     LispObject ParseQuoted() {
