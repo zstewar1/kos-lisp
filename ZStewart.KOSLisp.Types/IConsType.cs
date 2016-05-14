@@ -157,7 +157,7 @@ namespace ZStewart.KOSLisp.Types {
     /// </summary>
     /// <param name="list">The list to convert.</param>
     /// <returns>A lisp tuple with the same contents as the original list.</returns>
-    public static LispObject ToLispTuple(IReadOnlyList<LispObject> list) {
+    public static LispObject ToLispTuple([RestArgument] IReadOnlyList<LispObject> list) {
       LispObject res = NilType.Nil;
       for(int i = list.Count - 1; i >= 0; i--) {
         res = Create(list[i], res);
