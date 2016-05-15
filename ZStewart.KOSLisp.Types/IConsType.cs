@@ -14,7 +14,7 @@ namespace ZStewart.KOSLisp.Types {
     protected IConsType () { }
 
     /// <summary>
-    /// Since ICons is immutable, it provides a second constructor so subtypes can
+    /// Since ICons is immutable, it provides a second constructor so s can
     /// instantiate the car and cdr.
     /// </summary>
     protected IConsType (LispObject car, LispObject cdr) {
@@ -57,11 +57,11 @@ namespace ZStewart.KOSLisp.Types {
       // Default cdr to nil.
       cdr = cdr ?? NilType.Nil;
       // Faster shortcut when it is the base type.
-      if (subtype == ICons) {
+      if (ReferenceEquals(subtype, ICons)) {
         return Create(car, cdr);
       } else {
         if (!LispType.IsSubtype(subtype, ICons)) {
-          throw ExceptionType.ThrowTypeError("type must be a subtype of icons");
+          throw ExceptionType.ThrowTypeError("type must be a  of icons");
         }
         if (!IsCorrectInstanceType(subtype, ICons)) {
           throw ExceptionType.ThrowTypeError(
@@ -78,10 +78,10 @@ namespace ZStewart.KOSLisp.Types {
     private static void Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {}
 
     private static LispObject GetCar (LispObject instance) {
-      // TODO(zstewar1): Maybe check isinstance? Maybe not though, all subtypes should
-      // have initialized with our New, so instance must be a ConsType. If a subtype, then
+      // TODO(zstewar1): Maybe check isinstance? Maybe not though, all s should
+      // have initialized with our New, so instance must be a ConsType. If a , then
       // it would either have an __dict__ if a dynamic type, or be a real C# subclass if
-      // a static subtype. Either way, it should be safe to use a check/convert on the C#
+      // a static . Either way, it should be safe to use a check/convert on the C#
       // type.
       if (instance is IConsType) {
         return (instance as IConsType).Car;
@@ -110,7 +110,7 @@ namespace ZStewart.KOSLisp.Types {
           val.Append(" ");
         } else {
           value = null;
-          if (cdr != NilType.Nil) {
+          if (!ReferenceEquals(cdr, NilType.Nil)) {
             val.Append(" . ");
             val.Append(StringType.GetReprString(cdr));
           }
@@ -142,9 +142,10 @@ namespace ZStewart.KOSLisp.Types {
       var car = ListOperations.GetCar(originalList);
       var cdr = ListOperations.GetCdr(originalList);
       var newcdr = Copy(cdr);
-      // We use exact type equality because any subtype of ICons should still be
+      // We use exact type equality because any  of ICons should still be
       // converted.
-      if (newcdr == cdr && originalList.__class__ == ICons) {
+      if (ReferenceEquals(newcdr, cdr)
+          && ReferenceEquals(originalList.__class__, ICons)) {
         return originalList;
       }
       return Create(car, newcdr);

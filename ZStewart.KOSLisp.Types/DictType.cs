@@ -35,7 +35,7 @@ namespace ZStewart.KOSLisp.Types {
     private static DictType New(
         [Required] LispType subtype,
         [RestIgnore] byte ri, [RestKwIgnore] byte rki) {
-      if (subtype == Dict) {
+      if (ReferenceEquals(subtype, Dict)) {
         return Create();
       } else {
         if (!LispType.IsSubtype(subtype, Dict)) {

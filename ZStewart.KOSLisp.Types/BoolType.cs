@@ -68,8 +68,8 @@ namespace ZStewart.KOSLisp.Types {
         () => ExceptionType.CreateAttributeError(
           "{0} object has no attribute {1}",
           obj.__class__, PropConsts.Bool));
-      if (b == T) return T;
-      if (b == F) return F;
+      if (ReferenceEquals(b, T)) return T;
+      if (ReferenceEquals(b, F)) return F;
       throw ExceptionType.ThrowTypeError(
         "unable to convert {0} object to bool.", obj.__class__);
     }
@@ -97,7 +97,7 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
-    public bool Value { get { return this == T; } }
+    public bool Value { get { return ReferenceEquals(this, T); } }
 
     public override bool IsSelfEvaluating { get { return true; } }
   }

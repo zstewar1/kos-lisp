@@ -51,7 +51,7 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispType subtype,
         [RestIgnore] byte ri, [RestKwIgnore] byte rki) {
       // Faster shortcut when it is the base type.
-      if (subtype == Cons) {
+      if (ReferenceEquals(subtype, Cons)) {
         return new ConsType() {
           __class__ = Cons,
         };
@@ -128,16 +128,16 @@ namespace ZStewart.KOSLisp.Types {
       try {
         var len = ListOperations.Count(self);
         if (len == 2 && LispType.IsInstance(self.Car, SymbolType.Symbol)) {
-          if (self.Car == SymbolType.Create("quote")) {
+          if (ReferenceEquals(self.Car, SymbolType.Create("quote"))) {
             return StringType.Create(
               "'" + StringType.GetReprString(ListOperations.GetCar(self.Cdr)));
-          } else if (self.Car == SymbolType.Create("--backquote--")) {
+          } else if (ReferenceEquals(self.Car, SymbolType.Create("--backquote--"))) {
             return StringType.Create(
               "`" + StringType.GetReprString(ListOperations.GetCar(self.Cdr)));
-          } else if (self.Car == SymbolType.Create(":--unquote--")) {
+          } else if (ReferenceEquals(self.Car, SymbolType.Create(":--unquote--"))) {
             return StringType.Create(
               "," + StringType.GetReprString(ListOperations.GetCar(self.Cdr)));
-          } else if (self.Car == SymbolType.Create(":--splice--")) {
+          } else if (ReferenceEquals(self.Car, SymbolType.Create(":--splice--"))) {
             return StringType.Create(
               ",@" + StringType.GetReprString(ListOperations.GetCar(self.Cdr)));
           }
@@ -155,7 +155,7 @@ namespace ZStewart.KOSLisp.Types {
           val.Append(" ");
         } else {
           value = null;
-          if (cdr != NilType.Nil) {
+          if (!ReferenceEquals(cdr, NilType.Nil)) {
             val.Append(" . ");
             val.Append(StringType.GetReprString(cdr));
           }
@@ -183,7 +183,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="orignalList">The list to copy.</param>
     /// <returns>A copy of the given list as only normal conses.</returns>
     public static LispObject Copy(LispObject originalList) {
-      if (originalList == NilType.Nil) return NilType.Nil;
+      if (ReferenceEquals(originalList, NilType.Nil)) return NilType.Nil;
       var car = ListOperations.GetCar(originalList);
       var cdr = ListOperations.GetCdr(originalList);
       var newcdr = Copy(cdr);

@@ -39,7 +39,7 @@ namespace ZStewart.KOSLisp.Types {
     private static NumberType New(
         [Required] LispType subtype,
         [Optional(null)] LispObject value) {
-      if (subtype == Number) {
+      if (ReferenceEquals(subtype, Number)) {
         return Create(value != null ? GetValue(value) : 0.0);
       } else {
         if (!LispType.IsSubtype(subtype, Number)) {

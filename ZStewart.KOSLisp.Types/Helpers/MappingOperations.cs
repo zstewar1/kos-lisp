@@ -15,7 +15,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           () => ExceptionType.CreateTypeError(
             "\"{0}\" object is not subscriptable", target.__class__));
       } catch (ExceptionWrapper ex) {
-        if (@default != null
+        if (@default == null
             || !ExceptionType.Check(ex, ExceptionType.KeyError)) {
           throw;
         }

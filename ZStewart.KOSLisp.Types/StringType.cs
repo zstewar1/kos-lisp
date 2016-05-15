@@ -41,7 +41,7 @@ namespace ZStewart.KOSLisp.Types {
     private static StringType New(
         [Required] LispType subtype,
         [Optional(null)] LispObject value) {
-      if (subtype == String) {
+      if (ReferenceEquals(subtype, String)) {
         if (value != null) {
           return GetStr(value);
         } else {

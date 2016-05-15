@@ -85,7 +85,8 @@ namespace ZStewart.KOSLisp.Types {
     private LispObject Get (LispObject instance, LispObject type) {
       if (!(type is LispType) && type != NilType.Nil) {
         throw ExceptionType.ThrowTypeError("type must be a type or nil");
-      } else if (instance == NilType.Nil && type != NilType.NilClass) {
+      } else if (ReferenceEquals(instance, NilType.Nil)
+          && !ReferenceEquals(type, NilType.NilClass)) {
         return this;
       } else if (!ObjectType.IsAssignableFrom(instance.GetType())) {
         throw ExceptionType.ThrowTypeError(

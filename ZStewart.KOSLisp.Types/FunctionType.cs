@@ -45,7 +45,8 @@ namespace ZStewart.KOSLisp.Types {
         LispObject type) {
       if (!(self is FunctionType)) {
         throw ExceptionType.ThrowTypeError("self must be a Function");
-      } else if (instance == NilType.Nil && type != NilType.NilClass) {
+      } else if (ReferenceEquals(instance, NilType.Nil)
+          && !ReferenceEquals(type, NilType.NilClass)) {
         return self;
       } else {
         return MethodType.Create(((FunctionType)self).Name, instance, self);

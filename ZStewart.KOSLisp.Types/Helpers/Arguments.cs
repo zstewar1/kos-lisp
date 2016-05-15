@@ -156,7 +156,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       }
       // Marshal any nullable which received Nil as null (unless it was captured as a
       // lisp object, in which case it would be captured as itself.
-      if (source == NilType.Nil
+      if (ReferenceEquals(source, NilType.Nil)
           && !typeof(LispObject).IsAssignableFrom(destType)
           && (destType.IsClass || destType.IsInterface
               || (destType.IsGenericType

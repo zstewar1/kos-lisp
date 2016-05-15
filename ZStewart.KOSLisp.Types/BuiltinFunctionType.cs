@@ -52,7 +52,8 @@ namespace ZStewart.KOSLisp.Types {
       if (!(self is BuiltinFunctionType)) {
         throw ExceptionType.ThrowTypeError("self must be a BuiltinFunction");
       }
-      if (instance == NilType.Nil && type != NilType.NilClass) {
+      if (ReferenceEquals(instance, NilType.Nil)
+          && !ReferenceEquals(type, NilType.NilClass)) {
         return self;
       } else {
         return MethodType.Create(((BuiltinFunctionType)self).Name, instance, self);

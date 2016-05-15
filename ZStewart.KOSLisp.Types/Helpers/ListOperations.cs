@@ -92,7 +92,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <returns>The number of elements or null if there is an error counting.</returns>
     public static int Count(LispObject list) {
       int cnt = 0;
-      while (!list.Is(NilType.Nil)) {
+      while (!ReferenceEquals(list, NilType.Nil)) {
         cnt++;
         try {
           list = GetCdr(list);

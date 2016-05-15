@@ -82,7 +82,7 @@ namespace ZStewart.KOSLisp.Types {
 
     #region Setup Funtionality
     public static void ConfigureType (LispType type) {
-      if (type.__mro__ == null) {
+      if (ReferenceEquals(type.__mro__, null)) {
         type.__mro__ = Linearize(type);
       }
       // TODO(zstewar1): Populate dict.
@@ -110,7 +110,7 @@ namespace ZStewart.KOSLisp.Types {
     /// <param name="type">The type ot linearlize.</param>
     /// <returns>The linearization of the given type.</returns>
     private static LispObject Linearize(LispType type) {
-      if (type.__bases__ == NilType.Nil) {
+      if (ReferenceEquals(type.__bases__, NilType.Nil)) {
         return IConsType.ToLispTuple(type);
       }
       return IConsType.Create(type, MergeMroBases(type.__bases__));
@@ -130,8 +130,9 @@ namespace ZStewart.KOSLisp.Types {
           // Check that head is not in the tail of any other MRO.
           if (mroList
             .Where(o => o != mro)
-            .Any(o => o.Skip(1).Any(t => t == head))) {
+            .Any(o => o.Skip(1).Any(t => ReferenceEquals(t, head)))) {
             // Cannot add this element now.
+            head = null;
             continue;
           }
           break;
@@ -141,7 +142,7 @@ namespace ZStewart.KOSLisp.Types {
         }
         linearization.Add(head);
         for (int i = 0; i < mroList.Count; i++) {
-          if (mroList[i][0] == head) mroList[i].RemoveAt(0);
+          if (ReferenceEquals(mroList[i][0], head)) mroList[i].RemoveAt(0);
           if (mroList[i].Count == 0) mroList.RemoveAt(i--);
         }
       }
@@ -215,7 +216,7 @@ namespace ZStewart.KOSLisp.Types {
           "Second argument must be a type, got {0}", type);
       }
       foreach (var t in ListOperations.IterMro(instance)) {
-        if (t == type) return true;
+        if (ReferenceEquals(t, type)) return true;
       }
       return false;
     }
@@ -232,7 +233,7 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispType subtype,
         [Required] LispType parentType) {
       foreach (var t in ListOperations.IterList<LispType>(subtype.__mro__)) {
-        if (t ==  parentType) return true;
+        if (ReferenceEquals(t,  parentType)) return true;
       }
       return false;
     }

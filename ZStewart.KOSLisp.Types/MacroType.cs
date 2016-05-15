@@ -45,7 +45,8 @@ namespace ZStewart.KOSLisp.Types {
         LispObject type) {
       if (!(self is MacroType)) {
         throw ExceptionType.ThrowTypeError("self must be a Macro");
-      } else if (instance == NilType.Nil && type != NilType.NilClass) {
+      } else if (ReferenceEquals(instance, NilType.Nil)
+          && !ReferenceEquals(type, NilType.NilClass)) {
         return self;
       } else {
         var macro = (MacroType)self;

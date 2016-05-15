@@ -59,7 +59,7 @@ namespace ZStewart.KOSLisp.Types {
       // - No args if overriding __new__
       // See http://stackoverflow.com/a/19277824/1036501
 
-      if (type == Object) {
+      if (ReferenceEquals(type, Object)) {
         if (args.Count > 0) {
           throw ExceptionType.ThrowTypeError(
             "--new-- expected 1 argument, got {0}",
@@ -175,7 +175,7 @@ namespace ZStewart.KOSLisp.Types {
 
     [BuiltinFunction(Name = "--hash--")]
     private static LispObject Hash([Required] LispObject self) {
-      return self.Hash();
+      return NumberType.Create(self.BaseObjectHash());
     }
 
     [BuiltinFunction(Name = "--eq--")]
@@ -396,7 +396,7 @@ namespace ZStewart.KOSLisp.Types {
       bool isSubtype = false;
       var def = NewInitDefined.None;
       foreach(var type in ListOperations.IterList<LispType>(subtype.__mro__)) {
-        if (type == supertype) {
+        if (ReferenceEquals(type, supertype)) {
           isSubtype = true;
           break;
         }
@@ -433,8 +433,8 @@ namespace ZStewart.KOSLisp.Types {
     }
     #endregion Static Helper Methods
 
-    private LispObject Hash() {
-      return NumberType.Create(base.GetHashCode());
+    protected int BaseObjectHash () {
+      return base.GetHashCode();
     }
 
     public override string ToString() {
@@ -460,6 +460,9 @@ namespace ZStewart.KOSLisp.Types {
       return BoolType.From(obj).Value;
     }
 
+    // Call the operators out to the comparison operations. This is inconvenient inside of
+    // the Types library (necessitates using ReferenceEquals a lot instead of ==, but
+    // should make operating on things in client code easier.
     public static bool operator==(LispObject first, LispObject second) {
       if (ReferenceEquals(first, null) || ReferenceEquals(second, null)) {
         return ReferenceEquals(first, second);

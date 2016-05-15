@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using ZStewart.KOSLisp.Types.Attributes;
+using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
   public class SymbolType : LispObject {
@@ -30,7 +31,7 @@ namespace ZStewart.KOSLisp.Types {
     private static SymbolType New(
         [Required] LispType subtype,
         [Required] LispObject value) {
-      if (subtype == Symbol) {
+      if (ReferenceEquals(subtype, Symbol)) {
           if (value is SymbolType) {
             return (SymbolType)value;
           }
@@ -69,7 +70,6 @@ namespace ZStewart.KOSLisp.Types {
     private static LispObject ToRepr([Required] SymbolType obj) {
       return StringType.Create(obj.Identifier);
     }
-    // TODO(zstewar1): In language instantiation stuff.
     #endregion
 
     public const string SUBSYMBOL_REGEX = @"[\p{L}@<>=_+!~*^%$/\-\d]";
@@ -142,5 +142,13 @@ namespace ZStewart.KOSLisp.Types {
     public string Identifier { get; }
 
     public virtual bool IsSelfEvaluating { get { return false; } }
+
+    public override int GetHashCode() {
+      return BaseObjectHash();
+    }
+
+    public override bool Equals(object other) {
+      return ReferenceEquals(this, other);
+    }
   }
 }

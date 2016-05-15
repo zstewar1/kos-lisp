@@ -135,7 +135,7 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
               ListOperations.SetCdr(end, obj);
               dotDone = true;
             }
-          } else if (list == NilType.Nil) {
+          } else if (ReferenceEquals(list, NilType.Nil)) {
             list = ConsType.Create(obj, NilType.Nil);
             end = list;
           } else {
