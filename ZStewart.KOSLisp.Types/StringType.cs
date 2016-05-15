@@ -122,10 +122,9 @@ namespace ZStewart.KOSLisp.Types {
     public static StringType GetStr (LispObject obj) {
       var str = LookupHelpers.Lookup(
         obj,
-        unused => false,
-        unused => { throw new InvalidOperationException(); }, // Should never happen.
+        unused => null,
         PropConsts.Str,
-        () => ExceptionType.CreateAttributeError(
+        () => ExceptionType.ThrowAttributeError(
           "{0} object has no method {1}",
           obj.__class__, PropConsts.Str));
       if (!(str is StringType)) {
@@ -142,10 +141,9 @@ namespace ZStewart.KOSLisp.Types {
     public static StringType GetRepr(LispObject obj) {
       var repr = LookupHelpers.Lookup(
         obj,
-        unused => false,
-        unused => { throw new InvalidOperationException(); }, // Should never happen.
+        unused => null,
         PropConsts.Repr,
-        () => ExceptionType.CreateAttributeError(
+        () => ExceptionType.ThrowAttributeError(
           "{0} object has no method {1}",
           obj.__class__, PropConsts.Repr));
       if (!(repr is StringType)) {

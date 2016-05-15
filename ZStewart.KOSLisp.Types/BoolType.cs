@@ -62,10 +62,9 @@ namespace ZStewart.KOSLisp.Types {
     public static BoolType From(LispObject obj) {
       var b = LookupHelpers.Lookup(
         obj,
-        unused => false,
-        unused => { throw new InvalidOperationException(); }, // Should never happen.
+        unused => null,
         PropConsts.Bool,
-        () => ExceptionType.CreateAttributeError(
+        () => ExceptionType.ThrowAttributeError(
           "{0} object has no attribute {1}",
           obj.__class__, PropConsts.Bool));
       if (ReferenceEquals(b, T)) return T;

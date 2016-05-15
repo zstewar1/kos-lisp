@@ -19,10 +19,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     public static LispObject Get(LispObject descriptor, LispObject obj, LispObject type) {
       return LookupHelpers.Lookup(
         descriptor, obj, type,
-        t => t.__get__ != null,
         t => t.__get__,
         PropConsts.Get,
-        () => ExceptionType.CreateAttributeError(
+        () => ExceptionType.ThrowAttributeError(
           "\"{0}\" object has no attribute __get__", descriptor.__class__));
     }
 
@@ -37,10 +36,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         LispObject descriptor, LispObject obj, LispObject value) {
       LookupHelpers.Lookup(
         descriptor, obj, value,
-        t => t.__set__ != null,
         t => t.__set__,
         PropConsts.Set,
-        () => ExceptionType.CreateAttributeError(
+        () => ExceptionType.ThrowAttributeError(
           "\"{0}\" object has no attribute __set__", descriptor.__class__));
       return value;
     }

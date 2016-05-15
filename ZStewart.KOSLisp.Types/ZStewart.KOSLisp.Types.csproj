@@ -50,7 +50,6 @@
     <Compile Include="TypeCategories\NumberMethods.cs" />
     <Compile Include="ArgumentProperties.cs" />
     <Compile Include="CallMagic.cs" />
-    <Compile Include="Delegates.cs" />
     <Compile Include="DictType.cs" />
     <Compile Include="ModuleType.cs" />
     <Compile Include="ConsType.cs" />

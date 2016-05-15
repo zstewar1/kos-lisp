@@ -6,6 +6,13 @@ using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Types {
   public class FunctionType : LispObject {
+    /// <summary>
+    /// Function inner implementation delegate.
+    /// </summary>
+    public delegate LispObject Impl(
+        List<LispObject> pargs,
+        Dictionary<SymbolType, LispObject> kwargs);
+
     #region Static Type Setup
     private static LispType _function;
     public static LispType Function {
@@ -56,7 +63,7 @@ namespace ZStewart.KOSLisp.Types {
 
     #region Static Helper Methods
     public static FunctionType Create(
-        SymbolType name, CallFunc impl) {
+        SymbolType name, Impl impl) {
       return new FunctionType(name, impl) {
         __class__ = Function,
       };
@@ -64,10 +71,10 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Helper Methods
 
     public SymbolType Name { get; }
-    private readonly CallFunc impl;
+    private readonly Impl impl;
 
     protected FunctionType(
-        SymbolType name, CallFunc impl) {
+        SymbolType name, Impl impl) {
       Name = name;
       this.impl = impl;
     }
@@ -75,7 +82,7 @@ namespace ZStewart.KOSLisp.Types {
     private LispObject Call(
         List<LispObject> pargs,
         Dictionary<SymbolType, LispObject> kwargs) {
-      return impl(this, pargs, kwargs);
+      return impl(pargs, kwargs);
     }
   }
 }

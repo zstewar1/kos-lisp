@@ -47,8 +47,6 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// Produce an expression representing executing the specified expressions.
     /// </summary>
     public override Expression Emit() {
-      var selfFunctionParameter = Expression.Parameter(
-        typeof(LispObject), "--unused-func-self--");
       var pargsParameter = Expression.Parameter(typeof(List<LispObject>), "--in-pargs--");
       var kwargsParameter = Expression.Parameter(
         typeof(Dictionary<SymbolType, LispObject>), "--in-kwargs--");
@@ -56,10 +54,10 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         typeof(FunctionType), "Create", null,
         Expression.Constant(GetFunctionName()),
         Expression.Lambda(
-          typeof(CallFunc),
+          typeof(FunctionType.Impl),
           EmitLambdaBody(pargsParameter, kwargsParameter),
           GetFunctionName().Identifier,
-          ImmutableList.Create(selfFunctionParameter, pargsParameter, kwargsParameter)));
+          ImmutableList.Create(pargsParameter, kwargsParameter)));
     }
 
     /// <summary>

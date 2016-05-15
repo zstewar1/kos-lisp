@@ -20,10 +20,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
-        t => t._comparison_methods != null && t._comparison_methods.__eq__ != null,
-        t => t._comparison_methods.__eq__,
+        t => t._comparison_methods?.__eq__,
         eqattr,
-        () => ExceptionType.CreateTypeError(
+        () => ExceptionType.ThrowTypeError(
           "\"{0}\" object is not comparable", target.__class__));
     }
 
@@ -39,10 +38,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
-        t => t._comparison_methods != null && t._comparison_methods.__le__ != null,
-        t => t._comparison_methods.__le__,
+        t => t._comparison_methods?.__le__,
         leattr,
-        () => ExceptionType.CreateTypeError(
+        () => ExceptionType.ThrowTypeError(
           "\"{0}\" object is not comparable", target.__class__));
     }
 
@@ -58,10 +56,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
-        t => t._comparison_methods != null && t._comparison_methods.__lt__ != null,
-        t => t._comparison_methods.__lt__,
+        t => t._comparison_methods?.__lt__,
         ltattr,
-        () => ExceptionType.CreateTypeError(
+        () => ExceptionType.ThrowTypeError(
           "\"{0}\" object is not comparable", target.__class__));
     }
 
@@ -77,10 +74,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
-        t => t._comparison_methods != null && t._comparison_methods.__gt__ != null,
-        t => t._comparison_methods.__gt__,
+        t => t._comparison_methods?.__gt__,
         gtattr,
-        () => ExceptionType.CreateTypeError(
+        () => ExceptionType.ThrowTypeError(
           "\"{0}\" object is not comparable", target.__class__));
     }
 
@@ -96,10 +92,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
-        t => t._comparison_methods != null && t._comparison_methods.__ge__ != null,
-        t => t._comparison_methods.__ge__,
+        t => t._comparison_methods?.__ge__,
         geattr,
-        () => ExceptionType.CreateTypeError(
+        () => ExceptionType.ThrowTypeError(
           "\"{0}\" object is not comparable", target.__class__));
     }
 
@@ -107,10 +102,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         [Required] this LispObject target) {
       var val = LookupHelpers.Lookup(
         target,
-        t => t._comparison_methods != null && t._comparison_methods.__hash__ != null,
-        t => t._comparison_methods.__hash__,
+        t => t._comparison_methods?.__hash__,
         hashattr,
-        () => ExceptionType.CreateTypeError(
+        () => ExceptionType.ThrowTypeError(
           "\"{0}\" object is not hashable", target.__class__));
       if (!(val is NumberType)) {
         throw ExceptionType.ThrowTypeError(

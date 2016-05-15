@@ -17,8 +17,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       // use it would cause an infinite recursion.
       LispObject __mro__ = targetType.__mro__;
       for (;;) {
-        if (targetType._list_methods != null
-            && targetType._list_methods.__getcar__ != null) {
+        if (targetType._list_methods?.__getcar__ != null) {
           return targetType._list_methods.__getcar__(target);
         } else {
           LispObject getcar = null;
@@ -52,10 +51,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       // first time, so this method shouldn't produce an infinite recursion.
       return LookupHelpers.Lookup(
         target,
-        t => t._list_methods != null && t._list_methods.__getcdr__ != null,
-        t => t._list_methods.__getcdr__,
+        t => t._list_methods?.__getcdr__,
         getcdrattr,
-        () => ExceptionType.CreateTypeError(
+        () => ExceptionType.ThrowTypeError(
           "cannot get cdr of \"{0}\" object", target.__class__));
     }
 
@@ -64,10 +62,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         [Required] LispObject value) {
       LookupHelpers.Lookup(
         target, value,
-        t => t._list_methods != null && t._list_methods.__setcar__ != null,
-        t => t._list_methods.__setcar__,
+        t => t._list_methods?.__setcar__,
         setcarattr,
-        () => ExceptionType.CreateTypeError(
+        () => ExceptionType.ThrowTypeError(
           "cannot set car of \"{0}\" object", target.__class__));
       return value;
     }
@@ -77,10 +74,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         [Required] LispObject value) {
       LookupHelpers.Lookup(
         target, value,
-        t => t._list_methods != null && t._list_methods.__setcdr__ != null,
-        t => t._list_methods.__setcdr__,
+        t => t._list_methods?.__setcdr__,
         setcdrattr,
-        () => ExceptionType.CreateTypeError(
+        () => ExceptionType.ThrowTypeError(
           "cannot set cdr of \"{0}\" object", target.__class__));
       return value;
     }
