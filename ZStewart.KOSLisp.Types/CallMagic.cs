@@ -196,7 +196,7 @@ namespace ZStewart.KOSLisp.Types {
             continue;
           }
         }
-        throw new ArgumentException("found unannotated parameter {0}", param.Name);
+        throw new ArgumentException($"found unannotated parameter {param.Name}");
       }
 
       arguments = args.ToImmutable();
