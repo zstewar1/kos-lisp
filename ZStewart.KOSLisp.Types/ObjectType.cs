@@ -291,7 +291,10 @@ namespace ZStewart.KOSLisp.Types {
     /// Get an attribute of an object using its builtin __getattr__, or --getattribute--
     /// if provided.
     /// </summary>
-    public static LispObject GetAttribute(LispObject obj, LispObject attribute) {
+    public static LispObject GetAttribute(
+        [Required] LispObject obj,
+        [Required] LispObject attribute,
+        [Optional(null)] LispObject fallback = null) {
       if (!LispType.IsInstance(attribute, SymbolType.Symbol)) {
         throw ExceptionType.ThrowTypeError("attribute name must be symbol");
       }
@@ -310,18 +313,27 @@ namespace ZStewart.KOSLisp.Types {
         if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
       }
 
-      return LookupHelpers.Lookup(
-        obj, attribute,
-        t => false,
-        // Since the first predicate is false, this should never be called.
-        t => null,
-        PropConsts.GetAttr,
-        () => ExceptionType.CreateAttributeError(
-          "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
+      try {
+        return LookupHelpers.Lookup(
+          obj, attribute,
+          t => false,
+          // Since the first predicate is false, this should never be called.
+          t => null,
+          PropConsts.GetAttr,
+          () => ExceptionType.CreateAttributeError(
+            "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
+      } catch (ExceptionWrapper ex) {
+        if (fallback == null || !ExceptionType.Check(ex, ExceptionType.AttributeError)) {
+          throw;
+        }
+        return fallback;
+      }
     }
 
     public static LispObject SetAttribute(
-        LispObject obj, LispObject attribute, LispObject value) {
+        [Required] LispObject obj,
+        [Required] LispObject attribute,
+        [Required] LispObject value) {
       if (!LispType.IsInstance(attribute, SymbolType.Symbol)) {
         throw ExceptionType.ThrowTypeError("attribute name must be symbol");
       }
