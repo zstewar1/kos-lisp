@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using ZStewart.KOSLisp.Types.Attributes;
 using ZStewart.KOSLisp.Types.Helpers;
+using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
   /// <summary>
@@ -28,6 +29,10 @@ namespace ZStewart.KOSLisp.Types {
           __getattr__ = GetAttr,
           __setattr__ = SetAttr,
           _instance_type = typeof(LispObject),
+          _comparison_methods = new ComparisonMethods {
+            __eq__ = Eq,
+            __hash__ = Hash,
+          },
         };
         _object.__class__ = LispType.Type;
         _object.__bases__ = NilType.Nil;
@@ -168,9 +173,20 @@ namespace ZStewart.KOSLisp.Types {
         "\"{0}\" object has no attribute {1}", obj.__class__, attr);
     }
 
+    [BuiltinFunction(Name = "--hash--")]
+    private static LispObject Hash([Required] LispObject self) {
+      return self.Hash();
+    }
+
+    [BuiltinFunction(Name = "--eq--")]
+    private static LispObject Eq(
+        [Required] LispObject self,
+        [Required] LispObject other) {
+      return BoolType.Create(ReferenceEquals(self, other));
+    }
 
     [BuiltinFunction(Name = "--bool--")]
-    private static LispObject ToBool([Required] LispObject nil) {
+    private static LispObject ToBool([Required] LispObject unused) {
       return BoolType.T;
     }
 
@@ -417,8 +433,61 @@ namespace ZStewart.KOSLisp.Types {
     }
     #endregion Static Helper Methods
 
+    private LispObject Hash() {
+      return NumberType.Create(base.GetHashCode());
+    }
+
     public override string ToString() {
       return StringType.GetStrString(this);
+    }
+
+    public override bool Equals(object other) {
+      if (other is LispObject) {
+        return Equals((LispObject)other);
+      }
+      return false;
+    }
+
+    public bool Equals(LispObject other) {
+      return BoolType.From(ComparisonOperations.Eq(this, other)).Value;
+    }
+
+    public override int GetHashCode() {
+      return (int)ComparisonOperations.Hash(this).Value;
+    }
+
+    public static implicit operator bool(LispObject obj) {
+      return BoolType.From(obj).Value;
+    }
+
+    public static bool operator==(LispObject first, LispObject second) {
+      if (ReferenceEquals(first, null) || ReferenceEquals(second, null)) {
+        return ReferenceEquals(first, second);
+      }
+      return BoolType.From(ComparisonOperations.Eq(first, second)).Value;
+    }
+
+    public static bool operator!=(LispObject first, LispObject second) {
+      if (ReferenceEquals(first, null) || ReferenceEquals(second, null)) {
+        return !ReferenceEquals(first, second);
+      }
+      return !BoolType.From(ComparisonOperations.Eq(first, second)).Value;
+    }
+
+    public static bool operator>=(LispObject first, LispObject second) {
+      return BoolType.From(ComparisonOperations.Ge(first, second)).Value;
+    }
+
+    public static bool operator>(LispObject first, LispObject second) {
+      return BoolType.From(ComparisonOperations.Gt(first, second)).Value;
+    }
+
+    public static bool operator<(LispObject first, LispObject second) {
+      return BoolType.From(ComparisonOperations.Lt(first, second)).Value;
+    }
+
+    public static bool operator<=(LispObject first, LispObject second) {
+      return BoolType.From(ComparisonOperations.Le(first, second)).Value;
     }
   }
 }

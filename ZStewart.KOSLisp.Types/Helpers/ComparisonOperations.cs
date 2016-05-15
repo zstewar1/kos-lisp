@@ -7,6 +7,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     private static readonly LispObject ltattr = SymbolType.Create("--lt--");
     private static readonly LispObject gtattr = SymbolType.Create("--gt--");
     private static readonly LispObject geattr = SymbolType.Create("--ge--");
+    private static readonly LispObject hashattr = SymbolType.Create("--hash--");
 
     /// <summary>
     /// Returns true if the given lisp objects are equal. False otherwise. Null on error.
@@ -15,7 +16,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Eq(
-        [Required] LispObject target,
+        [Required] this LispObject target,
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
@@ -34,7 +35,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Le(
-        [Required] LispObject target,
+        [Required] this LispObject target,
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
@@ -53,7 +54,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Lt(
-        [Required] LispObject target,
+        [Required] this LispObject target,
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
@@ -72,7 +73,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Gt(
-        [Required] LispObject target,
+        [Required] this LispObject target,
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
@@ -91,7 +92,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Ge(
-        [Required] LispObject target,
+        [Required] this LispObject target,
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
@@ -102,6 +103,31 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           "\"{0}\" object is not comparable", target.__class__));
     }
 
-    // TODO(zstewar1): The rest of the comparison operations. (le,lt,gt,ge,hash,is)
+    public static NumberType Hash(
+        [Required] this LispObject target) {
+      var val = LookupHelpers.Lookup(
+        target,
+        t => t._comparison_methods != null && t._comparison_methods.__hash__ != null,
+        t => t._comparison_methods.__hash__,
+        hashattr,
+        () => ExceptionType.CreateTypeError(
+          "\"{0}\" object is not hashable", target.__class__));
+      if (!(val is NumberType)) {
+        throw ExceptionType.ThrowTypeError(
+          "result of hash must be a number, got {0}", val.__class__);
+      }
+      var num = (NumberType)val;
+      if (num.Value % 1 != 0) {
+        throw ExceptionType.ThrowValueError(
+          "result of hash must be an integer, got {0}", num.Value);
+      }
+      return num;
+    }
+
+    public static BoolType Is(
+        [Required] this LispObject first,
+        [Required] LispObject second) {
+      return BoolType.Create(ReferenceEquals(first, second));
+    }
   }
 }
