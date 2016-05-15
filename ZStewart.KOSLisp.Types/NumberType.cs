@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using static ZStewart.KOSLisp.Types.ExceptionType;
 using static ZStewart.KOSLisp.Types.NotImplementedType;
 
 using ZStewart.KOSLisp.Types.Helpers;
@@ -55,10 +56,10 @@ namespace ZStewart.KOSLisp.Types {
         return Create(value != null ? GetValue(value) : 0.0);
       } else {
         if (!LispType.IsSubtype(subtype, Number)) {
-          throw ExceptionType.ThrowTypeError("type must be a subtype of num");
+          throw ThrowTypeError("type must be a subtype of num");
         }
         if (!IsCorrectInstanceType(subtype, Number)) {
-          throw ExceptionType.ThrowTypeError(
+          throw ThrowTypeError(
             "num.--new-- cannot be used to instantiate object of type {0}", subtype);
         }
         return new NumberType(value != null ? GetValue(value) : 0.0) {
@@ -83,11 +84,11 @@ namespace ZStewart.KOSLisp.Types {
         if (double.TryParse(((StringType)value).Value, out res)) {
           return res;
         } else {
-          throw ExceptionType.ThrowValueError(
+          throw ThrowValueError(
             "could not convert string to number: {0}", value);
         }
       } else {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "num argument must be a string or number not {0}", value.__class__);
       }
     }
@@ -97,7 +98,7 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispObject self,
         [Required] LispObject other) {
       if (!(self is NumberType)) {
-        throw ExceptionType.ThrowTypeError("self must be a number");
+        throw ThrowTypeError("self must be a number");
       }
       if (other.__class__.RefEq(Number)
           || !other.NotSubtypeOrRedefines(
@@ -112,7 +113,7 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispObject self,
         [Required] LispObject other) {
       if (!(self is NumberType)) {
-        throw ExceptionType.ThrowTypeError("self must be a number");
+        throw ThrowTypeError("self must be a number");
       }
       if (other.__class__.RefEq(Number)
           || !other.NotSubtypeOrRedefines(
@@ -127,7 +128,7 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispObject self,
         [Required] LispObject other) {
       if (!(self is NumberType)) {
-        throw ExceptionType.ThrowTypeError("self must be a number");
+        throw ThrowTypeError("self must be a number");
       }
       if (other.__class__.RefEq(Number)
           || !other.NotSubtypeOrRedefines(
@@ -142,7 +143,7 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispObject self,
         [Required] LispObject other) {
       if (!(self is NumberType)) {
-        throw ExceptionType.ThrowTypeError("self must be a number");
+        throw ThrowTypeError("self must be a number");
       }
       if (other.__class__.RefEq(Number)
           || !other.NotSubtypeOrRedefines(
@@ -157,7 +158,7 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispObject self,
         [Required] LispObject other) {
       if (!(self is NumberType)) {
-        throw ExceptionType.ThrowTypeError("self must be a number");
+        throw ThrowTypeError("self must be a number");
       }
       if (other.__class__.RefEq(Number)
           || !other.NotSubtypeOrRedefines(
@@ -170,7 +171,7 @@ namespace ZStewart.KOSLisp.Types {
     [BuiltinFunction(Name = "--hash--")]
     private static LispObject Hash([Required] LispObject self) {
       if (!(self is NumberType)) {
-        throw ExceptionType.ThrowTypeError("self must be a number");
+        throw ThrowTypeError("self must be a number");
       }
       return Create(((NumberType)self).Value.GetHashCode());
     }
