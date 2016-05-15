@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using static ZStewart.KOSLisp.Types.ExceptionType;
+using static ZStewart.KOSLisp.Types.NotImplementedType;
+
 using ZStewart.KOSLisp.Types.Attributes;
 using ZStewart.KOSLisp.Types.Helpers;
+using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
   public class StringType : LispObject {
@@ -27,6 +31,14 @@ namespace ZStewart.KOSLisp.Types {
         _string = new LispType {
           __name__ = "str",
           _instance_type = typeof(StringType),
+          _comparison_methods = new ComparisonMethods {
+            __eq__ = Eq,
+            __le__ = Le,
+            __lt__ = Lt,
+            __gt__ = Gt,
+            __ge__ = Ge,
+            __hash__ = Hash,
+          },
         };
         _string.__class__ = LispType.Type;
         _string.__bases__ = IConsType.ToLispTuple(LispObject.Object);
@@ -65,6 +77,104 @@ namespace ZStewart.KOSLisp.Types {
     [BuiltinFunction(Name = "--init--")]
     private static void Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {}
 
+    [BuiltinFunction(Name = "--eq--")]
+    private static LispObject Eq(
+        [Required] LispObject self,
+        [Required] LispObject other) {
+      if (!(self is StringType)) {
+        throw ExceptionType.ThrowTypeError("self must be a string");
+      }
+      if (other.__class__.RefEq(String)
+          || !other.NotSubtypeOrRedefines(
+            String, t => t._comparison_methods?.__eq__ != null, PropConsts.Eq)) {
+        return BoolType.Create(
+          comparer.Compare(
+            ((StringType)self).Value, ((StringType)other).Value)
+          == 0);
+      }
+      return NotImplemented;
+    }
+
+    [BuiltinFunction(Name = "--le--")]
+    private static LispObject Le(
+        [Required] LispObject self,
+        [Required] LispObject other) {
+      if (!(self is StringType)) {
+        throw ExceptionType.ThrowTypeError("self must be a string");
+      }
+      if (other.__class__.RefEq(String)
+          || !other.NotSubtypeOrRedefines(
+            String, t => t._comparison_methods?.__le__ != null, PropConsts.Le)) {
+        return BoolType.Create(
+          comparer.Compare(
+            ((StringType)self).Value, ((StringType)other).Value)
+          <= 0);
+      }
+      return NotImplemented;
+    }
+
+    [BuiltinFunction(Name = "--lt--")]
+    private static LispObject Lt(
+        [Required] LispObject self,
+        [Required] LispObject other) {
+      if (!(self is StringType)) {
+        throw ExceptionType.ThrowTypeError("self must be a string");
+      }
+      if (other.__class__.RefEq(String)
+          || !other.NotSubtypeOrRedefines(
+            String, t => t._comparison_methods?.__lt__ != null, PropConsts.Lt)) {
+        return BoolType.Create(
+          comparer.Compare(
+            ((StringType)self).Value, ((StringType)other).Value)
+          < 0);
+      }
+      return NotImplemented;
+    }
+
+    [BuiltinFunction(Name = "--gt--")]
+    private static LispObject Gt(
+        [Required] LispObject self,
+        [Required] LispObject other) {
+      if (!(self is StringType)) {
+        throw ExceptionType.ThrowTypeError("self must be a string");
+      }
+      if (other.__class__.RefEq(String)
+          || !other.NotSubtypeOrRedefines(
+            String, t => t._comparison_methods?.__gt__ != null, PropConsts.Gt)) {
+        return BoolType.Create(
+          comparer.Compare(
+            ((StringType)self).Value, ((StringType)other).Value)
+          > 0);
+      }
+      return NotImplemented;
+    }
+
+    [BuiltinFunction(Name = "--ge--")]
+    private static LispObject Ge(
+        [Required] LispObject self,
+        [Required] LispObject other) {
+      if (!(self is StringType)) {
+        throw ExceptionType.ThrowTypeError("self must be a string");
+      }
+      if (other.__class__.RefEq(String)
+          || !other.NotSubtypeOrRedefines(
+            String, t => t._comparison_methods?.__ge__ != null, PropConsts.Ge)) {
+        return BoolType.Create(
+          comparer.Compare(
+            ((StringType)self).Value, ((StringType)other).Value)
+          >= 0);
+      }
+      return NotImplemented;
+    }
+
+    [BuiltinFunction(Name = "--hash--")]
+    private static LispObject Hash([Required] LispObject self) {
+      if (!(self is StringType)) {
+        throw ExceptionType.ThrowTypeError("self must be a number");
+      }
+      return NumberType.Create(((StringType)self).Value.GetHashCode());
+    }
+
     /// <summary>
     /// Get the str value of this string. Which is just itself.
     /// </summary>
@@ -94,6 +204,11 @@ namespace ZStewart.KOSLisp.Types {
       return BoolType.Create(self.Length != 0);
     }
     #endregion
+
+    /// <summary>
+    /// String Comparer used for comparing lisp strings.
+    /// </summary>
+    private static StringComparer comparer => StringComparer.InvariantCultureIgnoreCase;
 
     #region Static Helper Methods
     private static StringType _empty;
