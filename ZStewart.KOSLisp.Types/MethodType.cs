@@ -29,24 +29,32 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    [BuiltinFunction(Name = "--call--")]
     private static LispObject Call (
-        LispObject self,
-        List<LispObject> pargs,
-        Dictionary<SymbolType, LispObject> kwargs) {
+        [Required] LispObject self,
+        [RestCapture] List<LispObject> pargs,
+        [RestKwCapture] Dictionary<SymbolType, LispObject> kwargs) {
       if (self is MethodType) {
         return ((MethodType)self).Call(pargs, kwargs);
       }
       throw ExceptionType.ThrowTypeError("first argument must be a Method");
     }
 
+    [BuiltinFunction(Name = "--get--")]
     private static LispObject Get (
-        LispObject self,
-        LispObject instance,
-        LispObject type) {
+        [Required] LispObject self,
+        [Required] LispObject instance,
+        [Optional(null)] LispObject type) {
       if (!(self is MethodType)) {
         throw ExceptionType.ThrowTypeError("self must be a Method");
       }
       return self;
+    }
+
+    [BuiltinFunction(Name = "--repr--")]
+    private static LispObject Repr([Required] MethodType method) {
+      return StringType.Format(
+        "[method {0} of {1} object]", method.Name, method.receiver.__class__);
     }
     #endregion
 
