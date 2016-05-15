@@ -192,7 +192,8 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
       for (int i = 1; i < split.Length; i++) {
         // This assumes that the getattr function is named getattr.
         result = ConsType.ToLispList(
-          SymbolType.Create("getattr"), result, SymbolType.Create(split[i]));
+          SymbolType.Create("getattr"), result,
+          ConsType.ToLispList(SymbolType.Create("quote"), SymbolType.Create(split[i])));
       }
       return result;
     }
