@@ -112,6 +112,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         AddType(NumberType.Number);
         AddType(StringType.String);
         AddType(SymbolType.Symbol);
+        AddType(MacroType.Macro);
 
         // Type defined in builtins.
         AddType(GenSymType.GenSym);
