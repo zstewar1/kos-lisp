@@ -403,7 +403,7 @@ namespace ZStewart.KOSLisp.Types {
     }
     #endregion SyntaxError
 
-    public static bool Check(ExceptionType ex, LispType type) {
+    public static bool CheckException(ExceptionType ex, LispType type) {
       return LispType.IsInstance(ex, type);
     }
     #endregion

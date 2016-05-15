@@ -24,7 +24,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           try {
             getcar = MappingOperations.GetItem(targetType.__dict__, getcarattr);
           } catch (ExceptionWrapper ex) {
-            if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+            if (!ExceptionType.CheckException(ex, ExceptionType.KeyError)) throw;
           }
           if (getcar != null) {
             return CallableOperations.Call(getcar, IConsType.ToLispTuple(target));
@@ -93,7 +93,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         try {
           list = GetCdr(list);
         } catch (ExceptionWrapper ex) {
-          if (!ExceptionType.Check(ex, ExceptionType.TypeError)) throw;
+          if (!ExceptionType.CheckException(ex, ExceptionType.TypeError)) throw;
 
           var ne = ExceptionType.CreateTypeError("Count list failed: not a proper list.");
           ne.__cause__ = ex;
@@ -111,7 +111,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         Count(list);
         return true;
       } catch (ExceptionWrapper ex) {
-        if (!ExceptionType.Check(ex, ExceptionType.TypeError)) throw;
+        if (!ExceptionType.CheckException(ex, ExceptionType.TypeError)) throw;
       }
       return false;
     }

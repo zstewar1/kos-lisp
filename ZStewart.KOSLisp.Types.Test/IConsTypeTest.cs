@@ -170,7 +170,7 @@ namespace ZStewart.KOSLisp.Types.Test {
       IConsType cons = IConsType.Create(n1, n2);
 
       var ex = Assert.Throws<ExceptionWrapper>(() => ListOperations.SetCar(cons, n3));
-      Assert.True(ExceptionType.Check(ex, ExceptionType.TypeError));
+      Assert.True(ExceptionType.CheckException(ex, ExceptionType.TypeError));
       Assert.AreSame(n1, cons.Car);
       Assert.AreSame(n2, cons.Cdr);
     }
@@ -184,7 +184,7 @@ namespace ZStewart.KOSLisp.Types.Test {
       IConsType cons = IConsType.Create(n1, n2);
 
       var ex = Assert.Throws<ExceptionWrapper>(() => ListOperations.SetCdr(cons, n3));
-      Assert.True(ExceptionType.Check(ex, ExceptionType.TypeError));
+      Assert.True(ExceptionType.CheckException(ex, ExceptionType.TypeError));
       Assert.AreSame(n1, cons.Car);
       Assert.AreSame(n2, cons.Cdr);
     }

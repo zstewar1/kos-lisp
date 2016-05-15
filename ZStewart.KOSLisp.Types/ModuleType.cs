@@ -52,14 +52,14 @@ namespace ZStewart.KOSLisp.Types {
       try {
         return LispObject.GetAttribute(module, symbol);
       } catch (ExceptionWrapper ex) {
-        if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
+        if (!ExceptionType.CheckException(ex, ExceptionType.AttributeError)) throw;
       }
 
       LispObject builtins;
       try {
         builtins = LispObject.GetAttribute(module, PropConsts.Builtins);
       } catch (ExceptionWrapper ex) {
-        if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
+        if (!ExceptionType.CheckException(ex, ExceptionType.AttributeError)) throw;
         throw ExceptionType.ThrowNameError(
             "name \"{0}\" is not defined", symbol);
       }
@@ -68,14 +68,14 @@ namespace ZStewart.KOSLisp.Types {
         try {
           return LispObject.GetAttribute(builtins, symbol);
         } catch (ExceptionWrapper ex) {
-          if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
+          if (!ExceptionType.CheckException(ex, ExceptionType.AttributeError)) throw;
           throw ExceptionType.ThrowNameError("name \"{0}\" is not defined", symbol);
         }
       } else {
         try {
           return MappingOperations.GetItem(builtins, symbol);
         } catch (ExceptionWrapper ex) {
-          if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+          if (!ExceptionType.CheckException(ex, ExceptionType.KeyError)) throw;
           throw ExceptionType.ThrowNameError("name \"{0}\" is not defined", symbol);
         }
       }
@@ -91,7 +91,7 @@ namespace ZStewart.KOSLisp.Types {
         LispObject.SetAttribute(module, symbol, value);
         return NilType.Nil;
       } catch (ExceptionWrapper ex) {
-        if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
+        if (!ExceptionType.CheckException(ex, ExceptionType.AttributeError)) throw;
         throw ExceptionType.ThrowNameError("name \"{0}\" is not defined", symbol);
       }
     }

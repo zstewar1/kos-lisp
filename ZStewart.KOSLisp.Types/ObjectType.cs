@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using static ZStewart.KOSLisp.Types.ExceptionType;
+
 using ZStewart.KOSLisp.Types.Attributes;
 using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
@@ -61,7 +63,7 @@ namespace ZStewart.KOSLisp.Types {
 
       if (ReferenceEquals(type, Object)) {
         if (args.Count > 0) {
-          throw ExceptionType.ThrowTypeError(
+          throw ThrowTypeError(
             "--new-- expected 1 argument, got {0}",
             args.Count + 1);
         }
@@ -69,7 +71,7 @@ namespace ZStewart.KOSLisp.Types {
           __class__ = Object,
         };
       } else if (!IsCorrectInstanceType(type, Object)) {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "object.--new-- cannot be used to instantiate object of type {0}",
           type);
       } else {
@@ -81,7 +83,7 @@ namespace ZStewart.KOSLisp.Types {
             __dict__ = DictType.Create(),
           };
         }
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "--new-- expected 1 argument, got {0}",
           args.Count + 1);
       }
@@ -89,11 +91,11 @@ namespace ZStewart.KOSLisp.Types {
 
     private static LispObject GetAttr(LispObject obj, LispObject attr) {
       if (!LispType.IsInstance(attr, SymbolType.Symbol)) {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "attribute name must be symbol, not \"{0}\"", attr.__class__);
       }
       if (((SymbolType)attr).IsSelfEvaluating) {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "attribute name must not be a self-evaluating symbol");
       }
 
@@ -104,18 +106,16 @@ namespace ZStewart.KOSLisp.Types {
       if (obj.__dict__ != null) {
         try {
           objdictitem = MappingOperations.GetItem(obj.__dict__, attr);
-        } catch (ExceptionWrapper ex) {
-          if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
-        }
+        } catch (ExceptionWrapper ex)
+          when (CheckException(ex, KeyError)) {}
       }
       LispObject classitem = null;
       foreach (var targetType in ListOperations.IterMro(obj)) {
         try {
           classitem = MappingOperations.GetItem(targetType.__dict__, attr);
           break;
-        } catch (ExceptionWrapper ex) {
-          if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
-        }
+        } catch (ExceptionWrapper ex)
+          when (CheckException(ex, KeyError)) {}
       }
 
       // If neither is null, we have to preference data-descriptors.
@@ -139,17 +139,17 @@ namespace ZStewart.KOSLisp.Types {
         return classitem;
       }
 
-      throw ExceptionType.ThrowAttributeError(
+      throw ThrowAttributeError(
         "\"{0}\" object has no attribute {1}", obj.__class__, attr);
     }
 
     private static LispObject SetAttr(LispObject obj, LispObject attr, LispObject value) {
       if (!LispType.IsInstance(attr, SymbolType.Symbol)) {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "attribute name must be symbol, not \"{0}\"", attr.__class__);
       }
       if (((SymbolType)attr).IsSelfEvaluating) {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "attribute name must not be a self-evaluating symbol");
       }
 
@@ -161,9 +161,8 @@ namespace ZStewart.KOSLisp.Types {
         try {
           classitem = MappingOperations.GetItem(targetType.__dict__, attr);
           break;
-        } catch (ExceptionWrapper ex) {
-          if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
-        }
+        } catch (ExceptionWrapper ex)
+          when (CheckException(ex, KeyError)) {}
       }
 
       if (classitem != null) {
@@ -177,7 +176,7 @@ namespace ZStewart.KOSLisp.Types {
         return NilType.Nil;
       }
 
-      throw ExceptionType.ThrowAttributeError(
+      throw ThrowAttributeError(
         "\"{0}\" object has no attribute {1}", obj.__class__, attr);
     }
 
@@ -320,10 +319,10 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispObject attribute,
         [Optional(null)] LispObject fallback = null) {
       if (!LispType.IsInstance(attribute, SymbolType.Symbol)) {
-        throw ExceptionType.ThrowTypeError("attribute name must be symbol");
+        throw ThrowTypeError("attribute name must be symbol");
       }
       if (((SymbolType)attribute).IsSelfEvaluating) {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "attribute name must not be a self-evaluating symbol");
       }
 
@@ -334,21 +333,20 @@ namespace ZStewart.KOSLisp.Types {
           PropConsts.GetAttribute,
           // We should never reach this since everything inherits from object and object
           // provides the final fallback getattribute method.
-          () => ExceptionType.ThrowAttributeError(
+          () => ThrowAttributeError(
             "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
       } catch (ExceptionWrapper ex)
-        when (ExceptionType.Check(ex, ExceptionType.AttributeError)) {}
+        when (CheckException(ex, AttributeError)) {}
 
       try {
         return LookupHelpers.Lookup(
           obj, attribute,
           t => null,
           PropConsts.GetAttr,
-          () => ExceptionType.ThrowAttributeError(
+          () => ThrowAttributeError(
             "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
       } catch (ExceptionWrapper ex)
-        when (fallback != null && ExceptionType.Check(ex, ExceptionType.AttributeError)) {
-      }
+        when (fallback != null && CheckException(ex, AttributeError)) {}
       return fallback;
     }
 
@@ -357,10 +355,10 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispObject attribute,
         [Required] LispObject value) {
       if (!LispType.IsInstance(attribute, SymbolType.Symbol)) {
-        throw ExceptionType.ThrowTypeError("attribute name must be symbol");
+        throw ThrowTypeError("attribute name must be symbol");
       }
       if (((SymbolType)attribute).IsSelfEvaluating) {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "attribute name must not be a self-evaluating symbol");
       }
 
@@ -368,7 +366,7 @@ namespace ZStewart.KOSLisp.Types {
         obj, attribute, value,
         t => t.__setattr__,
         PropConsts.SetAttr,
-        () => ExceptionType.ThrowAttributeError(
+        () => ThrowAttributeError(
           "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
     }
 
@@ -381,9 +379,8 @@ namespace ZStewart.KOSLisp.Types {
       try {
         GetAttribute(obj, attribute);
         return true;
-      } catch (ExceptionWrapper ex) {
-        if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
-      }
+      } catch (ExceptionWrapper ex)
+        when (CheckException(ex, AttributeError)) {}
       return false;
     }
 
@@ -413,19 +410,17 @@ namespace ZStewart.KOSLisp.Types {
         try {
           GetAttribute(type, PropConsts.New);
           def |= NewInitDefined.New;
-        } catch (ExceptionWrapper ex) {
-          if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
-        }
+        } catch (ExceptionWrapper ex)
+          when (CheckException(ex, AttributeError)) {}
 
         try {
           GetAttribute(type, PropConsts.Init);
           def |= NewInitDefined.Init;
-        } catch (ExceptionWrapper ex) {
-          if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
-        }
+        } catch (ExceptionWrapper ex)
+          when (CheckException(ex, AttributeError)) {}
       }
       if (!isSubtype) {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "type {0} is not a subtype of {1}",
           subtype, supertype);
       }
@@ -438,7 +433,7 @@ namespace ZStewart.KOSLisp.Types {
           return type._instance_type == supertype._instance_type;
         }
       }
-      throw ExceptionType.ThrowTypeError("type {0} has no instance type!", subtype);
+      throw ThrowTypeError("type {0} has no instance type!", subtype);
     }
     #endregion Static Helper Methods
 

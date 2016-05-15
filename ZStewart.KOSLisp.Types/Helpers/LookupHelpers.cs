@@ -178,7 +178,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           try {
             fallback = MappingOperations.GetItem(targetType.__dict__, fallbackSymbol);
           } catch (ExceptionWrapper ex) {
-            if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+            if (!ExceptionType.CheckException(ex, ExceptionType.KeyError)) throw;
           }
           if (fallback != null) {
             if (!DescriptorOperations.IsDescriptor(fallback)) {
@@ -201,7 +201,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           MappingOperations.GetItem(targetType.__dict__, fallbackSymbol);
           return true;
         } catch (ExceptionWrapper ex) {
-          if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+          if (!ExceptionType.CheckException(ex, ExceptionType.KeyError)) throw;
         }
       }
       return false;
@@ -237,7 +237,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
             // It does redefine the given operation.
             return true;
           } catch (ExceptionWrapper ex) {
-            if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+            if (!ExceptionType.CheckException(ex, ExceptionType.KeyError)) throw;
           }
         }
       }

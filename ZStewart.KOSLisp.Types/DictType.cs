@@ -66,7 +66,7 @@ namespace ZStewart.KOSLisp.Types {
             key = ListOperations.GetCar(seq[i]);
             value = ListOperations.GetCdr(seq[i]);
           } catch (ExceptionWrapper ex) {
-            if (!ExceptionType.Check(ex, ExceptionType.TypeError)) throw;
+            if (!ExceptionType.CheckException(ex, ExceptionType.TypeError)) throw;
             throw ExceptionType.ThrowTypeError(
               "dictionary update sequence item #{0} was not a cons", i);
           }

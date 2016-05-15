@@ -143,7 +143,7 @@ namespace ZStewart.KOSLisp.Types {
           }
         }
       } catch (ExceptionWrapper ex) {
-        if (!ExceptionType.Check(ex, ExceptionType.TypeError)) throw;
+        if (!ExceptionType.CheckException(ex, ExceptionType.TypeError)) throw;
       }
       StringBuilder val = new StringBuilder("(");
       ConsType value = self;
