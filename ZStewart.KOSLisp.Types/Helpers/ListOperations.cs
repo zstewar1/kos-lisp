@@ -34,7 +34,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         // Advance to CDR before continuing, since we have to force-skip the first
         // element.
         __mro__ = GetCdr(__mro__);
-        if (__mro__ == NilType.Nil) {
+        if (ReferenceEquals(__mro__, NilType.Nil)) {
           throw ExceptionType.ThrowTypeError(
             "cannot get car of \"{0}\" object", target.__class__);
         }
@@ -92,7 +92,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <returns>The number of elements or null if there is an error counting.</returns>
     public static int Count(LispObject list) {
       int cnt = 0;
-      while (list != NilType.Nil) {
+      while (!list.Is(NilType.Nil)) {
         cnt++;
         try {
           list = GetCdr(list);
@@ -131,7 +131,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </param>
     /// <returns>A C# iterator that iterates over the given Lisp List.</returns>
     public static IEnumerable<LispObject> IterList(LispObject list) {
-      while (list != NilType.Nil) {
+      while (!ReferenceEquals(list, NilType.Nil)) {
         yield return GetCar(list);
         list = GetCdr(list);
       }
