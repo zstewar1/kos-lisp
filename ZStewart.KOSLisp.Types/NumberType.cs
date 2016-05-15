@@ -197,17 +197,5 @@ namespace ZStewart.KOSLisp.Types {
 
     private readonly double value;
     public double Value { get { return value; } }
-
-    // Shortcut lookup of equals/hash code for C# users.
-    public override bool Equals(object other) {
-      if (other is NumberType) {
-        return Value == ((NumberType)other).Value;
-      }
-      return false;
-    }
-
-    public override int GetHashCode() {
-      return Value.GetHashCode();
-    }
   }
 }
