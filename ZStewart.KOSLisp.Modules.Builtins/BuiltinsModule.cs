@@ -67,6 +67,10 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         AddBuiltin(toList, "list");
         AddBuiltin(toTuple, "tuple");
 
+        // Attribute retrieval
+        AddBuiltin(typeof(LispObject), "GetAttribute", "getattr");
+        AddBuiltin(typeof(LispObject), "SetAttribute", "setattr");
+
         // Extras defined in this module.
         AddBuiltin(typeof(BuiltinsModule), "Print", "print");
         AddBuiltin(typeof(BuiltinsModule), "Repr", "repr");
