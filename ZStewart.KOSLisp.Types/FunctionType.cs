@@ -36,20 +36,22 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    [BuiltinFunction(Name = "--call--")]
     private static LispObject Call (
-        LispObject self,
-        List<LispObject> pargs,
-        Dictionary<SymbolType, LispObject> kwargs) {
+        [Required] LispObject self,
+        [RestCapture] List<LispObject> pargs,
+        [RestKwCapture] Dictionary<SymbolType, LispObject> kwargs) {
       if (self is FunctionType) {
         return ((FunctionType)self).Call(pargs, kwargs);
       }
       throw ExceptionType.ThrowTypeError("first argument must be a Function");
     }
 
+    [BuiltinFunction(Name = "--get--")]
     private static LispObject Get (
-        LispObject self,
-        LispObject instance,
-        LispObject type) {
+        [Required] LispObject self,
+        [Required] LispObject instance,
+        [Optional(null)] LispObject type) {
       if (!(self is FunctionType)) {
         throw ExceptionType.ThrowTypeError("self must be a Function");
       } else if (ReferenceEquals(instance, NilType.Nil)
@@ -58,6 +60,11 @@ namespace ZStewart.KOSLisp.Types {
       } else {
         return MethodType.Create(((FunctionType)self).Name, instance, self);
       }
+    }
+
+    [BuiltinFunction(Name = "--repr--")]
+    private static LispObject ToRepr([Required] FunctionType self) {
+      return StringType.Format("[function {0}]", self.Name);
     }
     #endregion Static Type Setup
 
