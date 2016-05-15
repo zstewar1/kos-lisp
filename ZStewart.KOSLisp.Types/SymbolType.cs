@@ -71,7 +71,7 @@ namespace ZStewart.KOSLisp.Types {
     private static LispObject ToRepr([Required] SymbolType obj) {
       return StringType.Create(obj.Identifier);
     }
-    #endregion
+    #endregion Static Type Setup
 
     public const string SUBSYMBOL_REGEX = @"[\p{L}@<>=_+!~*^%$/\-\d]";
     public const string SYMBOL_REGEX = SUBSYMBOL_REGEX + "+";
