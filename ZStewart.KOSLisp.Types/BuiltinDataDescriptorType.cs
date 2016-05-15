@@ -66,7 +66,9 @@ namespace ZStewart.KOSLisp.Types {
           propName,
           BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance |
           BindingFlags.FlattenHierarchy),
-        lispName);
+        lispName) {
+        __class__ = BuiltinDataDescriptor,
+      };
     }
     #endregion Static Helper Methods
 
