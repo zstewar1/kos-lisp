@@ -1,4 +1,12 @@
-﻿using System;
+﻿using CallFunc =
+  System.Func<
+    ZStewart.KOSLisp.Types.LispObject,
+    System.Collections.Generic.List<ZStewart.KOSLisp.Types.LispObject>,
+    System.Collections.Generic.Dictionary<
+      ZStewart.KOSLisp.Types.SymbolType, ZStewart.KOSLisp.Types.LispObject>,
+    ZStewart.KOSLisp.Types.LispObject>;
+
+using System;
 using System.Collections.Generic;
 
 using ZStewart.KOSLisp.Types.TypeCategories;

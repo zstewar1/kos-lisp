@@ -132,20 +132,20 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
-    private static LispType _notImplemented;
-    public static LispType NotImplemented {
+    private static LispType _notImplementedException;
+    public static LispType NotImplementedException {
       get {
-        if (_notImplemented != null) return _notImplemented;
+        if (_notImplementedException != null) return _notImplementedException;
 
-        _notImplemented = new LispType {
-          __name__ = "NotImplemented",
+        _notImplementedException = new LispType {
+          __name__ = "NotImplementedException",
         };
-        _notImplemented.__class__ = LispType.Type;
-        _notImplemented.__bases__ = IConsType.ToLispTuple(Exception);
-        _notImplemented.__mro__ = IConsType.ToLispTuple(
-          _notImplemented, Exception, LispObject.Object);
-        LispType.ConfigureType(_notImplemented);
-        return _notImplemented;
+        _notImplementedException.__class__ = LispType.Type;
+        _notImplementedException.__bases__ = IConsType.ToLispTuple(Exception);
+        _notImplementedException.__mro__ = IConsType.ToLispTuple(
+          _notImplementedException, Exception, LispObject.Object);
+        LispType.ConfigureType(_notImplementedException);
+        return _notImplementedException;
       }
     }
 
@@ -351,30 +351,32 @@ namespace ZStewart.KOSLisp.Types {
     }
     #endregion KeyError
 
-    #region NotImplemented
-    public static ExceptionType CreateNotImplemented(
+    #region NotImplementedException
+    public static ExceptionType CreateNotImplementedException(
         ExceptionType cause, string message, params object[] args) {
       return new ExceptionType {
-        __class__ = NotImplemented,
+        __class__ = NotImplementedException,
         messageFormat = message,
         formatArgs = args,
         __cause__ = cause,
       };
     }
 
-    public static ExceptionType CreateNotImplemented(string message, params object[] args) {
-      return CreateNotImplemented(null, message, args);
+    public static ExceptionType CreateNotImplementedException(
+        string message, params object[] args) {
+      return CreateNotImplementedException(null, message, args);
     }
 
-    public static ExceptionWrapper ThrowNotImplemented(
+    public static ExceptionWrapper ThrowNotImplementedException(
         ExceptionType cause, string message, params object[] args) {
-      throw new ExceptionWrapper(CreateNotImplemented(cause, message, args));
+      throw new ExceptionWrapper(CreateNotImplementedException(cause, message, args));
     }
 
-    public static ExceptionWrapper ThrowNotImplemented(string message, params object[] args) {
-      throw new ExceptionWrapper(CreateNotImplemented(message, args));
+    public static ExceptionWrapper ThrowNotImplementedException(
+        string message, params object[] args) {
+      throw new ExceptionWrapper(CreateNotImplementedException(message, args));
     }
-    #endregion NotImplemented
+    #endregion NotImplementedException
 
     #region SyntaxError
     public static ExceptionType CreateSyntaxError(

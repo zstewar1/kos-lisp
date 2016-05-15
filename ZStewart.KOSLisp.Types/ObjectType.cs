@@ -330,32 +330,26 @@ namespace ZStewart.KOSLisp.Types {
       try {
         return LookupHelpers.Lookup(
           obj, attribute,
-          t => t.__getattr__ != null,
           t => t.__getattr__,
           PropConsts.GetAttribute,
           // We should never reach this since everything inherits from object and object
           // provides the final fallback getattribute method.
-          () => ExceptionType.CreateAttributeError(
+          () => ExceptionType.ThrowAttributeError(
             "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
-      } catch (ExceptionWrapper ex) {
-        if (!ExceptionType.Check(ex, ExceptionType.AttributeError)) throw;
-      }
+      } catch (ExceptionWrapper ex)
+        when (ExceptionType.Check(ex, ExceptionType.AttributeError)) {}
 
       try {
         return LookupHelpers.Lookup(
           obj, attribute,
-          t => false,
-          // Since the first predicate is false, this should never be called.
           t => null,
           PropConsts.GetAttr,
-          () => ExceptionType.CreateAttributeError(
+          () => ExceptionType.ThrowAttributeError(
             "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
-      } catch (ExceptionWrapper ex) {
-        if (fallback == null || !ExceptionType.Check(ex, ExceptionType.AttributeError)) {
-          throw;
-        }
-        return fallback;
+      } catch (ExceptionWrapper ex)
+        when (fallback != null && ExceptionType.Check(ex, ExceptionType.AttributeError)) {
       }
+      return fallback;
     }
 
     public static LispObject SetAttribute(
@@ -372,10 +366,9 @@ namespace ZStewart.KOSLisp.Types {
 
       return LookupHelpers.Lookup(
         obj, attribute, value,
-        t => t.__setattr__ != null,
         t => t.__setattr__,
         PropConsts.SetAttr,
-        () => ExceptionType.CreateAttributeError(
+        () => ExceptionType.ThrowAttributeError(
           "\"{0}\" object has no attribute {1}", obj.__class__, attribute));
     }
 

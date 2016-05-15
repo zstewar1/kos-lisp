@@ -9,10 +9,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       try {
         return LookupHelpers.Lookup(
           target, key,
-          t => t._map_methods != null && t._map_methods.__getitem__ != null,
-          t => t._map_methods.__getitem__,
+          t => t._map_methods?.__getitem__,
           PropConsts.GetItem,
-          () => ExceptionType.CreateTypeError(
+          () => ExceptionType.ThrowTypeError(
             "\"{0}\" object is not subscriptable", target.__class__));
       } catch (ExceptionWrapper ex) {
         if (@default == null
@@ -36,10 +35,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         [Required] LispObject value) {
       LookupHelpers.Lookup(
         target, key, value,
-        t => t._map_methods != null && t._map_methods.__setitem__ != null,
-        t => t._map_methods.__setitem__,
+        t => t._map_methods?.__setitem__,
         PropConsts.SetItem,
-        () => ExceptionType.CreateTypeError(
+        () => ExceptionType.ThrowTypeError(
           "subscript of \"{0}\" object is not assignable", target.__class__));
       return value;
     }

@@ -1,4 +1,5 @@
-﻿using static ZStewart.KOSLisp.Types.NotImplementedType;
+﻿using static ZStewart.KOSLisp.Types.ExceptionType;
+using static ZStewart.KOSLisp.Types.NotImplementedType;
 
 using ZStewart.KOSLisp.Types.Attributes;
 
@@ -31,11 +32,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     private static LispObject EqInner(LispObject a, LispObject b) {
       return LookupHelpers.Lookup(
         a, b,
-        t => t._comparison_methods?.__eq__ != null,
-        t => t._comparison_methods.__eq__,
+        t => t._comparison_methods?.__eq__,
         PropConsts.Eq,
-        () => ExceptionType.CreateTypeError(
-          "\"{0}\" object is not comparable", a.__class__));
+        () => NotImplemented);
     }
 
     /// <summary>
@@ -56,19 +55,16 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       if (!res.RefEq(NotImplemented)) {
         return res;
       }
-      throw ExceptionType.ThrowTypeError(
-        "incomparable types: {0}, {1}", target.__class, other.__class__);
+      throw ThrowTypeError(
+        "incomparable types: {0}, {1}", target.__class__, other.__class__);
     }
 
     private static LispObject LeInner(LispObject a, LispObject b) {
       return LookupHelpers.Lookup(
         a, b,
-        t => t._comparison_methods?.__le__ != null,
-        t => t._comparison_methods.__le__,
+        t => t._comparison_methods?.__le__,
         PropConsts.Le,
-        // TODO(zstewar1): Make these have the ability not to throw.
-        () => ExceptionType.CreateTypeError(
-          "\"{0}\" object is not comparable", target.__class__));
+        () => NotImplemented);
     }
 
     /// <summary>
@@ -81,13 +77,24 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     public static LispObject Lt(
         [Required] LispObject target,
         [Required] LispObject other) {
+      var res = LtInner(target, other);
+      if (!res.RefEq(NotImplemented)) {
+        return res;
+      }
+      res = GtInner(other, target);
+      if (!res.RefEq(NotImplemented)) {
+        return res;
+      }
+      throw ThrowTypeError(
+        "incomparable types: {0}, {1}", target.__class__, other.__class__);
+    }
+
+    private static LispObject LtInner(LispObject a, LispObject b) {
       return LookupHelpers.Lookup(
-        target, other,
-        t => t._comparison_methods != null && t._comparison_methods.__lt__ != null,
-        t => t._comparison_methods.__lt__,
-        ltattr,
-        () => ExceptionType.CreateTypeError(
-          "\"{0}\" object is not comparable", target.__class__));
+        a, b,
+        t => t._comparison_methods?.__lt__,
+        PropConsts.Lt,
+        () => NotImplemented);
     }
 
     /// <summary>
@@ -100,13 +107,24 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     public static LispObject Gt(
         [Required] LispObject target,
         [Required] LispObject other) {
+      var res = GtInner(target, other);
+      if (!res.RefEq(NotImplemented)) {
+        return res;
+      }
+      res = LtInner(other, target);
+      if (!res.RefEq(NotImplemented)) {
+        return res;
+      }
+      throw ThrowTypeError(
+        "incomparable types: {0}, {1}", target.__class__, other.__class__);
+    }
+
+    private static LispObject GtInner(LispObject a, LispObject b) {
       return LookupHelpers.Lookup(
-        target, other,
-        t => t._comparison_methods != null && t._comparison_methods.__gt__ != null,
-        t => t._comparison_methods.__gt__,
-        gtattr,
-        () => ExceptionType.CreateTypeError(
-          "\"{0}\" object is not comparable", target.__class__));
+        a, b,
+        t => t._comparison_methods?.__gt__,
+        PropConsts.Gt,
+        () => NotImplemented);
     }
 
     /// <summary>
@@ -119,31 +137,45 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     public static LispObject Ge(
         [Required] LispObject target,
         [Required] LispObject other) {
+      var res = GeInner(target, other);
+      if (!res.RefEq(NotImplemented)) {
+        return res;
+      }
+      res = LeInner(other, target);
+      if (!res.RefEq(NotImplemented)) {
+        return res;
+      }
+      throw ThrowTypeError(
+        "incomparable types: {0}, {1}", target.__class__, other.__class__);
+    }
+
+    private static LispObject GeInner(LispObject a, LispObject b) {
       return LookupHelpers.Lookup(
-        target, other,
-        t => t._comparison_methods != null && t._comparison_methods.__ge__ != null,
-        t => t._comparison_methods.__ge__,
-        geattr,
-        () => ExceptionType.CreateTypeError(
-          "\"{0}\" object is not comparable", target.__class__));
+        a, b,
+        t => t._comparison_methods?.__ge__,
+        PropConsts.Ge,
+        () => NotImplemented);
     }
 
     public static NumberType Hash(
         [Required] LispObject target) {
       var val = LookupHelpers.Lookup(
         target,
-        t => t._comparison_methods != null && t._comparison_methods.__hash__ != null,
-        t => t._comparison_methods.__hash__,
-        hashattr,
-        () => ExceptionType.CreateTypeError(
+        t => t._comparison_methods?.__hash__,
+        PropConsts.Hash,
+        () => ThrowTypeError(
           "\"{0}\" object is not hashable", target.__class__));
+      if (val.RefEq(NotImplemented)) {
+        throw ThrowTypeError(
+          "\"{0}\" object is not hashable", target.__class__);
+      }
       if (!(val is NumberType)) {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "result of hash must be a number, got {0}", val.__class__);
       }
       var num = (NumberType)val;
       if (num.Value % 1 != 0) {
-        throw ExceptionType.ThrowValueError(
+        throw ThrowValueError(
           "result of hash must be an integer, got {0}", num.Value);
       }
       return num;

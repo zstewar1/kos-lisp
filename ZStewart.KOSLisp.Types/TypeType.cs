@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using static ZStewart.KOSLisp.Types.ExceptionType;
+
 using ZStewart.KOSLisp.Types.Attributes;
 using ZStewart.KOSLisp.Types.Helpers;
 
@@ -42,12 +44,12 @@ namespace ZStewart.KOSLisp.Types {
     private static LispObject New(
         [Required] LispObject subtype,
         [RestIgnore] byte ri, [RestKwIgnore] byte rki) {
-      throw ExceptionType.ThrowNotImplemented("can't create new types yet");
+      throw ThrowNotImplementedException("can't create new types yet");
     }
 
     [BuiltinFunction(Name = "--init--")]
     private static LispObject Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {
-      throw ExceptionType.ThrowNotImplemented("can't init new types yet");
+      throw ThrowNotImplementedException("can't init new types yet");
     }
 
 
@@ -56,7 +58,7 @@ namespace ZStewart.KOSLisp.Types {
         List<LispObject> pargs,
         Dictionary<SymbolType, LispObject> kwargs) {
       if (!(instance is LispType)) {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "type must be a lisp type, got {0} object", instance.__class__);
       }
       var type = (LispType)instance;
@@ -138,7 +140,7 @@ namespace ZStewart.KOSLisp.Types {
           break;
         }
         if (head == null) {
-          throw ExceptionType.ThrowTypeError("Cannot create consistent MRO");
+          throw ThrowTypeError("Cannot create consistent MRO");
         }
         linearization.Add(head);
         for (int i = 0; i < mroList.Count; i++) {
@@ -212,8 +214,7 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispObject instance,
         [Required] LispObject type) {
       if (!(type is LispType)) {
-        throw ExceptionType.ThrowTypeError(
-          "Second argument must be a type, got {0}", type);
+        throw ThrowTypeError("Second argument must be a type, got {0}", type);
       }
       foreach (var t in ListOperations.IterMro(instance)) {
         if (ReferenceEquals(t, type)) return true;

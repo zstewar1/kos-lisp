@@ -43,10 +43,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         Dictionary<SymbolType, LispObject> kwargs) {
       return LookupHelpers.Lookup(
         callable, pargs, kwargs,
-        t => t.__call__ != null,
-        t => t.__call__.Invoke,
+        t => t.__call__,
         PropConsts.Call,
-        () => ExceptionType.CreateTypeError(
+        () => ExceptionType.ThrowTypeError(
           "\"{0}\" object is not callable", callable.__class__));
     }
 

@@ -13,19 +13,17 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="target">
     /// The target of the lookup. The object whose MRO should be looped through.
     /// </param>
-    /// <param name="hasBuiltin">
-    /// A delegate that takes the type object and checks if it has the requested operation
-    /// available as a builtin.
-    /// </param>
-    /// <param name="getBuiltin">
-    /// A delegate that takes the type object and returns the requested builtin operation.
+    /// <param name="getBuiltinOrNull">
+    /// A delegate that takes the type object and returns the requested builtin operation,
+    /// or null if the operation is not defined as a builtin.
     /// </param>
     /// <param name="fallbackSymbol">
     /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
     /// returns false
     /// </param>
-    /// <param name="generateError">
-    /// A function wich generate an error to be set when the lookup fails.
+    /// <param name="notFoundResult">
+    /// A function wich provide a final result or generate an error to be set when the
+    /// lookup fails.
     /// </param>
     /// <returns>
     /// The result of the operation on the target object, throught the first builtin or
@@ -34,18 +32,16 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </returns>
     internal static LispObject Lookup(
         LispObject target,
-        Predicate<LispType> hasBuiltin,
-        Func<LispType, Func<LispObject, LispObject>> getBuiltin,
+        Func<LispType, Func<LispObject, LispObject>> getBuiltinOrNull,
         LispObject fallbackSymbol,
-        Func<ExceptionType> generateError) {
+        Func<LispObject> notFoundResult) {
       return InnerLookup(
         target,
-        hasBuiltin,
-        getBuiltin,
+        getBuiltinOrNull,
         builtin => builtin(target),
         fallbackSymbol,
         fallback => CallableOperations.Call(fallback),
-        generateError);
+        notFoundResult);
     }
 
     /// <summary>
@@ -57,19 +53,17 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="arg1">
     /// The first argument (besides target) to the function call.
     /// </param>
-    /// <param name="hasBuiltin">
-    /// A delegate that takes the type object and checks if it has the requested operation
-    /// available as a builtin.
-    /// </param>
-    /// <param name="getBuiltin">
-    /// A delegate that takes the type object and returns the requested builtin operation.
+    /// <param name="getBuiltinOrNull">
+    /// A delegate that takes the type object and returns the requested builtin operation,
+    /// or null if the operation is not defined as a builtin.
     /// </param>
     /// <param name="fallbackSymbol">
     /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
     /// returns false
     /// </param>
-    /// <param name="generateError">
-    /// A function wich generate an error to be set when the lookup fails.
+    /// <param name="notFoundResult">
+    /// A function wich provide a final result or generate an error to be set when the
+    /// lookup fails.
     /// </param>
     /// <returns>
     /// The result of the operation on the target object, throught the first builtin or
@@ -79,18 +73,16 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     internal static LispObject Lookup<TArg1>(
         LispObject target,
         TArg1 arg1,
-        Predicate<LispType> hasBuiltin,
-        Func<LispType, Func<LispObject, TArg1, LispObject>> getBuiltin,
+        Func<LispType, Func<LispObject, TArg1, LispObject>> getBuiltinOrNull,
         LispObject fallbackSymbol,
-        Func<ExceptionType> generateError) {
+        Func<LispObject> notFoundResult) {
       return InnerLookup(
         target,
-        hasBuiltin,
-        getBuiltin,
+        getBuiltinOrNull,
         builtin => builtin(target, arg1),
         fallbackSymbol,
         fallback => CallableOperations.Call(fallback, Arguments.Unmarshal(arg1)),
-        generateError);
+        notFoundResult);
     }
 
     /// <summary>
@@ -105,19 +97,17 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="arg2">
     /// The second argument (besides target) to the function call.
     /// </param>
-    /// <param name="hasBuiltin">
-    /// A delegate that takes the type object and checks if it has the requested operation
-    /// available as a builtin.
-    /// </param>
-    /// <param name="getBuiltin">
-    /// A delegate that takes the type object and returns the requested builtin operation.
+    /// <param name="getBuiltinOrNull">
+    /// A delegate that takes the type object and returns the requested builtin operation,
+    /// or null if the operation is not defined as a builtin.
     /// </param>
     /// <param name="fallbackSymbol">
     /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
     /// returns false
     /// </param>
-    /// <param name="generateError">
-    /// A function wich generate an error to be set when the lookup fails.
+    /// <param name="notFoundResult">
+    /// A function wich provide a final result or generate an error to be set when the
+    /// lookup fails.
     /// </param>
     /// <returns>
     /// The result of the operation on the target object, throught the first builtin or
@@ -128,19 +118,17 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         LispObject target,
         TArg1 arg1,
         TArg2 arg2,
-        Predicate<LispType> hasBuiltin,
-        Func<LispType, Func<LispObject, TArg1, TArg2, LispObject>> getBuiltin,
+        Func<LispType, Func<LispObject, TArg1, TArg2, LispObject>> getBuiltinOrNull,
         LispObject fallbackSymbol,
-        Func<ExceptionType> generateError) {
+        Func<LispObject> notFoundResult) {
       return InnerLookup(
         target,
-        hasBuiltin,
-        getBuiltin,
+        getBuiltinOrNull,
         builtin => builtin(target, arg1, arg2),
         fallbackSymbol,
         fallback => CallableOperations.Call(
           fallback, Arguments.Unmarshal(arg1), Arguments.Unmarshal(arg2)),
-        generateError);
+        notFoundResult);
     }
 
     /// <summary>
@@ -149,12 +137,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="obj">
     /// The object being searched through.
     /// </param>
-    /// <param name="hasBuiltin">
-    /// A delegate that takes the type object and checks if it has the requested operation
-    /// available as a builtin.
-    /// </param>
-    /// <param name="getBuiltin">
-    /// A delegate that takes the type object and returns the requested builtin operation.
+    /// <param name="getBuiltinOrNull">
+    /// A delegate that takes the type object and returns the requested builtin operation,
+    /// or null if no builtin operation is defined.
     /// </param>
     /// <param name="doBuiltinCall">
     /// A delegate that takes the builtin function and calls it with appropriate
@@ -168,26 +153,26 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// Delegate which takes the found fallbakc callable and calls it with appropriate
     /// arguments.
     /// </param>
-    /// <param name="generateError">
-    /// A function which returns a formatted error message for when the approprate
-    /// function is not found as a builtin or dict item in the MRO.
+    /// <param name="notFoundResult">
+    /// A function which retuns a result to be used when the requested method is not found
+    /// on the type. Can also just generate an error message.
     /// </param>
     /// <returns>
     /// The result of the operation on the target object, throught the first builtin or
-    /// fallback method found in the target type's method resolution order, or null (with
-    /// an error set) if no appropriate method is found.
+    /// fallback method found in the target type's method resolution order, or the result
+    /// of notFoundResult if no builtin is found.
     /// </returns>
     private static LispObject InnerLookup<T>(
         LispObject obj,
-        Predicate<LispType> hasBuiltin,
-        Func<LispType, T> getBuiltin,
+        Func<LispType, T> getBuiltinOrNull,
         Func<T, LispObject> doBuiltinCall,
         LispObject fallbackSymbol,
         Func<LispObject, LispObject> doFallbackCall,
-        Func<ExceptionType> generateError) {
+        Func<LispObject> notFoundResult) {
       foreach (var targetType in ListOperations.IterMro(obj)) {
-        if (hasBuiltin(targetType)) {
-          return doBuiltinCall(getBuiltin(targetType));
+        var builtin = getBuiltinOrNull(targetType);
+        if (builtin != null) {
+          return doBuiltinCall(builtin);
         } else {
           LispObject fallback = null;
           try {
@@ -205,7 +190,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           }
         }
       }
-      throw new ExceptionWrapper(generateError());
+      return notFoundResult();
     }
 
     public static bool Query(
