@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using static ZStewart.KOSLisp.Types.NotImplementedType;
+
+using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.Attributes;
+using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
   public class NumberType : LispObject {
@@ -25,10 +29,18 @@ namespace ZStewart.KOSLisp.Types {
         _number = new LispType {
           __name__ = "num",
           _instance_type = typeof(NumberType),
+          _comparison_methods = new ComparisonMethods {
+            __eq__ = Eq,
+            __le__ = Le,
+            __lt__ = Lt,
+            __gt__ = Gt,
+            __ge__ = Ge,
+            __hash__ = Hash,
+          },
         };
         _number.__class__ = LispType.Type;
-        _number.__bases__ = IConsType.ToLispTuple(LispObject.Object);
-        _number.__mro__ = IConsType.ToLispTuple(_number, LispObject.Object);
+        _number.__bases__ = IConsType.ToLispTuple(Object);
+        _number.__mro__ = IConsType.ToLispTuple(_number, Object);
         LispType.ConfigureType(_number);
 
         return _number;
@@ -80,6 +92,89 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    [BuiltinFunction(Name = "--eq--")]
+    private static LispObject Eq(
+        [Required] LispObject self,
+        [Required] LispObject other) {
+      if (!(self is NumberType)) {
+        throw ExceptionType.ThrowTypeError("self must be a number");
+      }
+      if (other.__class__.RefEq(Number)
+          || !other.NotSubtypeOrRedefines(
+            Number, t => t._comparison_methods?.__eq__ != null, PropConsts.Eq)) {
+        return BoolType.Create(((NumberType)self).Value == ((NumberType)other).Value);
+      }
+      return NotImplemented;
+    }
+
+    [BuiltinFunction(Name = "--le--")]
+    private static LispObject Le(
+        [Required] LispObject self,
+        [Required] LispObject other) {
+      if (!(self is NumberType)) {
+        throw ExceptionType.ThrowTypeError("self must be a number");
+      }
+      if (other.__class__.RefEq(Number)
+          || !other.NotSubtypeOrRedefines(
+            Number, t => t._comparison_methods?.__le__ != null, PropConsts.Le)) {
+        return BoolType.Create(((NumberType)self).Value <= ((NumberType)other).Value);
+      }
+      return NotImplemented;
+    }
+
+    [BuiltinFunction(Name = "--lt--")]
+    private static LispObject Lt(
+        [Required] LispObject self,
+        [Required] LispObject other) {
+      if (!(self is NumberType)) {
+        throw ExceptionType.ThrowTypeError("self must be a number");
+      }
+      if (other.__class__.RefEq(Number)
+          || !other.NotSubtypeOrRedefines(
+            Number, t => t._comparison_methods?.__lt__ != null, PropConsts.Lt)) {
+        return BoolType.Create(((NumberType)self).Value < ((NumberType)other).Value);
+      }
+      return NotImplemented;
+    }
+
+    [BuiltinFunction(Name = "--gt--")]
+    private static LispObject Gt(
+        [Required] LispObject self,
+        [Required] LispObject other) {
+      if (!(self is NumberType)) {
+        throw ExceptionType.ThrowTypeError("self must be a number");
+      }
+      if (other.__class__.RefEq(Number)
+          || !other.NotSubtypeOrRedefines(
+            Number, t => t._comparison_methods?.__gt__ != null, PropConsts.Gt)) {
+        return BoolType.Create(((NumberType)self).Value > ((NumberType)other).Value);
+      }
+      return NotImplemented;
+    }
+
+    [BuiltinFunction(Name = "--ge--")]
+    private static LispObject Ge(
+        [Required] LispObject self,
+        [Required] LispObject other) {
+      if (!(self is NumberType)) {
+        throw ExceptionType.ThrowTypeError("self must be a number");
+      }
+      if (other.__class__.RefEq(Number)
+          || !other.NotSubtypeOrRedefines(
+            Number, t => t._comparison_methods?.__ge__ != null, PropConsts.Ge)) {
+        return BoolType.Create(((NumberType)self).Value >= ((NumberType)other).Value);
+      }
+      return NotImplemented;
+    }
+
+    [BuiltinFunction(Name = "--hash--")]
+    private static LispObject Hash([Required] LispObject self) {
+      if (!(self is NumberType)) {
+        throw ExceptionType.ThrowTypeError("self must be a number");
+      }
+      return Create(((NumberType)self).Value.GetHashCode());
+    }
+
     [BuiltinFunction(Name = "--bool--")]
     private static LispObject ToBool([Required] double value) {
       if (value == 0) return BoolType.F;
@@ -102,5 +197,17 @@ namespace ZStewart.KOSLisp.Types {
 
     private readonly double value;
     public double Value { get { return value; } }
+
+    // Shortcut lookup of equals/hash code for C# users.
+    public override bool Equals(object other) {
+      if (other is NumberType) {
+        return Value == ((NumberType)other).Value;
+      }
+      return false;
+    }
+
+    public override int GetHashCode() {
+      return Value.GetHashCode();
+    }
   }
 }

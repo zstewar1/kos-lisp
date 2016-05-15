@@ -1,14 +1,9 @@
-﻿using ZStewart.KOSLisp.Types.Attributes;
+﻿using static ZStewart.KOSLisp.Types.NotImplementedType;
+
+using ZStewart.KOSLisp.Types.Attributes;
 
 namespace ZStewart.KOSLisp.Types.Helpers {
   public static class ComparisonOperations {
-    private static readonly LispObject eqattr = SymbolType.Create("--eq--");
-    private static readonly LispObject leattr = SymbolType.Create("--le--");
-    private static readonly LispObject ltattr = SymbolType.Create("--lt--");
-    private static readonly LispObject gtattr = SymbolType.Create("--gt--");
-    private static readonly LispObject geattr = SymbolType.Create("--ge--");
-    private static readonly LispObject hashattr = SymbolType.Create("--hash--");
-
     /// <summary>
     /// Returns true if the given lisp objects are equal. False otherwise. Null on error.
     /// </summary>
@@ -16,15 +11,31 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Eq(
-        [Required] this LispObject target,
+        [Required] LispObject target,
         [Required] LispObject other) {
+      var res = EqInner(target, other);
+      if (!res.RefEq(NotImplemented)) {
+        return res;
+      }
+      res = EqInner(other, target);
+      if (!res.RefEq(NotImplemented)) {
+        return res;
+      }
+      // if neither supports comparisons to the other, they aren't equal.
+      return BoolType.F;
+    }
+
+    /// <summary>
+    /// Inner helper for repeated equality check inner operation.
+    /// </summary>
+    private static LispObject EqInner(LispObject a, LispObject b) {
       return LookupHelpers.Lookup(
-        target, other,
-        t => t._comparison_methods != null && t._comparison_methods.__eq__ != null,
+        a, b,
+        t => t._comparison_methods?.__eq__ != null,
         t => t._comparison_methods.__eq__,
-        eqattr,
+        PropConsts.Eq,
         () => ExceptionType.CreateTypeError(
-          "\"{0}\" object is not comparable", target.__class__));
+          "\"{0}\" object is not comparable", a.__class__));
     }
 
     /// <summary>
@@ -35,13 +46,27 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Le(
-        [Required] this LispObject target,
+        [Required] LispObject target,
         [Required] LispObject other) {
+      var res = LeInner(target, other);
+      if (!res.RefEq(NotImplemented)) {
+        return res;
+      }
+      res = GeInner(other, target);
+      if (!res.RefEq(NotImplemented)) {
+        return res;
+      }
+      throw ExceptionType.ThrowTypeError(
+        "incomparable types: {0}, {1}", target.__class, other.__class__);
+    }
+
+    private static LispObject LeInner(LispObject a, LispObject b) {
       return LookupHelpers.Lookup(
-        target, other,
-        t => t._comparison_methods != null && t._comparison_methods.__le__ != null,
+        a, b,
+        t => t._comparison_methods?.__le__ != null,
         t => t._comparison_methods.__le__,
-        leattr,
+        PropConsts.Le,
+        // TODO(zstewar1): Make these have the ability not to throw.
         () => ExceptionType.CreateTypeError(
           "\"{0}\" object is not comparable", target.__class__));
     }
@@ -54,7 +79,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Lt(
-        [Required] this LispObject target,
+        [Required] LispObject target,
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
@@ -73,7 +98,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Gt(
-        [Required] this LispObject target,
+        [Required] LispObject target,
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
@@ -92,7 +117,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <param name="other">Second object to compare.</param>
     /// <returns>T/F</returns>
     public static LispObject Ge(
-        [Required] this LispObject target,
+        [Required] LispObject target,
         [Required] LispObject other) {
       return LookupHelpers.Lookup(
         target, other,
@@ -104,7 +129,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     }
 
     public static NumberType Hash(
-        [Required] this LispObject target) {
+        [Required] LispObject target) {
       var val = LookupHelpers.Lookup(
         target,
         t => t._comparison_methods != null && t._comparison_methods.__hash__ != null,
@@ -125,9 +150,16 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     }
 
     public static BoolType Is(
-        [Required] this LispObject first,
+        [Required] LispObject first,
         [Required] LispObject second) {
       return BoolType.Create(ReferenceEquals(first, second));
+    }
+
+    /// <summary>
+    /// A convenience method to more easily check reference equality.
+    /// </summary>
+    public static bool RefEq(this object first, object second) {
+      return ReferenceEquals(first, second);
     }
   }
 }

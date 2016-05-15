@@ -143,6 +143,7 @@ namespace ZStewart.KOSLisp.Types {
 
     public virtual bool IsSelfEvaluating { get { return false; } }
 
+    // Bypass lookups for symbols.
     public override int GetHashCode() {
       return BaseObjectHash();
     }

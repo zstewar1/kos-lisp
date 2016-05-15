@@ -92,6 +92,10 @@ namespace ZStewart.KOSLisp.Types {
         throw ExceptionType.ThrowTypeError(
           "attribute name must be symbol, not \"{0}\"", attr.__class__);
       }
+      if (((SymbolType)attr).IsSelfEvaluating) {
+        throw ExceptionType.ThrowTypeError(
+          "attribute name must not be a self-evaluating symbol");
+      }
 
       // Check if the item is in the object's dictionary, then check the class. If the
       // class item is a data descriptor fetch the value and return it, otherwise return
@@ -143,6 +147,10 @@ namespace ZStewart.KOSLisp.Types {
       if (!LispType.IsInstance(attr, SymbolType.Symbol)) {
         throw ExceptionType.ThrowTypeError(
           "attribute name must be symbol, not \"{0}\"", attr.__class__);
+      }
+      if (((SymbolType)attr).IsSelfEvaluating) {
+        throw ExceptionType.ThrowTypeError(
+          "attribute name must not be a self-evaluating symbol");
       }
 
       // Check if the item is in the class dictionary, then check if the clas item is a
@@ -314,6 +322,10 @@ namespace ZStewart.KOSLisp.Types {
       if (!LispType.IsInstance(attribute, SymbolType.Symbol)) {
         throw ExceptionType.ThrowTypeError("attribute name must be symbol");
       }
+      if (((SymbolType)attribute).IsSelfEvaluating) {
+        throw ExceptionType.ThrowTypeError(
+          "attribute name must not be a self-evaluating symbol");
+      }
 
       try {
         return LookupHelpers.Lookup(
@@ -352,6 +364,10 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispObject value) {
       if (!LispType.IsInstance(attribute, SymbolType.Symbol)) {
         throw ExceptionType.ThrowTypeError("attribute name must be symbol");
+      }
+      if (((SymbolType)attribute).IsSelfEvaluating) {
+        throw ExceptionType.ThrowTypeError(
+          "attribute name must not be a self-evaluating symbol");
       }
 
       return LookupHelpers.Lookup(

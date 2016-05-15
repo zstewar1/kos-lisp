@@ -52,6 +52,33 @@ namespace ZStewart.KOSLisp.Types {
     public static SymbolType Set { get { return SymbolType.Create("--set--"); } }
     #endregion
 
+    #region Comparison Methods
+    /// <summary>
+    /// Method used to check instance equality.
+    /// </summary>
+    public static SymbolType Eq { get { return SymbolType.Create("--eq--"); } }
+    /// <summary>
+    /// Method used to check less than or equal.
+    /// </summary>
+    public static SymbolType Le { get { return SymbolType.Create("--le--"); } }
+    /// <summary>
+    /// Method used to check less than.
+    /// </summary>
+    public static SymbolType Lt { get { return SymbolType.Create("--lt--"); } }
+    /// <summary>
+    /// Method used to check greater than.
+    /// </summary>
+    public static SymbolType Gt { get { return SymbolType.Create("--gt--"); } }
+    /// <summary>
+    /// Method used to check greater than or equal.
+    /// </summary>
+    public static SymbolType Ge { get { return SymbolType.Create("--ge--"); } }
+    /// <summary>
+    /// Method used to get the instance's hash.
+    /// </summary>
+    public static SymbolType Hash { get { return SymbolType.Create("--hash--"); } }
+    #endregion Comparison Methods
+
     /// <summary>
     /// The function used to call the given object as a function.
     /// </summary>
@@ -90,5 +117,7 @@ namespace ZStewart.KOSLisp.Types {
     /// The name of an object, method, module, etc.
     /// </summary>
     public static SymbolType Name { get { return SymbolType.Create("--name--"); } }
+
+
   }
 }

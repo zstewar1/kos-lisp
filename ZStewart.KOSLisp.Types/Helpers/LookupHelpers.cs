@@ -221,5 +221,43 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       }
       return false;
     }
+
+    /// <summary>
+    /// Check if the given type defines its own version of the specified method before
+    /// type in the MRO or is not a subtype of the given type.
+    ///
+    /// The purpose of this method is to allow certain comparison operations and similar
+    /// to check whether the object they are being checked against is one they know how to
+    /// compare to.
+    ///
+    /// For example, object knows how to compare to other objects. But for subtypes of
+    /// object, it doesn't want to replace the subtype's equals method if the subtype is
+    /// on the right side, i.e. for (eq a b) where a is an object and b is an instance of
+    /// a subtype of object, if (type b) defines its own --eq-- method,
+    /// </summary>
+    public static bool NotSubtypeOrRedefines(
+        this LispObject other, LispType type,
+        Predicate<LispType> hasBuiltin,
+        LispObject fallbackSymbol) {
+      foreach(var targetType in ListOperations.IterMro(other)) {
+        if (ReferenceEquals(targetType, type)) {
+          // It is a subtype, and does not redefine the given operation.
+          return false;
+        } else if (hasBuiltin(targetType)) {
+          // It does redefine the given operation.
+          return true;
+        } else {
+          try {
+            MappingOperations.GetItem(targetType.__dict__, fallbackSymbol);
+            // It does redefine the given operation.
+            return true;
+          } catch (ExceptionWrapper ex) {
+            if (!ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+          }
+        }
+      }
+      // It is not a subtype.
+      return true;
+    }
   }
 }

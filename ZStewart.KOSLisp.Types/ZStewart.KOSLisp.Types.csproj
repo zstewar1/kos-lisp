@@ -59,6 +59,7 @@
     <Compile Include="LispObject.cs" />
     <Compile Include="LispType.cs" />
     <Compile Include="NilType.cs" />
+    <Compile Include="NotImplementedType.cs" />
     <Compile Include="BoolType.cs" />
     <Compile Include="ExceptionType.cs" />
     <Compile Include="ExceptionWrapper.cs" />
