@@ -19,11 +19,25 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
     }
 
     /// <summary>
+    /// Add the given method, using the method name as the symbol.
+    /// </summary>
+    private static void AddBuiltin(MethodInfo method) {
+      AddBuiltin(method, method.Name);
+    }
+
+    /// <summary>
     /// Look up the given static method on the given type and ad it to the _builtins
     /// dictionary.
     /// </summary>
     private static void AddBuiltin(Type fromType, string name, string symbol) {
       AddBuiltin(CallMagic.FindMethod(fromType, name), symbol);
+    }
+
+    /// <summary>
+    /// Add the given method, using the name as the symbol.
+    /// </summary>
+    private static void AddBuiltin(Type fromType, string name) {
+      AddBuiltin(fromType, name, name);
     }
 
     /// <summary>
@@ -68,12 +82,21 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         AddBuiltin(toTuple, "tuple");
 
         // Mapping Operations.
-        AddBuiltin(typeof(MappingOperations), "GetItem", "getitem");
-        AddBuiltin(typeof(MappingOperations), "SetItem", "setitem");
+        AddBuiltin(typeof(MappingOperations), "GetItem");
+        AddBuiltin(typeof(MappingOperations), "SetItem");
 
         // Attribute retrieval
         AddBuiltin(typeof(LispObject), "GetAttribute", "getattr");
         AddBuiltin(typeof(LispObject), "SetAttribute", "setattr");
+
+        // Base (binary) comparison operations.
+        AddBuiltin(typeof(ComparisonOperations), "Eq");
+        AddBuiltin(typeof(ComparisonOperations), "Le");
+        AddBuiltin(typeof(ComparisonOperations), "Lt");
+        AddBuiltin(typeof(ComparisonOperations), "Gt");
+        AddBuiltin(typeof(ComparisonOperations), "Ge");
+        AddBuiltin(typeof(ComparisonOperations), "Hash");
+        AddBuiltin(typeof(ComparisonOperations), "Is");
 
         // Extras defined in this module.
         AddBuiltin(typeof(BuiltinsModule), "Print", "print");
