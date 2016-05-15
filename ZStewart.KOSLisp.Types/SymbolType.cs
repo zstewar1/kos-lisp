@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using ZStewart.KOSLisp.Types.Attributes;
+using ZStewart.KOSLisp.Types.Helpers;
 using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
@@ -145,11 +146,20 @@ namespace ZStewart.KOSLisp.Types {
 
     // Bypass lookups for symbols.
     public override int GetHashCode() {
-      return BaseObjectHash();
+      if (__class__.RefEq(Symbol)) {
+        return BaseObjectHash();
+      } else {
+        // LispObject ghc does the correct lookup.
+        return base.GetHashCode();
+      }
     }
 
     public override bool Equals(object other) {
-      return ReferenceEquals(this, other);
+      if (__class__.RefEq(Symbol)) {
+        return ReferenceEquals(this, other);
+      } else {
+        return base.Equals(other);
+      }
     }
   }
 }
