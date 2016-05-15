@@ -4,14 +4,20 @@ namespace ZStewart.KOSLisp.Types.Helpers {
   public static class MappingOperations {
     public static LispObject GetItem(
         [Required] LispObject target,
-        [Required] LispObject key) {
-      return LookupHelpers.Lookup(
-        target, key,
-        t => t._map_methods != null && t._map_methods.__getitem__ != null,
-        t => t._map_methods.__getitem__,
-        PropConsts.GetItem,
-        () => ExceptionType.CreateTypeError(
-          "\"{0}\" object is not subscriptable", target.__class__));
+        [Required] LispObject key,
+        [Optional(null)] LispObject @default = null) {
+      try {
+        return LookupHelpers.Lookup(
+          target, key,
+          t => t._map_methods != null && t._map_methods.__getitem__ != null,
+          t => t._map_methods.__getitem__,
+          PropConsts.GetItem,
+          () => ExceptionType.CreateTypeError(
+            "\"{0}\" object is not subscriptable", target.__class__));
+      } catch (ExceptionWrapper ex) {
+        if (@default == null || !ExceptionType.Check(ex, ExceptionType.KeyError)) throw;
+        return @default;
+      }
     }
 
     public static bool CanGet([Required] LispObject target) {

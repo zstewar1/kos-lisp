@@ -160,6 +160,7 @@ namespace ZStewart.KOSLisp {
           }
         }
       }
+      Console.WriteLine();
     }
   }
 }

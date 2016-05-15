@@ -94,8 +94,8 @@ namespace ZStewart.KOSLisp.Types {
       if (type._instance_type != null) {
         foreach (var method in type._instance_type.GetMethods(
             BindingFlags.NonPublic | BindingFlags.Static)) {
-          var builtin = method.GetCustomAttribute<BuiltinFunctionAttribute>();
-          if (builtin != null) {
+          var builtins = method.GetCustomAttributes<BuiltinFunctionAttribute>();
+          foreach (var builtin in builtins) {
             var name = SymbolType.Create(builtin.Name ?? method.Name);
             MappingOperations.SetItem(
               type.__dict__, name, BuiltinFunctionType.Create(method, name));

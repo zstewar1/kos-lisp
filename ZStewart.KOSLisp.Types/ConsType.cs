@@ -134,10 +134,10 @@ namespace ZStewart.KOSLisp.Types {
           } else if (self.Car == SymbolType.Create("--backquote--")) {
             return StringType.Create(
               "`" + StringType.GetReprString(ListOperations.GetCar(self.Cdr)));
-          } else if (self.Car == SymbolType.Create("--unquote--")) {
+          } else if (self.Car == SymbolType.Create(":--unquote--")) {
             return StringType.Create(
               "," + StringType.GetReprString(ListOperations.GetCar(self.Cdr)));
-          } else if (self.Car == SymbolType.Create("--splice--")) {
+          } else if (self.Car == SymbolType.Create(":--splice--")) {
             return StringType.Create(
               ",@" + StringType.GetReprString(ListOperations.GetCar(self.Cdr)));
           }

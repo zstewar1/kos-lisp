@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
-using ZStewart.KOSLisp.Types.TypeCategories;
 using ZStewart.KOSLisp.Types.Attributes;
+using ZStewart.KOSLisp.Types.Helpers;
+using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
   public class DictType : LispObject {
@@ -25,15 +27,61 @@ namespace ZStewart.KOSLisp.Types {
         _dict.__mro__ = IConsType.ToLispTuple(_dict, LispObject.Object);
         LispType.ConfigureType(_dict);
 
-        LispType.AddStatic(_dict, "IterKeys", "keys");
-        LispType.AddStatic(_dict, "IterValues", "values");
-        LispType.AddStatic(_dict, "Iter", "iter");
-
         return _dict;
       }
     }
 
-    private static LispObject GetItem(LispObject dict, LispObject key) {
+    [BuiltinFunction(Name = "--new--")]
+    private static DictType New(
+        [Required] LispType subtype,
+        [RestIgnore] byte ri, [RestKwIgnore] byte rki) {
+      if (subtype == Dict) {
+        return Create();
+      } else {
+        if (!LispType.IsSubtype(subtype, Dict)) {
+          throw ExceptionType.ThrowTypeError("type must be a subtype of dict");
+        }
+        if (!IsCorrectInstanceType(subtype, Dict)) {
+          throw ExceptionType.ThrowTypeError(
+              "dict.--new-- cannot be used to instantiate object of type {0}",
+              subtype);
+        }
+        return new DictType() {
+          __class__ = Dict,
+          __dict__ = Create(),
+        };
+      }
+    }
+
+    [BuiltinFunction(Name = "--init--")]
+    [BuiltinFunction(Name = "update")]
+    private static void Init(
+        [Required] DictType self,
+        [Optional(null)] List<LispObject> seq,
+        [RestKwCapture] Dictionary<SymbolType, LispObject> kwargs) {
+      if (seq != null) {
+        for(int i = 0; i < seq.Count; i++) {
+          LispObject key, value;
+          try {
+            key = ListOperations.GetCar(seq[i]);
+            value = ListOperations.GetCdr(seq[i]);
+          } catch (ExceptionWrapper ex) {
+            if (!ExceptionType.Check(ex, ExceptionType.TypeError)) throw;
+            throw ExceptionType.ThrowTypeError(
+              "dictionary update sequence item #{0} was not a cons", i);
+          }
+          self.storage[key] = value;
+        }
+      }
+      foreach (var kvp in kwargs) {
+        self.storage[kvp.Key] = kvp.Value;
+      }
+    }
+
+    [BuiltinFunction(Name = "--getitiem--")]
+    private static LispObject GetItem(
+        [Required] LispObject dict,
+        [Required] LispObject key) {
       if (!(dict is DictType)) {
         throw ExceptionType.ThrowTypeError(
           "dict must be a dictionary or dictionary subtype, was {0}", dict.__class__);
@@ -41,7 +89,11 @@ namespace ZStewart.KOSLisp.Types {
       return ((DictType)dict).GetItem(key);
     }
 
-    private static LispObject SetItem(LispObject dict, LispObject key, LispObject value) {
+    [BuiltinFunction(Name = "--setitem--")]
+    private static LispObject SetItem(
+        [Required] LispObject dict,
+        [Required] LispObject key,
+        [Required] LispObject value) {
       if (!(dict is DictType)) {
         throw ExceptionType.ThrowTypeError(
           "dict must be a dictionary or dictionary subtype, was {0}", dict.__class__);
@@ -49,14 +101,45 @@ namespace ZStewart.KOSLisp.Types {
       return ((DictType)dict).SetItem(key, value);
     }
 
+    [BuiltinFunction(Name = "--delitem--")]
+    private static void DelItem(
+        [Required] DictType dict,
+        [Required] LispObject key) {
+      dict.SetItem(key, null);
+    }
+
+    [BuiltinFunction(Name = "--repr--")]
+    private static StringType Repr(
+        [Required] DictType dict) {
+      var sb = new StringBuilder();
+      sb.Append("{");
+      bool first = true;
+      foreach (var kvp in dict.storage) {
+        if (!first) {
+          sb.Append(' ');
+        } else {
+          first = false;
+        }
+        sb.AppendFormat(
+            "({0} . {1})",
+            StringType.GetReprString(kvp.Key),
+            StringType.GetReprString(kvp.Value));
+      }
+      sb.Append("}");
+      return StringType.Create(sb.ToString());
+    }
+
+    [BuiltinFunction(Name = "keys")]
     private static LispObject IterKeys([Required] DictType self) {
       return BuiltinIterType.Create(self.IterKeys());
     }
 
+    [BuiltinFunction(Name = "values")]
     private static LispObject IterValues([Required] DictType self) {
       return BuiltinIterType.Create(self.IterValues());
     }
 
+    [BuiltinFunction(Name = "iter")]
     private static LispObject Iter([Required] DictType self) {
       return BuiltinIterType.Create(self.Iter());
     }

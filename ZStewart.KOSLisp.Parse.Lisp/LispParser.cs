@@ -246,7 +246,7 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
       var orignalUnquoteDepth = unquoteDepth;
       try {
         unquoteDepth++;
-        return ParseWrappingExpression("--unquote--", "unquoted");
+        return ParseWrappingExpression(":--unquote--", "unquoted");
       } finally {
         unquoteDepth = orignalUnquoteDepth;
       }
@@ -266,7 +266,7 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
       var orignalUnquoteDepth = unquoteDepth;
       try {
         unquoteDepth++;
-        return ParseWrappingExpression("--splice--", "spliced");
+        return ParseWrappingExpression(":--splice--", "spliced");
       } finally {
         unquoteDepth = orignalUnquoteDepth;
       }

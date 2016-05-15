@@ -67,6 +67,10 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         AddBuiltin(toList, "list");
         AddBuiltin(toTuple, "tuple");
 
+        // Mapping Operations.
+        AddBuiltin(typeof(MappingOperations), "GetItem", "getitem");
+        AddBuiltin(typeof(MappingOperations), "SetItem", "setitem");
+
         // Attribute retrieval
         AddBuiltin(typeof(LispObject), "GetAttribute", "getattr");
         AddBuiltin(typeof(LispObject), "SetAttribute", "setattr");
