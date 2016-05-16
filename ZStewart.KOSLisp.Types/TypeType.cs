@@ -95,7 +95,7 @@ namespace ZStewart.KOSLisp.Types {
       // inherit them from the parent.
       if (type._instance_type != null) {
         foreach (var method in type._instance_type.GetMethods(
-            BindingFlags.NonPublic | BindingFlags.Static)) {
+            BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)) {
           var builtins = method.GetCustomAttributes<BuiltinFunctionAttribute>();
           foreach (var builtin in builtins) {
             var name = SymbolType.Create(builtin.Name ?? method.Name);

@@ -12,16 +12,6 @@ using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
   public class StringType : LispObject {
-    protected StringType () { }
-
-    /// <summary>
-    /// Since StringType is immutable, it provides a second constructor so that subtypes
-    /// can initialize the value.
-    /// </summary>
-    protected StringType (string value) {
-      this.value = value;
-    }
-
     #region Static Type Setup
     private static LispType _string;
     public static LispType String {
@@ -175,34 +165,6 @@ namespace ZStewart.KOSLisp.Types {
       return NumberType.Create(((StringType)self).Value.GetHashCode());
     }
 
-    /// <summary>
-    /// Get the str value of this string. Which is just itself.
-    /// </summary>
-    [BuiltinFunction(Name = "--str--")]
-    private static LispObject ToStr([Required] StringType str) {
-      return str;
-    }
-
-    /// <summary>
-    /// Create a representation string of this string, with all quotes appearing escaped,
-    /// and the value wrapped in more quotes.
-    /// </summary>
-    [BuiltinFunction(Name = "--repr--")]
-    private static LispObject ToRepr([Required] StringType str) {
-      return Create(
-        new StringBuilder(str.Value)
-          .Replace("\"", "\\\"")
-          .Replace("\n", "\\n")
-          .Replace("\r", "\\r")
-          .Insert(0, "\"")
-          .Append("\"")
-          .ToString());
-    }
-
-    [BuiltinFunction(Name = "--bool--")]
-    private static LispObject ToBool([Required] string self) {
-      return BoolType.Create(self.Length != 0);
-    }
     #endregion
 
     /// <summary>
@@ -269,7 +231,45 @@ namespace ZStewart.KOSLisp.Types {
     }
     #endregion Static Helper Methods
 
-    private readonly string value;
-    public string Value { get { return value; } }
+    public string Value { get; }
+
+    /// <summary>
+    /// Since StringType is immutable, it provides a second constructor so that subtypes
+    /// can initialize the value.
+    /// </summary>
+    protected StringType (string value) {
+      Value = value;
+    }
+
+    #region Non-special Methods
+    /// <summary>
+    /// Get the str value of this string. Which is just itself.
+    /// </summary>
+    [BuiltinFunction(Name = "--str--")]
+    private LispObject ToStr() {
+      return this;
+    }
+
+    /// <summary>
+    /// Create a representation string of this string, with all quotes appearing escaped,
+    /// and the value wrapped in more quotes.
+    /// </summary>
+    [BuiltinFunction(Name = "--repr--")]
+    private LispObject ToRepr() {
+      return Create(
+        new StringBuilder(Value)
+          .Replace("\"", "\\\"")
+          .Replace("\n", "\\n")
+          .Replace("\r", "\\r")
+          .Insert(0, "\"")
+          .Append("\"")
+          .ToString());
+    }
+
+    [BuiltinFunction(Name = "--bool--")]
+    private LispObject ToBool() {
+      return BoolType.Create(Value.Length != 0);
+    }
+    #endregion Non-special Methods
   }
 }
