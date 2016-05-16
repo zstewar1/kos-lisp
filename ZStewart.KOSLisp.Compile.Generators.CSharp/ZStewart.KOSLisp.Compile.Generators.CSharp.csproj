@@ -38,6 +38,7 @@
     <Compile Include="CSharpGeneratorFactory.cs" />
     <Compile Include="CSharpGenerator.cs" />
     <Compile Include="CSharpBindingGenerator.cs" />
+    <Compile Include="CSharpMacroExpander.cs" />
     <Compile Include="CSharpConstGenerator.cs" />
     <Compile Include="CSharpSetVarGenerator.cs" />
     <Compile Include="CSharpFuncCallGenerator.cs" />

@@ -1,7 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+
 using static ZStewart.KOSLisp.Types.ExceptionType;
 
 using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Types;
+using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
   /// <summary>
@@ -26,8 +32,34 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// returns null if macro does not designate a macro.
     /// </summary>
     public LispObject Expand(AstOp macro, LispObject args) {
-      // TODO(zstewar1): Actually expand the macro.
-      return null;
+      // Expand the AST fragment to get an expression that evaluates to the maybe-macro
+      // object.
+      var expression = expressionGenerator.Create(macro).Emit();
+      // Compile the expression to get a function which we can call.
+      var macroExpression = Expression.Lambda<Func<LispObject>>(expression).Compile();
+
+      LispObject maybeMacro;
+      try {
+        // call the expression, catching name and attribute errors. and abortin macro
+        // expansion for these.
+        maybeMacro = macroExpression();
+      } catch (ExceptionWrapper ex)
+        when (CheckException(ex, NameError) || CheckException(ex, AttributeError)) {
+        // if it is a name/attribute error, the result should just be null for "don't
+        // expand". All other errors are propagated because they are unexpected.
+        return null;
+      }
+      // Try to getattribute the macroexpand function. If this passes, we have a macro.
+      // Use a default value of Nil so we don't need to try catch more.
+      var macroExpand = LispObject.GetAttribute(
+        maybeMacro, PropConsts.MacroExpand, NilType.Nil);
+      if (ReferenceEquals(macroExpand, NilType.Nil)) {
+        return null;
+      }
+
+      // We have a macro's macroexpand funciton. Try to call it, and return the result as
+      // the new expression.
+      return CallableOperations.Call(macroExpand, ListOperations.IterList(args).ToList());
     }
   }
 }
