@@ -102,7 +102,7 @@ namespace ZStewart.KOSLisp {
       var mainModule = ModuleType.Create(
         SymbolType.Create(name), BuiltinsModule.Builtins);
       var context = new GlobalContext(mainModule);
-      var semantizer = new DefaultSemanticAnalyzer();
+      var semantizer = BaseSemanticAnalyzer.CreateDefaultAnalyzer();
       var generatorFactory = new CSharpGeneratorFactory();
       for(;;) {
         LispObject parsed;
