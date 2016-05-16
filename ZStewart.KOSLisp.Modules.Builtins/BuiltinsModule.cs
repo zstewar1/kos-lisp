@@ -98,6 +98,10 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         AddBuiltin(typeof(ComparisonOperations), "Hash");
         AddBuiltin(typeof(ComparisonOperations), "Is");
 
+        // Type Checking
+        AddBuiltin(typeof(LispType), "IsInstance");
+        AddBuiltin(typeof(LispType), "IsSubtype");
+
         // Extras defined in this module.
         AddBuiltin(typeof(BuiltinsModule), "Print", "print");
         AddBuiltin(typeof(BuiltinsModule), "Repr", "repr");
@@ -112,6 +116,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         AddType(NumberType.Number);
         AddType(StringType.String);
         AddType(SymbolType.Symbol);
+        AddType(KeywordSymbolType.KeywordSymbol);
         AddType(MacroType.Macro);
 
         // Type defined in builtins.

@@ -251,7 +251,7 @@ namespace ZStewart.KOSLisp.Types {
       } else {
         lambdaBody = Expression.Call(
           typeof(Arguments).GetMethod("Unmarshal", new Type[]{typeof(object)}),
-          innerCall);
+          Expression.Convert(innerCall, typeof(object)));
       }
 
       implementation = Expression.Lambda<MagicFunction>(
