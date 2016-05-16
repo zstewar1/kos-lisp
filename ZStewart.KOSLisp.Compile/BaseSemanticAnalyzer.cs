@@ -8,11 +8,8 @@ using ZStewart.KOSLisp.Types.Helpers;
 
 namespace ZStewart.KOSLisp.Compile {
   /// <summary>
-  /// An ABC for analyzer implementations. Provides a method to covert an expression to
-  /// AST assuming it has been *sufficiently* macroexpanded. This means that the
-  /// expression has been macroexpanded until either it is a constant value or the first
-  /// value in the cons list expression is either a symbol designating a special form or
-  /// an expression that evaluates to a function to call.
+  /// A basic semantic analyzer which uses a set of special forms to convert the input and
+  /// does not really do anything else special.
   /// </summary>
   public abstract class BaseSemanticAnalyzer : SemanticAnalyzer {
     /// <summary>
@@ -26,9 +23,11 @@ namespace ZStewart.KOSLisp.Compile {
     /// <summary>
     /// This is a special form which will be passed the entirety of the expression if the
     /// first item is not a symbol or it is a symbol which does not match any special
-    /// form. The functionForm is expected know what to do with the result.
+    /// form. The functionOrMacroForm is expected know what to do with the result.
+    /// Typically this means checking if the first item is a macro and expanding it, or
+    /// converting it to an AstFuncCall.
     /// </summary>
-    protected readonly SpecialForm functionForm;
+    protected readonly SpecialForm functionOrMacroForm;
 
     /// <summary>
     /// This is the special form which will be passed the entirety of the expression if
@@ -42,10 +41,12 @@ namespace ZStewart.KOSLisp.Compile {
     /// this dictionary, the the rest of the expression (i.e. the exprssion *after* the
     /// name of the form) is passed to the special form.
     /// </param>
-    /// <param name="functionForm">
+    /// <param name="functionOrMacroForm">
     /// This is a special form which will be passed the entirety of the expression if the
     /// first item is not a symbol or it is a symbol which does not match any special
-    /// form. The functionForm is expected know what to do with the result.
+    /// form. The functionOrMacroForm is expected know what to do with the result.
+    /// Typically this means checking if the first item is a macro and expanding it, or
+    /// converting it to an AstFuncCall.
     /// </param>
     /// <param name="primitiveForm">
     /// This is the special form which will be passed the entirety of the expression if
@@ -53,25 +54,17 @@ namespace ZStewart.KOSLisp.Compile {
     /// </param>
     protected BaseSemanticAnalyzer(
         ImmutableDictionary<SymbolType, SpecialForm> namedSpecialForms,
-        SpecialForm functionForm,
+        SpecialForm functionOrMacroForm,
         SpecialForm primitiveForm) {
       this.namedSpecialForms = namedSpecialForms;
-      this.functionForm = functionForm;
+      this.functionOrMacroForm = functionOrMacroForm;
       this.primitiveForm = primitiveForm;
     }
 
     /// <summary>
-    /// Derived classes need to implement this method, as the base class only knows how to
-    /// do special-form expansion. (This may change later).
+    /// Convert from lisp expression representing a syntax tree to the AST.
     /// </summary>
-    public abstract AstOp ToAst(LispObject expression, Context context);
-
-    /// <summary>
-    /// Convert a from to an AST. The form must be "sufficiently" macroexpanded, i.e. if
-    /// it is a cons list, and the first element represents a macro that should be
-    /// expanded, then that macro should have been expanded already.
-    /// </summary>
-    protected AstOp ConvertForm(LispObject form, Context context) {
+    public virtual AstOp ToAst(LispObject form, Context context) {
       // A cons expression is either a special form or a function call now.
       if (form is ConsType) {
         // Get the car: if it's a symbol and the symbol matches a named special form, then
@@ -84,7 +77,8 @@ namespace ZStewart.KOSLisp.Compile {
             return sf.ToAst(rest, context, this);
           }
         }
-        return functionForm.ToAst(form, context, this);
+        // Make functionOrMacroForm handle anything that isn't a constant or special form.
+        return functionOrMacroForm.ToAst(form, context, this);
       } else {
         // All non-cons expressions are to be treated as primitives, which may be
         // variable lookups or constants.
