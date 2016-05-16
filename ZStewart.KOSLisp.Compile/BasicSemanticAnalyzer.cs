@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 
 using ZStewart.KOSLisp.Compile.AST;
@@ -11,7 +12,31 @@ namespace ZStewart.KOSLisp.Compile {
   /// A basic semantic analyzer which uses a set of special forms to convert the input and
   /// does not really do anything else special.
   /// </summary>
-  public abstract class BaseSemanticAnalyzer : SemanticAnalyzer {
+  public class BasicSemanticAnalyzer : SemanticAnalyzer {
+    /// <summary>
+    /// Create a default semantic analyzer with a default set of special forms.
+    /// </summary>
+    /// <param name="macroExpander">
+    /// A macro expander to be used for expanding forms that might be macros or function
+    /// calls.
+    /// </param>
+    public static BasicSemanticAnalyzer CreateDefaultAnalyzer(
+        MacroExpander macroExpander) {
+      return new BasicSemanticAnalyzer(
+        ImmutableDictionary.CreateRange(new Dictionary<SymbolType, SpecialForm> {
+          [SymbolType.Create("quote")] = new QuoteSpecialForm(),
+          [SymbolType.Create("lambda")] = new LambdaSpecialForm(),
+          [SymbolType.Create("defun")] = new DefunSpecialForm(),
+          [SymbolType.Create("defmacro")] =  new DefmacroSpecialForm(),
+          [SymbolType.Create("let")] = new LetSpecialForm(),
+          [SymbolType.Create("progn")] = new PrognSpecialForm(),
+          [SymbolType.Create("if")] = new IfSpecialForm(),
+          [SymbolType.Create("setvar")] = new SetVarSpecialForm(),
+        }),
+        new FuncCallOrMacroSpecialForm(macroExpander),
+        new PrimitiveSpecialForm());
+    }
+
     /// <summary>
     /// Dictionary of symbols to special forms. This is what the compiler looks through
     /// while parsing an expression if the first element is a symbol. If the symbol is in
@@ -52,7 +77,7 @@ namespace ZStewart.KOSLisp.Compile {
     /// This is the special form which will be passed the entirety of the expression if
     /// the expression is not a Cons.
     /// </param>
-    protected BaseSemanticAnalyzer(
+    protected BasicSemanticAnalyzer(
         ImmutableDictionary<SymbolType, SpecialForm> namedSpecialForms,
         SpecialForm functionOrMacroForm,
         SpecialForm primitiveForm) {

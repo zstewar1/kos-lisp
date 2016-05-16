@@ -47,7 +47,7 @@
     <Compile Include="SpecialForms\LambdaSpecialForm.cs" />
     <Compile Include="SpecialForms\DefunSpecialForm.cs" />
     <Compile Include="SpecialForms\DefmacroSpecialForm.cs" />
-    <Compile Include="SpecialForms\FuncCallSpecialForm.cs" />
+    <Compile Include="SpecialForms\FuncCallOrMacroSpecialForm.cs" />
     <Compile Include="SpecialForms\PrimitiveSpecialForm.cs" />
     <Compile Include="SpecialForms\QuoteSpecialForm.cs" />
     <Compile Include="AST\Ast.cs" />
@@ -67,9 +67,9 @@
     <Compile Include="AST\AstLocalBinding.cs" />
     <Compile Include="Generators\GeneratorFactory.cs" />
     <Compile Include="Generators\CodeGenerator.cs" />
+    <Compile Include="MacroExpander.cs" />
     <Compile Include="SemanticAnalyzer.cs" />
-    <Compile Include="BaseSemanticAnalyzer.cs" />
-    <Compile Include="DefaultSemanticAnalyzer.cs" />
+    <Compile Include="BasicSemanticAnalyzer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
