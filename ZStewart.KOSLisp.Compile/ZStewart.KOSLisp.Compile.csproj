@@ -46,6 +46,7 @@
     <Compile Include="SpecialForms\LetSpecialForm.cs" />
     <Compile Include="SpecialForms\LambdaSpecialForm.cs" />
     <Compile Include="SpecialForms\DefunSpecialForm.cs" />
+    <Compile Include="SpecialForms\DefmacroSpecialForm.cs" />
     <Compile Include="SpecialForms\FuncCallSpecialForm.cs" />
     <Compile Include="SpecialForms\PrimitiveSpecialForm.cs" />
     <Compile Include="SpecialForms\QuoteSpecialForm.cs" />
@@ -61,6 +62,7 @@
     <Compile Include="AST\AstLet.cs" />
     <Compile Include="AST\AstLambda.cs" />
     <Compile Include="AST\AstDefun.cs" />
+    <Compile Include="AST\AstDefmacro.cs" />
     <Compile Include="AST\AstGlobalBinding.cs" />
     <Compile Include="AST\AstLocalBinding.cs" />
     <Compile Include="Generators\GeneratorFactory.cs" />

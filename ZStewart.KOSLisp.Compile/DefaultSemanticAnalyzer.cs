@@ -24,6 +24,7 @@ namespace ZStewart.KOSLisp.Compile {
       db.Add(SymbolType.Create("quote"), new QuoteSpecialForm());
       db.Add(SymbolType.Create("lambda"), new LambdaSpecialForm());
       db.Add(SymbolType.Create("defun"), new DefunSpecialForm());
+      db.Add(SymbolType.Create("defmacro"), new DefmacroSpecialForm());
       db.Add(SymbolType.Create("let"), new LetSpecialForm());
       db.Add(SymbolType.Create("progn"), new PrognSpecialForm());
       db.Add(SymbolType.Create("if"), new IfSpecialForm());

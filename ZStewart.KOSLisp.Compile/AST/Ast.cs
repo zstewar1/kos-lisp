@@ -128,6 +128,28 @@ namespace ZStewart.KOSLisp.Compile.AST {
     }
 
     /// <summary>
+    /// Creates a new AstOp that represents defining and binding a macro with the given
+    /// arguments that evaluates the specified forms.
+    /// </summary>
+    public static AstDefmacro Defmacro(
+        AstBinding name,
+        IEnumerable<AstBinding> args,
+        IEnumerable<AstOp> forms) {
+      return new AstDefmacro(name, args, forms);
+    }
+
+    /// <summary>
+    /// Creates a new AstOp that represents defining and binding a macro with the given
+    /// arguments that evaluates the specified forms.
+    /// </summary>
+    public static AstDefmacro Defmacro(
+        AstBinding name,
+        IEnumerable<AstBinding> args,
+        params AstOp[] forms) {
+      return Defmacro(name, args, (IEnumerable<AstOp>)forms);
+    }
+
+    /// <summary>
     /// Create a global which is bound to the given symbol from the given module.
     /// </summary>
     public static AstGlobalBinding BindGlobal(ModuleType module, SymbolType symbol) {

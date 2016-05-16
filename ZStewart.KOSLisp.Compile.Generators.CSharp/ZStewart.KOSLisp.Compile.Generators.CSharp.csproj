@@ -46,6 +46,7 @@
     <Compile Include="CSharpLetGenerator.cs" />
     <Compile Include="CSharpLambdaGenerator.cs" />
     <Compile Include="CSharpDefunGenerator.cs" />
+    <Compile Include="CSharpDefmacroGenerator.cs" />
     <Compile Include="CSharpGlobalBindingGenerator.cs" />
     <Compile Include="CSharpLocalBindingGenerator.cs" />
   </ItemGroup>

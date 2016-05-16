@@ -36,6 +36,8 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
       var type = op.GetType();
       if (type == typeof(AstConst)) {
         return new CSharpConstGenerator((AstConst)op);
+      } else if (type == typeof(AstDefmacro)) {
+        return new CSharpDefmacroGenerator((AstDefmacro)op, GetFactoryForConstructor());
       } else if (type == typeof(AstDefun)) {
         return new CSharpDefunGenerator((AstDefun)op, GetFactoryForConstructor());
       } else if (type == typeof(AstFuncCall)) {
@@ -69,7 +71,6 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         return new CSharpLocalBindingGenerator(
           (AstLocalBinding)binding, GetFactoryForConstructor());
       }
-      // TODO(zstewar1): Binding code here.
 
       throw new InvalidOperationException("Unknown AstBinding type: " + type);
     }
