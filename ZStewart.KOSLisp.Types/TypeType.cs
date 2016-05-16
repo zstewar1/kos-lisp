@@ -43,15 +43,17 @@ namespace ZStewart.KOSLisp.Types {
     [BuiltinFunction(Name = "--new--")]
     private static LispObject New(
         [Required] LispObject subtype,
-        [RestIgnore] byte ri, [RestKwIgnore] byte rki) {
+        [Required] LispObject objectOrTypeName,
+        [Optional(null)] LispObject bases,
+        [Optional(null)] LispObject classDict) {
+      if (ReferenceEquals(subtype, Type) && bases == null && classDict == null) {
+        return objectOrTypeName.__class__;
+      }
       throw ThrowNotImplementedException("can't create new types yet");
     }
 
     [BuiltinFunction(Name = "--init--")]
-    private static LispObject Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {
-      throw ThrowNotImplementedException("can't init new types yet");
-    }
-
+    private static void Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {}
 
     private static LispObject Call(
         LispObject instance,

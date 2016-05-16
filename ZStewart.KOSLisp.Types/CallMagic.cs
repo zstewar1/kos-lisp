@@ -105,7 +105,7 @@ namespace ZStewart.KOSLisp.Types {
               var previous = args[i-1];
               switch(previous.Type) {
                 case ArgumentType.PositionalOrKeyword:
-                  if (attr.IsOptional && previous.IsOptional) {
+                  if (!attr.IsOptional && previous.IsOptional) {
                     throw new ArgumentException(
                       "found required positional argument after optional positional " +
                       "argument");
