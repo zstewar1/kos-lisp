@@ -75,9 +75,6 @@ namespace ZStewart.KOSLisp.Types {
     /// arguments and andles rest/keyword arguments.
     /// </summary>
     public CallMagic(MethodInfo boundMethod) {
-      if (!(boundMethod.IsStatic)) {
-        throw new ArgumentException("boundMethod must be static");
-      }
       if (!(Arguments.IsUnmarshalable(boundMethod.ReturnType)
             || boundMethod.ReturnType == typeof(void))) {
         throw new ArgumentException(
@@ -199,6 +196,15 @@ namespace ZStewart.KOSLisp.Types {
         throw new ArgumentException($"found unannotated parameter {param.Name}");
       }
 
+      if (!boundMethod.IsStatic) {
+        // For non-static methods, add an extra parameter to the argument list for the
+        // self parameter.
+        args.Insert(0, new ArgumentProperties(
+          ArgumentType.PositionalOrKeyword,
+          name: SymbolType.Create("self"),
+          isOptional: false));
+      }
+
       arguments = args.ToImmutable();
 
       // Generate the magic function which this call magic will use to make function
@@ -208,57 +214,33 @@ namespace ZStewart.KOSLisp.Types {
 
       var argumentExpressions = new List<Expression>();
 
-      for (int i = 0; i < arguments.Length; i++) {
-        var arg = arguments[i];
-        switch (arg.Type) {
-          case ArgumentType.PositionalOrKeyword:
-          case ArgumentType.Keyword:
-            {
-              // create an expression which represents marshaling the value in the correct
-              // array index as the given type.
-              Expression exp = Expression.Call(
-                typeof(Arguments), "Marshal", new Type[]{types[i]},
-                Expression.Convert(
-                  Expression.ArrayAccess(argsParam, Expression.Constant(i)),
-                  typeof(LispObject)));
-              if (arg.IsOptional) {
-                // if the argument is optional, first null check it and provide the
-                // default.
-                Expression @default;
-                if (defaults[i] == null) {
-                  @default = Expression.Default(types[i]);
-                } else {
-                  @default = Expression.Constant(defaults[i], types[i]);
-                }
-                exp = Expression.Condition(
-                  Expression.Equal(
-                    Expression.ArrayAccess(argsParam, Expression.Constant(i)),
-                    Expression.Constant(null, typeof(object))),
-                  @default,
-                  exp);
-              }
-              argumentExpressions.Add(exp);
-            }
-            break;
-          case ArgumentType.RestIgnore:
-          case ArgumentType.RestBlock:
-          case ArgumentType.RestKwIgnore:
-            // All ignorers and blocks result in a plain default(T)
-            argumentExpressions.Add(Expression.Default(types[i]));
-            break;
-          case ArgumentType.RestCapture:
-          case ArgumentType.RestKwCapture:
-            argumentExpressions.Add(
-              Expression.Convert(
-                Expression.ArrayAccess(argsParam, Expression.Constant(i)),
-                types[i]));
-            break;
-          default:
-            throw new InvalidOperationException("This should be impossible.");
+      if (boundMethod.IsStatic) {
+        for (int i = 0; i < arguments.Length; i++) {
+          argumentExpressions.Add(
+            GetMarshalerExpression(
+              arguments[i], types[i], defaults[i], Expression.ArrayAccess(
+                argsParam, Expression.Constant(i))));
+        }
+      } else {
+        // For instance methods, skip the instance for now.
+        for (int i = 1; i < arguments.Length; i++) {
+          argumentExpressions.Add(
+            GetMarshalerExpression(
+              arguments[i], types[i-1], defaults[i-1], Expression.ArrayAccess(
+                argsParam, Expression.Constant(i))));
         }
       }
 
-      Expression innerCall = Expression.Call(boundMethod, argumentExpressions);
+      Expression innerCall;
+      if (boundMethod.IsStatic) {
+        innerCall = Expression.Call(boundMethod, argumentExpressions);
+      } else {
+        innerCall = Expression.Call(
+          GetMarshalerExpression(arguments[0], boundMethod.DeclaringType, null,
+            Expression.ArrayAccess(argsParam, Expression.Constant(0))),
+          boundMethod,
+          argumentExpressions);
+      }
 
       Expression lambdaBody;
       if (boundMethod.ReturnType == typeof(void)) {
@@ -280,6 +262,64 @@ namespace ZStewart.KOSLisp.Types {
         ImmutableList.Create(argsParam)).Compile();
     }
 
+    /// <summary>
+    /// Get an expression which marshals the argument with the given properties.
+    /// </summary>
+    /// <param name="arg">
+    /// The argument propertis of the argument being marshaled
+    /// </param>
+    /// <param name="destType">
+    /// The type that the argument must be marshaled to.
+    /// </param>
+    /// <param name="defaultValue">
+    /// A value to set the parameter to if it is optional and not present. If defaultValue
+    /// is null, default(destType) is used, otherwise defaultValue is used.
+    /// </param>
+    /// <param name="aref">
+    /// An expression which evaluates to extract the argument from the parameter array.
+    /// </param>
+    private static Expression GetMarshalerExpression(
+        ArgumentProperties arg, Type destType, object defaultValue,
+        Expression aref) {
+      switch (arg.Type) {
+        case ArgumentType.PositionalOrKeyword:
+        case ArgumentType.Keyword:
+          {
+            // create an expression which represents marshaling the value in the correct
+            // array index as the given type.
+            Expression exp = Expression.Call(
+              typeof(Arguments), "Marshal", new Type[]{destType},
+              Expression.Convert(aref, typeof(LispObject)));
+            if (arg.IsOptional) {
+              // if the argument is optional, first null check it and provide the
+              // default.
+              Expression @default;
+              if (defaultValue == null) {
+                @default = Expression.Default(destType);
+              } else {
+                @default = Expression.Constant(defaultValue, destType);
+              }
+              exp = Expression.Condition(
+                Expression.ReferenceEqual(
+                  aref, Expression.Constant(null, typeof(object))),
+                @default,
+                exp);
+            }
+            return exp;
+          }
+        case ArgumentType.RestIgnore:
+        case ArgumentType.RestBlock:
+        case ArgumentType.RestKwIgnore:
+          // All ignorers and blocks result in a plain default(T)
+          return Expression.Default(destType);
+        case ArgumentType.RestCapture:
+        case ArgumentType.RestKwCapture:
+          // Caputure args just need a type cast.
+          return Expression.Convert(aref, destType);
+        default:
+          throw new InvalidOperationException("This should be impossible.");
+      }
+    }
     private readonly MagicFunction implementation;
 
     private readonly ImmutableArray<ArgumentProperties> arguments;
