@@ -166,6 +166,23 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    private static LispType _importError;
+    public static LispType ImportError {
+      get {
+        if (_importError != null) return _importError;
+
+        _importError = new LispType {
+          __name__ = "ImportError",
+        };
+        _importError.__class__ = LispType.Type;
+        _importError.__bases__ = IConsType.ToLispTuple(Exception);
+        _importError.__mro__ = IConsType.ToLispTuple(
+          _importError, Exception, LispObject.Object);
+        LispType.ConfigureType(_importError);
+        return _importError;
+      }
+    }
+
     private static LispObject ToRepr([Required] ExceptionType self) {
       return StringType.Format("({0} {1})", self.__class__.__name__, self.Message);
     }
@@ -402,6 +419,31 @@ namespace ZStewart.KOSLisp.Types {
       throw new ExceptionWrapper(CreateSyntaxError(message, args));
     }
     #endregion SyntaxError
+
+    #region ImportError
+    public static ExceptionType CreateImportError(
+        ExceptionType cause, string message, params object[] args) {
+      return new ExceptionType {
+        __class__ = ImportError,
+        messageFormat = message,
+        formatArgs = args,
+        __cause__ = cause,
+      };
+    }
+
+    public static ExceptionType CreateImportError(string message, params object[] args) {
+      return CreateImportError(null, message, args);
+    }
+
+    public static ExceptionWrapper ThrowImportError(
+        ExceptionType cause, string message, params object[] args) {
+      throw new ExceptionWrapper(CreateImportError(cause, message, args));
+    }
+
+    public static ExceptionWrapper ThrowImportError(string message, params object[] args) {
+      throw new ExceptionWrapper(CreateImportError(message, args));
+    }
+    #endregion ImportError
 
     public static bool CheckException(ExceptionType ex, LispType type) {
       return LispType.IsInstance(ex, type);
