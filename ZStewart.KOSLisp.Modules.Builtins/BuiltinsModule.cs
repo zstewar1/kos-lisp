@@ -12,118 +12,115 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
     /// Add a BuiltinFunction for the given static method to the _builtins module under
     /// the given name.
     /// </summary>
-    private static void AddBuiltin(MethodInfo method, string symbol) {
+    private static void AddBuiltin(
+        ModuleType builtins, MethodInfo method, string symbol) {
       var sym = SymbolType.Create(symbol);
       MappingOperations.SetItem(
-        _builtins.__dict__, sym, BuiltinFunctionType.Create(method, sym));
+        builtins.__dict__, sym, BuiltinFunctionType.Create(method, sym));
     }
 
     /// <summary>
     /// Add the given method, using the method name as the symbol.
     /// </summary>
-    private static void AddBuiltin(MethodInfo method) {
-      AddBuiltin(method, method.Name);
+    private static void AddBuiltin(ModuleType builtins, MethodInfo method) {
+      AddBuiltin(builtins, method, method.Name);
     }
 
     /// <summary>
     /// Look up the given static method on the given type and ad it to the _builtins
     /// dictionary.
     /// </summary>
-    private static void AddBuiltin(Type fromType, string name, string symbol) {
-      AddBuiltin(CallMagic.FindMethod(fromType, name), symbol);
+    private static void AddBuiltin(
+        ModuleType builtins, Type fromType, string name, string symbol) {
+      AddBuiltin(builtins, CallMagic.FindMethod(fromType, name), symbol);
     }
 
     /// <summary>
     /// Add the given method, using the name as the symbol.
     /// </summary>
-    private static void AddBuiltin(Type fromType, string name) {
-      AddBuiltin(fromType, name, name);
+    private static void AddBuiltin(ModuleType builtins, Type fromType, string name) {
+      AddBuiltin(builtins, fromType, name, name);
     }
 
     /// <summary>
     /// Look up the given static method on the given type and ad it to the _builtins
     /// dictionary.
     /// </summary>
-    private static void AddBuiltin<T>(string name, string symbol) {
-      AddBuiltin(typeof(T), name, symbol);
+    private static void AddBuiltin<T>(ModuleType builtins, string name, string symbol) {
+      AddBuiltin(builtins, typeof(T), name, symbol);
     }
 
     /// <summary>
     /// Add a reference to the given lisp type to the _builtins module.
     /// </summary>
-    private static void AddType(LispType type) {
+    private static void AddType(ModuleType builtins, LispType type) {
       MappingOperations.SetItem(
-        _builtins.__dict__, SymbolType.Create(type.__name__), type);
+        builtins.__dict__, SymbolType.Create(type.__name__), type);
     }
 
-    private static ModuleType _builtins;
     /// <summary>
     /// The builtins module, which should be referenced from other modules to provide
     /// basic functionality.
     /// </summary>
-    public static ModuleType Builtins {
-      get {
-        if (_builtins != null) return _builtins;
+    public static ModuleType LoadModule(ModuleImporter importer) {
+      var builtins = ModuleType.Create(SymbolType.Create("builtins"));
 
-        _builtins = ModuleType.Create(SymbolType.Create("builtins"));
+      // List Operations.
+      AddBuiltin(builtins, typeof(ListOperations), "GetCar", "car");
+      AddBuiltin(builtins, typeof(ListOperations), "GetCdr", "cdr");
+      AddBuiltin(builtins, typeof(ListOperations), "SetCar", "%setcar");
+      AddBuiltin(builtins, typeof(ListOperations), "SetCdr", "%setcdr");
 
-        // List Operations.
-        AddBuiltin(typeof(ListOperations), "GetCar", "car");
-        AddBuiltin(typeof(ListOperations), "GetCdr", "cdr");
-        AddBuiltin(typeof(ListOperations), "SetCar", "%setcar");
-        AddBuiltin(typeof(ListOperations), "SetCdr", "%setcdr");
+      // The convienience list/tuple constructors.
+      var toList = typeof(ConsType).GetMethod(
+          "ToLispList", new Type[] {typeof(IReadOnlyList<LispObject>)});
+      var toTuple = typeof(IConsType).GetMethod(
+          "ToLispTuple", new Type[] {typeof(IReadOnlyList<LispObject>)});
+      AddBuiltin(builtins, toList, "list");
+      AddBuiltin(builtins, toTuple, "tuple");
 
-        // The convienience list/tuple constructors.
-        var toList = typeof(ConsType).GetMethod(
-            "ToLispList", new Type[] {typeof(IReadOnlyList<LispObject>)});
-        var toTuple = typeof(IConsType).GetMethod(
-            "ToLispTuple", new Type[] {typeof(IReadOnlyList<LispObject>)});
-        AddBuiltin(toList, "list");
-        AddBuiltin(toTuple, "tuple");
+      // Mapping Operations.
+      AddBuiltin(builtins, typeof(MappingOperations), "GetItem");
+      AddBuiltin(builtins, typeof(MappingOperations), "SetItem");
 
-        // Mapping Operations.
-        AddBuiltin(typeof(MappingOperations), "GetItem");
-        AddBuiltin(typeof(MappingOperations), "SetItem");
+      // Attribute retrieval
+      AddBuiltin(builtins, typeof(LispObject), "GetAttribute", "getattr");
+      AddBuiltin(builtins, typeof(LispObject), "SetAttribute", "setattr");
 
-        // Attribute retrieval
-        AddBuiltin(typeof(LispObject), "GetAttribute", "getattr");
-        AddBuiltin(typeof(LispObject), "SetAttribute", "setattr");
+      // Base (binary) comparison operations.
+      AddBuiltin(builtins, typeof(ComparisonOperations), "Eq");
+      AddBuiltin(builtins, typeof(ComparisonOperations), "Le");
+      AddBuiltin(builtins, typeof(ComparisonOperations), "Lt");
+      AddBuiltin(builtins, typeof(ComparisonOperations), "Gt");
+      AddBuiltin(builtins, typeof(ComparisonOperations), "Ge");
+      AddBuiltin(builtins, typeof(ComparisonOperations), "Hash");
+      AddBuiltin(builtins, typeof(ComparisonOperations), "Is");
 
-        // Base (binary) comparison operations.
-        AddBuiltin(typeof(ComparisonOperations), "Eq");
-        AddBuiltin(typeof(ComparisonOperations), "Le");
-        AddBuiltin(typeof(ComparisonOperations), "Lt");
-        AddBuiltin(typeof(ComparisonOperations), "Gt");
-        AddBuiltin(typeof(ComparisonOperations), "Ge");
-        AddBuiltin(typeof(ComparisonOperations), "Hash");
-        AddBuiltin(typeof(ComparisonOperations), "Is");
+      // Type Checking
+      AddBuiltin(builtins, typeof(LispType), "IsInstance");
+      AddBuiltin(builtins, typeof(LispType), "IsSubtype");
 
-        // Type Checking
-        AddBuiltin(typeof(LispType), "IsInstance");
-        AddBuiltin(typeof(LispType), "IsSubtype");
+      // Extras defined in this module.
+      AddBuiltin(builtins, typeof(BuiltinsModule), "Print", "print");
+      AddBuiltin(builtins, typeof(BuiltinsModule), "Repr", "repr");
 
-        // Extras defined in this module.
-        AddBuiltin(typeof(BuiltinsModule), "Print", "print");
-        AddBuiltin(typeof(BuiltinsModule), "Repr", "repr");
+      // Types from the Types library.
+      AddType(builtins, LispType.Type);
+      AddType(builtins, LispObject.Object);
+      AddType(builtins, IConsType.ICons);
+      AddType(builtins, ConsType.Cons);
+      AddType(builtins, DictType.Dict);
+      AddType(builtins, BoolType.Bool);
+      AddType(builtins, NumberType.Number);
+      AddType(builtins, StringType.String);
+      AddType(builtins, SymbolType.Symbol);
+      AddType(builtins, KeywordSymbolType.KeywordSymbol);
+      AddType(builtins, MacroType.Macro);
 
-        // Types from the Types library.
-        AddType(LispType.Type);
-        AddType(LispObject.Object);
-        AddType(IConsType.ICons);
-        AddType(ConsType.Cons);
-        AddType(DictType.Dict);
-        AddType(BoolType.Bool);
-        AddType(NumberType.Number);
-        AddType(StringType.String);
-        AddType(SymbolType.Symbol);
-        AddType(KeywordSymbolType.KeywordSymbol);
-        AddType(MacroType.Macro);
+      // Type defined in builtins.
+      AddType(builtins, GenSymType.GenSym);
 
-        // Type defined in builtins.
-        AddType(GenSymType.GenSym);
-
-        return _builtins;
-      }
+      return builtins;
     }
 
     #region Simple Builtin Functions
