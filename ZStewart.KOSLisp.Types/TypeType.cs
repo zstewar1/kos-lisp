@@ -55,10 +55,11 @@ namespace ZStewart.KOSLisp.Types {
     [BuiltinFunction(Name = "--init--")]
     private static void Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {}
 
+    [BuiltinFunction(Name = "--call--")]
     private static LispObject Call(
-        LispObject instance,
-        List<LispObject> pargs,
-        Dictionary<SymbolType, LispObject> kwargs) {
+        [Required] LispObject instance,
+        [RestCapture] List<LispObject> pargs,
+        [RestKwCapture] Dictionary<SymbolType, LispObject> kwargs) {
       if (!(instance is LispType)) {
         throw ThrowTypeError(
           "type must be a lisp type, got {0} object", instance.__class__);
@@ -71,7 +72,15 @@ namespace ZStewart.KOSLisp.Types {
       newPargs.AddRange(pargs);
       var created = LispObject.Call(type, PropConsts.New, newPargs, kwargs);
       if (IsInstance(created, type)) {
-        LispObject.Call(created, PropConsts.Init, pargs, kwargs);
+        // Init requires special lookup so that we call the correct init when the value is
+        // a "type" which defines --init--. Otherwise new types will be initialized with
+        // their own instance initializer.
+        LookupHelpers.Lookup(
+          created, pargs, kwargs,
+          unused => null,
+          PropConsts.Init,
+          () => ThrowAttributeError(
+            "{0} has no method {1}", created.__class__, PropConsts.Init));
       }
       return created;
     }

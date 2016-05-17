@@ -70,10 +70,10 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// fallback method found in the target type's method resolution order, or null (with
     /// an error set) if no appropriate method is found.
     /// </returns>
-    internal static LispObject Lookup<TArg1>(
+    internal static LispObject Lookup(
         LispObject target,
-        TArg1 arg1,
-        Func<LispType, Func<LispObject, TArg1, LispObject>> getBuiltinOrNull,
+        LispObject arg1,
+        Func<LispType, Func<LispObject, LispObject, LispObject>> getBuiltinOrNull,
         LispObject fallbackSymbol,
         Func<LispObject> notFoundResult) {
       return InnerLookup(
@@ -81,7 +81,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         getBuiltinOrNull,
         builtin => builtin(target, arg1),
         fallbackSymbol,
-        fallback => CallableOperations.Call(fallback, Arguments.Unmarshal(arg1)),
+        fallback => CallableOperations.Call(fallback, arg1),
         notFoundResult);
     }
 
@@ -114,11 +114,12 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// fallback method found in the target type's method resolution order, or null (with
     /// an error set) if no appropriate method is found.
     /// </returns>
-    internal static LispObject Lookup<TArg1, TArg2>(
+    internal static LispObject Lookup(
         LispObject target,
-        TArg1 arg1,
-        TArg2 arg2,
-        Func<LispType, Func<LispObject, TArg1, TArg2, LispObject>> getBuiltinOrNull,
+        LispObject arg1,
+        LispObject arg2,
+        Func<LispType, Func<LispObject, LispObject, LispObject, LispObject>>
+          getBuiltinOrNull,
         LispObject fallbackSymbol,
         Func<LispObject> notFoundResult) {
       return InnerLookup(
@@ -126,8 +127,59 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         getBuiltinOrNull,
         builtin => builtin(target, arg1, arg2),
         fallbackSymbol,
-        fallback => CallableOperations.Call(
-          fallback, Arguments.Unmarshal(arg1), Arguments.Unmarshal(arg2)),
+        fallback => CallableOperations.Call(fallback, arg1, arg2),
+        notFoundResult);
+    }
+
+    /// <summary>
+    /// Lookup and perform a call on a function that supports the lisp calling-convention.
+    /// </summary>
+    /// <param name="target">
+    /// The target of the lookup. The object whose MRO should be looped through.
+    /// </param>
+    /// <param name="pargs">
+    /// The positional arguments to the function.
+    /// </param>
+    /// <param name="kwargs">
+    /// The keyword arguments to the function.
+    /// </param>
+    /// <param name="getBuiltinOrNull">
+    /// A delegate that takes the type object and returns the requested builtin operation,
+    /// or null if the operation is not defined as a builtin.
+    /// </param>
+    /// <param name="fallbackSymbol">
+    /// The symbol to lookup the fallback function in the type's dictionary if hasBuiltin
+    /// returns false
+    /// </param>
+    /// <param name="notFoundResult">
+    /// A function wich provide a final result or generate an error to be set when the
+    /// lookup fails.
+    /// </param>
+    /// <returns>
+    /// The result of the operation on the target object, throught the first builtin or
+    /// fallback method found in the target type's method resolution order, or null (with
+    /// an error set) if no appropriate method is found.
+    /// </returns>
+    internal static LispObject Lookup(
+        LispObject target,
+        List<LispObject> pargs,
+        Dictionary<SymbolType, LispObject> kwargs,
+        Func<
+          LispType,
+          Func<
+            LispObject,
+            List<LispObject>,
+            Dictionary<SymbolType, LispObject>,
+            LispObject>>
+          getBuiltinOrNull,
+        LispObject fallbackSymbol,
+        Func<LispObject> notFoundResult) {
+      return InnerLookup(
+        target,
+        getBuiltinOrNull,
+        builtin => builtin(target, pargs, kwargs),
+        fallbackSymbol,
+        fallback => CallableOperations.Call(fallback, pargs, kwargs),
         notFoundResult);
     }
 
