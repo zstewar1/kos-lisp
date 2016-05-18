@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 using static ZStewart.KOSLisp.Types.ExceptionType;
@@ -184,10 +185,29 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
       throw ThrowImportError("no import function found");
     }
 
+    /// <summary>
+    /// Given a known extant lisp file name, load it and import it as a lisp module.
+    /// </summary>
     protected virtual LispObject ImportFromLispFile(
         string filePath, string moduleIdentifier, string moduleName) {
+      var starterModule = GetFreshModule(moduleName);
+      var result = evaluator.Evaluate(starterModule, filePath);
+      importedModules.Add(moduleIdentifier, result);
+      return result;
+    }
 
-      return null;
+    /// <summary>
+    /// Given a valid import function (returns a lisp object, has zero or one parameters,
+    /// the one parameter takes a module importer) call it and return the result.
+    /// </summary>
+    protected virtual LispObject CallImportFunction(MethodInfo method) {
+      Expression callExpression;
+      if (method.GetParameters().Length == 0) {
+        callExpression = Expression.Call(method);
+      } else {
+        callExpression = Expression.Call(method, Expression.Constant(this));
+      }
+      return Expression.Lambda<Func<LispObject>>(callExpression).Compile()();
     }
   }
 }
