@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
+using System.Reflection;
 
 using static ZStewart.KOSLisp.Types.ExceptionType;
 
@@ -39,27 +42,38 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     public CSharpModuleImporter(params string[] libraryPath)
         : this((IEnumerable<string>)libraryPath) {}
 
-    public virtual LispObject Import(string moduleIdentifier) {
+    public virtual LispObject Import(params string[] moduleIdentifier) {
+      if (moduleIdentifier.Length == 0) {
+        throw ThrowImportError("empty module name");
+      }
+
+      var modident = string.Join(".", moduleIdentifier).ToUpperInvariant();
+      var modname = moduleIdentifier[moduleIdentifier.Length - 1];
+
+      if (moduleIdentifier.Any(
+            s => string.IsNullOrEmpty(s)
+              || s.Contains(".")
+              || Path.GetInvalidFileNameChars().Any(c => s.Contains(c)))) {
+        throw ThrowImportError("invalid module name: {0}", modident);
+      }
+
       LispObject module;
-      if (importedModules.TryGetValue(moduleIdentifier, out module)) {
+      if (importedModules.TryGetValue(modident, out module)) {
         return module;
       }
 
-      var modulePath = SplitAndValidate(moduleIdentifier);
-
-      throw ThrowNotImplementedException("");
-    }
-
-    /// <summary>
-    /// Split the module identifier into path components and ensure that it is a valid
-    /// module specification (no consecutive dots, no slashes).
-    /// </summary>
-    protected virtual string[] SplitAndValidate(string moduleIdentifier) {
-      var components = moduleIdentifier.Split(".");
-      if (components.Any(s => string.IsNullOrEmpty(s) || s.Contains("/"))) {
-        throw ThrowImportError("invalid module name: {0}", moduleIdentifier);
+      var dllPath = CaseInsensitivePathSearch(moduleIdentifier, ".dll");
+      if (dllPath != null) {
+        return ImportFromDotNetAssembly(dllPath, modident, modname);
       }
-      return components;
+
+      var lispPath = CaseInsensitivePathSearch(moduleIdentifier, ".kl") ??
+        CaseInsensitivePathSearch(moduleIdentifier, ".lisp");
+      if (lispPath != null) {
+        return ImportFromLispFile(lispPath, modident, modname);
+      }
+
+      throw ThrowImportError("module {0} not found", modident);
     }
 
     /// <summary>
@@ -74,16 +88,18 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     protected virtual string CaseInsensitivePathSearch(
         string[] modulePath, string extension) {
       foreach (var basePath in libraryPath) {
-        for (int i = 0; i < modulePath.Length && basePath != null; i++) {
+        var currentPath = basePath;
+        for (int i = 0; i < modulePath.Length && currentPath != null; i++) {
           if (i < modulePath.Length - 1) {
-            basePath = CaseInsensitiveDirectoryCheck(basePath, modulePath[i]);
+            currentPath = CaseInsensitiveDirectoryCheck(currentPath, modulePath[i]);
           } else {
-            basePath = CaseInsensitiveFileCheck(basePath, modulePath[i] + extension);
+            currentPath = CaseInsensitiveFileCheck(
+              currentPath, modulePath[i] + extension);
           }
         }
         // Found.
-        if (basePath != null) {
-          return basePath;
+        if (currentPath != null) {
+          return currentPath;
         }
       }
       // Couldn't find on any module path.
@@ -98,16 +114,12 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     protected virtual string CaseInsensitiveDirectoryCheck(
         string basePath, string nextComponent) {
       try {
-        foreach (var dirname in Dicrectory.EnumerateDirectories(basePath)) {
+        foreach (var dirname in Directory.EnumerateDirectories(basePath)) {
           if (comparer.Compare(Path.GetFileName(dirname), nextComponent) == 0) {
             return dirname;
           }
         }
-        // catch and ignore certain types of path errors as null return values to mean
-        // that we didn't find the path here.
-      } catch (DirectoryNotFoundException) {
       } catch (IOException) {
-      } catch (PathTooLongException) {
       }
       return null;
     }
@@ -117,7 +129,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// basePath is case sensitive on unix-like systems, nextComponent will always be case
     /// insensitive.
     /// </summary>
-    protected virtual string CaseInsentiveFileCheck(
+    protected virtual string CaseInsensitiveFileCheck(
         string basePath, string nextComponent) {
       try {
         foreach (var filename in Directory.EnumerateFiles(basePath)) {
@@ -125,10 +137,56 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
             return filename;
           }
         }
-      } catch (DirectoryNotFoundException) {
       } catch (IOException) {
-      } catch (PathTooLongException) {
       }
+      return null;
+    }
+
+    /// <summary>
+    /// Given a known extant .net assembly file name, load it and look for a class with
+    /// the appropriately annotated function.
+    /// </summary>
+    protected virtual LispObject ImportFromDotNetAssembly(
+        string assemblyPath, string moduleIdentifier, string moduleName) {
+      var assembly = Assembly.LoadFrom("file://" + assemblyPath);
+
+      foreach (var type in assembly.GetTypes()) {
+        if (type.ContainsGenericParameters) {
+          continue;
+        }
+
+        var method = type.GetMethod(
+          "ImportModule", BindingFlags.NonPublic | BindingFlags.Static);
+
+        if (method.ContainsGenericParameters) {
+          throw ThrowImportError(
+            "importer functions for .net modules cannot be generic");
+        }
+
+        if (!typeof(LispObject).IsAssignableFrom(method.ReturnType)) {
+          throw ThrowImportError(
+            "importer functions for .net modules must return LispObjects, got {0}",
+            method.ReturnType);
+        }
+
+        var parameters = method.GetParameters();
+        if ((parameters.Length == 1
+              && !parameters[0].ParameterType.IsAssignableFrom(typeof(ModuleImporter))) ||
+            parameters.Length > 1) {
+          throw ThrowImportError(
+            "importer functions for .net modules must take either zero parameters or a " +
+            "single parameter for a module importer.");
+        }
+
+        return CallImportFunction(method);
+      }
+
+      throw ThrowImportError("no import function found");
+    }
+
+    protected virtual LispObject ImportFromLispFile(
+        string filePath, string moduleIdentifier, string moduleName) {
+
       return null;
     }
   }

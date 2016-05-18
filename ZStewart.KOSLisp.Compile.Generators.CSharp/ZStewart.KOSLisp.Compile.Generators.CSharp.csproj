@@ -39,6 +39,7 @@
     <Compile Include="CSharpGenerator.cs" />
     <Compile Include="CSharpBindingGenerator.cs" />
     <Compile Include="CSharpMacroExpander.cs" />
+    <Compile Include="CSharpModuleImporter.cs" />
     <Compile Include="CSharpConstGenerator.cs" />
     <Compile Include="CSharpSetVarGenerator.cs" />
     <Compile Include="CSharpFuncCallGenerator.cs" />
@@ -60,6 +61,10 @@
     <ProjectReference Include="..\ZStewart.KOSLisp.Compile\ZStewart.KOSLisp.Compile.csproj">
       <Project>{7CA91E06-D389-453D-9F3E-E9D7DA6199A1}</Project>
       <Name>ZStewart.KOSLisp.Compile</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Modules\ZStewart.KOSLisp.Modules.csproj">
+      <Project>{39638BBB-F272-4627-AAB8-20054B3FBBD5}</Project>
+      <Name>ZStewart.KOSLisp.Modules</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

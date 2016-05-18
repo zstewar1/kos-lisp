@@ -9,6 +9,10 @@ namespace ZStewart.KOSLisp.Modules {
     /// Load the given module and return it. Raise an import error if the module is not
     /// found.
     /// </summary>
-    LispObject Import(string moduleIdentifier);
+    /// <param name="moduleIdentifier">
+    /// An array of module name components to map to the components of the full, dotted
+    /// module name.
+    /// </param>
+    LispObject Import(params string[] moduleIdentifier);
   }
 }
