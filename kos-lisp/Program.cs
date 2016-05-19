@@ -82,16 +82,10 @@ namespace ZStewart.KOSLisp {
       }
     }
 
-    private static IEnumerable<string> TEMPIterFile(TextReader reader) {
-      string line;
-      while ((line = reader.ReadLine()) != null) {
-        yield return line;
-      }
-    }
-
     private static void TEMPRun(
         string name, TextReader reader, bool printAst, bool printExpr, bool alwaysPrint,
         bool interactive = false) {
+      var textSource = new TextReaderSource(name, reader);
       var lexer = LispLexer.CreateDefaultLexer();
       var parser = new LispParser();
 
@@ -102,7 +96,7 @@ namespace ZStewart.KOSLisp {
       var macroExpander = new CSharpMacroExpander(generatorFactory);
       var semantizer = BasicSemanticAnalyzer.CreateDefaultAnalyzer(macroExpander);
 
-      var parseStream = parser.Parse(lexer.Lex(name, TEMPIterFile(reader)))
+      var parseStream = parser.Parse(lexer.Lex(textSource))
         .GetEnumerator();
       for(;;) {
         LispObject parsed;
@@ -120,7 +114,7 @@ namespace ZStewart.KOSLisp {
             "{0}: {1}", ex.LispException.__class__.__name__, ex.LispException.ToString());
           if (interactive) {
             // Reset the parse stream if interactive and the current line failed.
-            parseStream = parser.Parse(lexer.Lex(name, TEMPIterFile(reader)))
+            parseStream = parser.Parse(lexer.Lex(textSource))
               .GetEnumerator();
             continue;
           } else {

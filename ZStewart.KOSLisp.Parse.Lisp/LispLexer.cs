@@ -190,22 +190,17 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
       this.tokenizerConf = tokenizerConf;
     }
 
-    public IEnumerable<Token<LispTokType>> Lex(
-        string sourceName, IEnumerable<string> source) {
-      return new LispLexerStateful(sourceName, source, tokenizerConf);
+    public IEnumerable<Token<LispTokType>> Lex(Source source) {
+      return new LispLexerStateful(source, tokenizerConf);
     }
 
     #region Inner Stateful Class Implementation
     protected class LispLexerStateful : IEnumerable<Token<LispTokType>> {
       public LispLexerStateful(
-          string sourceName, IEnumerable<string> lines,
-          ImmutableDictionary<LispLexMode, LexerModeConfig> tokenizerConf)
-          : this(sourceName, lines.GetEnumerator(), tokenizerConf) {}
-      public LispLexerStateful(
-          string sourceName, IEnumerator<string> lines,
+          Source source,
           ImmutableDictionary<LispLexMode, LexerModeConfig> tokenizerConf) {
-        this.currentLoc = new SourceInformation(sourceName, "", 0, 0);
-        this.lines = lines;
+        this.currentLoc = new SourceInformation(source.Name, "", 0, 0);
+        this.lines = source.GetEnumerator();
         this.tokenizerConf = tokenizerConf;
       }
 

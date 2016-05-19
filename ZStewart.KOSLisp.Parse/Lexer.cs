@@ -16,6 +16,6 @@ namespace ZStewart.KOSLisp.Parse {
     /// give implementor more flexibility rather than requiring something more strict like
     /// a TextReader.
     /// </param>
-    IEnumerable<Token<TokType>> Lex (string sourceName, IEnumerable<string> source);
+    IEnumerable<Token<TokType>> Lex (Source source);
   }
 }
