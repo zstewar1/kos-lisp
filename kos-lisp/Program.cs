@@ -1,5 +1,6 @@
 ﻿using NDesk.Options;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -81,50 +82,51 @@ namespace ZStewart.KOSLisp {
       }
     }
 
+    private static IEnumerable<string> TEMPIterFile(TextReader reader) {
+      string line;
+      while ((line = reader.ReadLine()) != null) {
+        yield return line;
+      }
+    }
+
     private static void TEMPRun(
         string name, TextReader reader, bool printAst, bool printExpr, bool alwaysPrint,
         bool interactive = false) {
-      bool isExpressionFirstLine = true;
-      LispLexer lexer = new LispLexer(name, reader);
-      if (interactive) {
-        lexer.BeforeReadLine += () => {
-          if (isExpressionFirstLine) {
-            isExpressionFirstLine = false;
-            Console.Error.Write("=> ");
-          } else {
-            Console.Error.Write(".. ");
-          }
-        };
-      }
-
-      LispParser parser = new LispParser(lexer);
+      var lexer = LispLexer.CreateDefaultLexer();
+      var parser = new LispParser();
 
       var mainModule = ModuleType.Create(
-        SymbolType.Create(name), BuiltinsModule.Builtins);
+        SymbolType.Create(name), BuiltinsModule.ImportModule());
       var context = new GlobalContext(mainModule);
       var generatorFactory = new CSharpGeneratorFactory();
       var macroExpander = new CSharpMacroExpander(generatorFactory);
       var semantizer = BasicSemanticAnalyzer.CreateDefaultAnalyzer(macroExpander);
+
+      var parseStream = parser.Parse(lexer.Lex(name, TEMPIterFile(reader)))
+        .GetEnumerator();
       for(;;) {
         LispObject parsed;
         try {
-          isExpressionFirstLine = true;
-          parsed = parser.ParseNext();
-          if (printExpr && parsed != null) {
+          if (!parseStream.MoveNext()) {
+            break;
+          }
+          parsed = parseStream.Current;
+          if (printExpr) {
             Console.Error.WriteLine(StringType.GetReprString(parsed));
           }
         } catch (ExceptionWrapper ex) {
-          Console.Error.WriteLine("Exception while paring:");
+          Console.Error.WriteLine("Exception while parsing:");
           Console.Error.WriteLine(
             "{0}: {1}", ex.LispException.__class__.__name__, ex.LispException.ToString());
           if (interactive) {
-            lexer.ClearLine();
+            // Reset the parse stream if interactive and the current line failed.
+            parseStream = parser.Parse(lexer.Lex(name, TEMPIterFile(reader)))
+              .GetEnumerator();
             continue;
           } else {
             break;
           }
         }
-        if (parsed == null) break;
         // The function that represents evaluating the expression.
         Func<LispObject> func;
         try {

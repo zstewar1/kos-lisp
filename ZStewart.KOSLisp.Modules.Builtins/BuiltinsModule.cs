@@ -62,7 +62,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
     /// The builtins module, which should be referenced from other modules to provide
     /// basic functionality.
     /// </summary>
-    public static ModuleType LoadModule(ModuleImporter importer) {
+    public static ModuleType ImportModule() {
       var builtins = ModuleType.Create(SymbolType.Create("builtins"));
 
       // List Operations.

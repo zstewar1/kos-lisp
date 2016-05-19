@@ -134,14 +134,14 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
           .AddMatcher(@",@", RawToken.CreateTokenCreator(LispTokType.SPLICE))
           .AddMatcher(@",", RawToken.CreateTokenCreator(LispTokType.UNQUOTE))
           .AddMatcher("\"", (lexer, rv, s) => {
-            lexer.lexMode = LispLexMode.STRING;
+            lexer.LexMode = LispLexMode.STRING;
+            lexer.SavedSourceInfo = lexer.CurrentLoc;
             lexer.StringCollector.Clear();
             return null;
-          }),
+          })
           .AddMatcher(@";.*", (rv, s) => null)
           .AddMatcher(@"\s", (rv, s) => null)
-          .Build()
-      );
+          .Build());
       db.Add(
         LispLexMode.STRING,
         new LexerModeConfig.Builder()
@@ -167,16 +167,18 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
               return null;
             })
           .AddMatcher("\"", (state, rv, si) => {
+              state.LexMode = LispLexMode.NORMAL;
               return GenericToken.Create(
-                LispTokType.STRING, state.StringCollector.ToString());
+                rv, state.SavedSourceInfo,
+                LispTokType.STRING,
+                state.StringCollector.ToString());
             })
           .AddMatcher(
             @"[^""\\]+", (state, rv, si) => {
               state.StringCollector.Append(rv);
               return null;
-            }))
-          .Build()
-      );
+            })
+          .Build());
       return new LispLexer(db.ToImmutable());
     }
     #endregion Static Setup
@@ -188,38 +190,49 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
       this.tokenizerConf = tokenizerConf;
     }
 
-    IEnumerable<Token<LispTokType>> Lex(IEnumerable<string> source) {
-      return new LispLexerStateful(source, tokenizerConf);
+    public IEnumerable<Token<LispTokType>> Lex(
+        string sourceName, IEnumerable<string> source) {
+      return new LispLexerStateful(sourceName, source, tokenizerConf);
     }
 
     #region Inner Stateful Class Implementation
     protected class LispLexerStateful : IEnumerable<Token<LispTokType>> {
       public LispLexerStateful(
-          IEnumerable<string> lines,
-          ImmutableDictionary<LispLexMode, LexerModeConf> tokenizerConf)
-          : this(lines.GetEnumerator(), tokenizerConf) {}
+          string sourceName, IEnumerable<string> lines,
+          ImmutableDictionary<LispLexMode, LexerModeConfig> tokenizerConf)
+          : this(sourceName, lines.GetEnumerator(), tokenizerConf) {}
       public LispLexerStateful(
-          IEnumerator<string> lines,
-          ImmutableDictionary<LispLexMode, LexerModeConf> tokenizerConf) {
+          string sourceName, IEnumerator<string> lines,
+          ImmutableDictionary<LispLexMode, LexerModeConfig> tokenizerConf) {
+        this.currentLoc = new SourceInformation(sourceName, "", 0, 0);
         this.lines = lines;
         this.tokenizerConf = tokenizerConf;
       }
 
-      public LispLexMode Mode { get; set; } = LispLexMode.NORMAL;
+      #region Lexer Config Accessible
+      // properties that are public in order to let them be accessed from lexer config
+      // action functions.
+      public LispLexMode LexMode { get; set; } = LispLexMode.NORMAL;
 
-      public readonly StringBuilder StringCollector { get; set; } = new StringBuilder();
+      public StringBuilder StringCollector { get; } = new StringBuilder();
+
+      public SourceInformation SavedSourceInfo { get; set; }
+
+      public SourceInformation CurrentLoc => currentLoc;
+      #endregion Lexer Config Accessible
 
       /// <summary>
       /// Line source for the file/whatever we are reading.
       /// </summary>
       private readonly IEnumerator<string> lines;
 
-      private readonly ImmutableDictionary<LispLexMode, LexerModeConf> tokenizerConf;
+      private readonly ImmutableDictionary<LispLexMode, LexerModeConfig> tokenizerConf;
 
       private SourceInformation currentLoc;
 
+
       // Delegate these private variables to the source location structure. This
-      // automatically keeps them in sync so that the currentLoc can be copied out at any
+      // automatically keeps them in sync so that the CurrentLoc can be copied out at any
       // time. Since it's a struct, mutating it is safe and won't affect returned copies.
       private string Line {
         get { return currentLoc.Line; }
@@ -236,25 +249,34 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
         set { currentLoc.ColumnIndex = value; }
       }
 
-      private LexerModeConf LexConf => tokenizerConf[Mode];
+      private LexerModeConfig LexConf => tokenizerConf[LexMode];
 
       public IEnumerator<Token<LispTokType>> GetEnumerator () {
         while (AdvanceNextLine()) {
+          bool matched = false;
           foreach (var matcher in LexConf.Matchers) {
             Match match = matcher.Item1.Match(Line.Substring(ColumnIndex));
             // Try the next matcher if this one fails.
             if (!match.Success) continue;
             ColumnIndex += match.Value.Length;
-            var val = matcher.Item2(this, match.Value, currentLoc);
-            if (val == null) {
-              // null means tha tthe token matched correctly, but did not produce a token
-              // directly. Advance the lexer and try again.
-              break;
+            var val = matcher.Item2(this, match.Value, CurrentLoc);
+            // If not null, we have a token to return. If null, then we matched but the
+            // match doesn't produce a token (which is not an error, it just means to
+            // consume input and try again).
+            if (val != null) {
+              yield return val;
             }
-            yield return val;
+            matched = true;
+            break;
           }
-          throw ThrowSyntaxError("unrecognized input");
+          if (!matched) {
+            throw ThrowSyntaxError("unrecognized input");
+          }
         }
+      }
+
+      System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+        return GetEnumerator();
       }
 
       /// <summary>
