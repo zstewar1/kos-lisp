@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using ZStewart.KOSLisp.Types;
 
 namespace ZStewart.KOSLisp.Parse {
@@ -6,13 +8,20 @@ namespace ZStewart.KOSLisp.Parse {
   /// </summary>
   public interface Parser {
     /// <summary>
-    /// Reads the next whole expression and returns the expression as a lisp object,
-    /// usually a "primitive" type or cons-list of "primitive" types. Here "primitive"
-    /// means, generally, simple types that have a syntactic representation in the lexer,
-    /// e.g. numbers, strings, and symbols.
+    /// Returns an iterator which can be used read expressions from some lisp object
+    /// source.
     ///
-    /// Returns null when the end-of-input has been reached.
+    /// The returned Enumerable should be lazy and only read from the source when MoveNext
+    /// is called.
     /// </summary>
-    LispObject ParseNext();
+    /// <param name="source">
+    /// An iterator over the lines of the file to read. This is an enumerable of string to
+    /// give implementor more flexibility rather than requiring something more strict like
+    /// a TextReader.
+    /// </param>
+    /// <returns>
+    /// A lazy iterator which reads lisp objects from the source as needed.
+    /// </returns>
+    IEnumerable<LispObject> Parse(IEnumerable<string> source);
   }
 }
