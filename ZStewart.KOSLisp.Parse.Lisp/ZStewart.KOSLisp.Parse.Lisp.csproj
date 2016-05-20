@@ -37,7 +37,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LispLexer.cs" />
     <Compile Include="LispParser.cs" />
-    <Compile Include="LispLexMode.cs" />
     <Compile Include="LispTokType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

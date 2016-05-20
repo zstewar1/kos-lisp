@@ -10,16 +10,11 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
   /// <summary>
   /// Parses a stream of lisp-tokens into s-expressions.
   /// </summary>
-  public class LispParser : Parser {
+  public class LispParser : Parser<LispTokType> {
+    public LispParser() {}
 
-    private readonly Lexer<LispTokType> lexer;
-
-    public LispParser(Lexer<LispTokType> lexer) {
-      this.lexer = lexer;
-    }
-
-    public IEnumerable<LispObject> Parse(IEnumerable<string> source) {
-      return new LispParserStateful(lexer.Lex(source));
+    public IEnumerable<LispObject> Parse(IEnumerable<Token<LispTokType>> source) {
+      return new LispParserStateful(source);
     }
 
     /// <summary>
@@ -30,7 +25,7 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
       /// <summary>
       /// The lexer which tokens are to be read from.
       /// </summary>
-      private readonly IEnumerator<LispTokType> lexer;
+      private readonly IEnumerator<Token<LispTokType>> lexer;
 
       /// <summary>
       /// For convenience lexer.Current is available as tok.
@@ -55,17 +50,21 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
       /// </summary>
       private int unquoteDepth = 0;
 
-      internal LispParserStateful(IEnumerable<LispTokType> lexer)
+      internal LispParserStateful(IEnumerable<Token<LispTokType>> lexer)
           : this(lexer.GetEnumerator()) {}
 
-      internal LispParserStateful(IEnumerator<LispTokType> lexer) {
+      internal LispParserStateful(IEnumerator<Token<LispTokType>> lexer) {
         this.lexer = lexer;
       }
 
-      IEnumerator<LispObject> GetEnumerator() {
+      public IEnumerator<LispObject> GetEnumerator() {
         while (lexer.MoveNext()) {
           yield return ParseExpression();
         }
+      }
+
+      System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+        return GetEnumerator();
       }
 
       /// <summary>
@@ -87,8 +86,8 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
         switch (tok.TokenType) {
           case LispTokType.OPEN_PAREN:
             return ParseList();
-          case LispTokType.STARTSTRING:
-            return ParseString();
+          case LispTokType.STRING:
+            return StringType.Create((tok as GenericToken<LispTokType, string>).Value);
           case LispTokType.IDENTIFIER:
             return ParseIdentifier();
           case LispTokType.NUMBER:
@@ -134,7 +133,7 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
             return list;
           } else if (tok.TokenType == LispTokType.DOT) {
             if (ReferenceEquals(list, NilType.Nil)) {
-              throw hrowSyntaxError("list cannot start with dot");
+              throw ThrowSyntaxError("list cannot start with dot");
             } else if (dot || dotDone) {
               throw ThrowSyntaxError(
                 "cannot have more than one dot in a list");
@@ -161,23 +160,6 @@ namespace ZStewart.KOSLisp.Parse.Lisp {
               ListOperations.SetCdr(end, newEnd);
               end = newEnd;
             }
-          }
-        }
-      }
-
-      LispObject ParseString() {
-        var builder = new StringBuilder();
-        while (true) {
-          if (!lexer.MoveNext()) {
-            throw ThrowSyntaxError(
-              "unexpected end of input while reading string.");
-          } else if (tok.TokenType == LispTokType.ENDSTRING) {
-            return StringType.Create(builder.ToString());
-          } else if (tok.TokenType == LispTokType.CHARACTER) {
-            builder.Append((tok as GenericToken<LispTokType, char>).Value);
-          } else {
-            throw ThrowSyntaxError(
-              "unexpected token type {0} while parsing string.", tok.TokenType);
           }
         }
       }

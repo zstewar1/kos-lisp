@@ -7,6 +7,7 @@
     // Symbols
     IDENTIFIER,
     NUMBER,
+    STRING,
 
     // Syntax
     DOT,
@@ -16,10 +17,5 @@
     BACKQUOTE,
     SPLICE,
     UNQUOTE,
-    STARTSTRING,
-
-    // String Mode
-    ENDSTRING,
-    CHARACTER,
   }
 }

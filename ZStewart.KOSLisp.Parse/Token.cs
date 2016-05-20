@@ -74,7 +74,7 @@ namespace ZStewart.KOSLisp.Parse {
     /// <param name="type">The token type for tokens created with this creator.</param>
     /// <returns>A function that creates tokens with the given token type.</returns>
     public static TokenCreator<TokType> CreateTokenCreator(TokType type) {
-      return delegate (string rv, SourceInformation si) {
+      return (string rv, SourceInformation si) => {
         return Create(rv, si, type);
       };
     }
@@ -168,7 +168,7 @@ namespace ZStewart.KOSLisp.Parse {
     /// </returns>
     public static TokenCreator<TokType> CreateTokenCreator (
         TokType type, Func<string, T> parseFunc) {
-      return delegate(string rv, SourceInformation si) {
+      return (string rv, SourceInformation si) => {
         return Create(rv, si, type, parseFunc(rv));
       };
     }
