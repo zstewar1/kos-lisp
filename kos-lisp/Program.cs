@@ -74,93 +74,64 @@ namespace ZStewart.KOSLisp {
           extra.Count == 2 ? "" : "s",
           String.Join(" ", extra.GetRange(1, extra.Count - 1)));
       } else if (extra.Count == 1) {
+        RunFile(extra[0], printAst, printExpr, alwaysPrint);
         using (var file = File.OpenText(extra[0])) {
           TEMPRun(new TextReaderSource(extra[0], file), printAst, printExpr, alwaysPrint);
         }
       } else {
-        var textSource = new GetlineSource("koslisp");
-        var nextPrompt = "=> ";
-        textSource.OnBeforeReadLine += () => {
-          textSource.Prompt = nextPrompt;
-          nextPrompt = ".. ";
-        };
-        TEMPRun(textSource, printAst, printExpr, alwaysPrint, true, () => nextPrompt = "=> ");
+        RunInteractive(printAst, printExpr, alwaysPrint);
       }
     }
 
-    private static void TEMPRun(
-        Source textSource, bool printAst, bool printExpr, bool alwaysPrint,
-        bool interactive = false, Action expressionComplete = null) {
-      var lexer = LispLexer.CreateDefaultLexer();
-      var parser = new LispParser();
+    private static void RunFile(
+        string filename, bool printAst, bool printExpr, bool alwaysPrint) {
+      var eval = new CSharpEvaluator(".");
 
-      var mainModule = ModuleType.Create(
-        SymbolType.Create(textSource.Name), BuiltinsModule.ImportModule());
-      var context = new GlobalContext(mainModule);
-      var generatorFactory = new CSharpGeneratorFactory();
-      var macroExpander = new CSharpMacroExpander(generatorFactory);
-      var semantizer = BasicSemanticAnalyzer.CreateDefaultAnalyzer(macroExpander);
+      using (var file = File.OpenText(filename)) {
+      var source = new TextReaderSource(file, filename);
 
-      var parseStream = parser.Parse(lexer.Lex(textSource))
-        .GetEnumerator();
-      for(;;) {
-        LispObject parsed;
+      var module = eval.GetFreshModule("--main--", "--main--");
+
+      eval.Evaluate(module, source);
+    }
+
+    private static void RunInteractive(bool printAst, bool printExpr, bool alwaysPrint) {
+      // TODO(zstewar1): handle printing.
+      var eval = new CSharpEvaluator(".");
+
+      var source = new GetlineSource("koslisp");
+      var nextPrompt = "=> ";
+      source.OnBeforeReadLine += () => {
+        source.Prompt = nextPrompt;
+        nextPrompt = ".. ";
+      };
+
+      var module = eval.GetFreshModule("--main--", "--main--");
+
+      IEnumerator<LispObject> parseStream;
+      Context context;
+      eval.StartParse(module, source, out parseStream, out context);
+
+      for (;;) {
+        LispObject result;
         try {
-          if (!parseStream.MoveNext()) {
-            break;
-          }
-          expressionComplete?.Invoke();
-          parsed = parseStream.Current;
-          if (printExpr) {
-            Console.Error.WriteLine(StringType.GetReprString(parsed));
-          }
-        } catch (ExceptionWrapper ex) {
-          Console.Error.WriteLine("Exception while parsing:");
-          Console.Error.WriteLine(
-            "{0}: {1}", ex.LispException.__class__.__name__, ex.LispException.ToString());
-          if (interactive) {
-            // Reset the parse stream if interactive and the current line failed.
-            parseStream = parser.Parse(lexer.Lex(textSource))
-              .GetEnumerator();
-            continue;
+          if (Evaluate1(parseStream, context, out result)) {
+            if (alwaysPrint || !ReferenceEquals(result, NilType.Nil)) {
+              Console.WriteLine(StringType.GetReprString(result));
+            }
+            // Reset prompt for next time a line is read.
           } else {
             break;
           }
-        }
-        // The function that represents evaluating the expression.
-        Func<LispObject> func;
-        try {
-          var ast = semantizer.ToAst(parsed, context);
-          if (printAst) {
-            Console.Error.WriteLine(ast);
-          }
-          var generator = generatorFactory.Create(ast);
-          var expression = generator.Emit();
-          func = Expression.Lambda<Func<LispObject>>(expression).Compile();
         } catch (ExceptionWrapper ex) {
-          Console.Error.WriteLine("Exception while compiling:");
           Console.Error.WriteLine(
-            "{0}: {1}", ex.LispException.__class__.__name__, ex.LispException.ToString());
-          if (interactive) {
-            continue;
-          } else {
-            break;
-          }
-        }
-        try {
-          var result = func();
-          if ((interactive && result != NilType.Nil) || alwaysPrint) {
-            Console.WriteLine(StringType.GetReprString(result));
-          }
-        } catch (ExceptionWrapper ex) {
-          Console.Error.WriteLine("Exception while evaluating:");
-          Console.Error.WriteLine(
-            "{0}: {1}", ex.LispException.__class__.__name__, ex.LispException.ToString());
-          if (interactive) {
-            continue;
-          } else {
-            break;
-          }
+            "{0}: {1}", ex.LispException.__class__.__name__, ex.LispException.Message);
+          // Reset parsing when there is an error (this clears the current line)
+          eval.StartParse(module, source, out parseStream, out context);
+        } finally {
+          // This resets the prompt for the next read. Unnecessary on a break, but we do
+          // it in finally so it happens whenter we successfully read or have an error.
+          nextPrompt = "=> ";
         }
       }
     }

@@ -8,6 +8,7 @@ using System.Reflection;
 using static ZStewart.KOSLisp.Types.ExceptionType;
 
 using ZStewart.KOSLisp.Modules;
+using ZStewart.KOSLisp.Parse;
 using ZStewart.KOSLisp.Types;
 
 namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
@@ -15,32 +16,51 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
   /// Implements a module importer which can load modules as either lisp code or C#
   /// assemblies.
   /// </summary>
-  public class CSharpModuleImporter : ModuleImporter {
+  public class CSharpEvaluator : ModuleImporter {
     /// <summary>
     /// Comparer used when checking for modules.
     /// </summary>
-    private static StringComparer comparer => StringComparer.InvariantCultureIgnoreCase;
+    protected static StringComparer comparer => StringComparer.InvariantCultureIgnoreCase;
 
     /// <summary>
     /// dictionary of imported modules by name, used to avoid a file-system lookup when
     /// calling import, and to prevent making duplicate copies of modules.
     /// </summary>
-    protected Dictionary<string, LispObject> importedModules =
+    protected readonly Dictionary<string, LispObject> importedModules =
       new Dictionary<string, LispObject>(StringComparer.InvariantCultureIgnoreCase);
 
     /// <summary>
     /// List of directory to search for modules.
     ///
     /// Note: while module names are searched case-insensitive within the library search
-    /// path, the libraryPath itself is case sensitive.
+    /// path, the libraryPath itself is case sensitive (if the filesystem is).
     /// </summary>
-    protected List<string> libraryPath;
+    protected readonly List<string> libraryPath;
 
-    public CSharpModuleImporter(IEnumerable<string> libraryPath) {
+    protected const string BUILTINS_MODNAME = "builtins";
+
+    protected readonly Parser<Token<LispTokType>> parser;
+    protected readonly Lexer<LispTokType> lexer;
+    protected readonly SemanticAnalyzer semantizer;
+    protected readonly GeneratorFactory<CodeGenerator<Expression>> generatorFactory;
+
+    protected CSharpEvaluator(
+        IEnumerable<string> libraryPath,
+        Parser<Token<LispTokType>> parser = null,
+        Lexer<LispTokType> lexer = null,
+        SemanticAnalyzer semantizer = null,
+        GeneratorFactory<CodeGenerator<Expression>> generatorFactory = null,
+        MacroExpander macroExpander = null) {
       this.libraryPath = libraryPath.ToList();
+
+      this.parser = parser ?? new LispParser();
+      this.lexer = lexer ?? LispLexer.CreateDefaultLexer();
+      this.generatorFactory = generatorFactory ?? new CSharpGeneratorFacotyr();
+      this.semantizer = semantizer ?? BasicSemanticAnalyzer.CreateDefaultAnalyzer(
+        macroExander ?? new MacroExpander(this.GeneratorFactory));
     }
 
-    public CSharpModuleImporter(params string[] libraryPath)
+    public CSharpEvaluator(params string[] libraryPath)
         : this((IEnumerable<string>)libraryPath) {}
 
     public virtual LispObject Import(params string[] moduleIdentifier) {
@@ -186,17 +206,6 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     }
 
     /// <summary>
-    /// Given a known extant lisp file name, load it and import it as a lisp module.
-    /// </summary>
-    protected virtual LispObject ImportFromLispFile(
-        string filePath, string moduleIdentifier, string moduleName) {
-      var starterModule = GetFreshModule(moduleName);
-      var result = evaluator.Evaluate(starterModule, filePath);
-      importedModules.Add(moduleIdentifier, result);
-      return result;
-    }
-
-    /// <summary>
     /// Given a valid import function (returns a lisp object, has zero or one parameters,
     /// the one parameter takes a module importer) call it and return the result.
     /// </summary>
@@ -208,6 +217,88 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         callExpression = Expression.Call(method, Expression.Constant(this));
       }
       return Expression.Lambda<Func<LispObject>>(callExpression).Compile()();
+    }
+
+    /// <summary>
+    /// Given a known extant lisp file name, load it and import it as a lisp module.
+    /// </summary>
+    protected virtual LispObject ImportFromLispFile(
+        string filePath, string moduleIdentifier, string moduleName) {
+      var mod = GetFreshModule(moduleName);
+      using (var file = File.OpenText(filePath)) {
+        var textSource = new TextReaderSource(moduleName, file);
+        try {
+          Evaluate(mod, textSource);
+        } catch {
+          // module gets removed if it throws.
+          importedModules.Remove(mod);
+          throw;
+        }
+      }
+      return result;
+    }
+
+    /// <summary>
+    /// Gets and sets up a new empty module.
+    /// </summary>
+    public virtual LispObject GetFreshModule(
+        string moduleIdentifier, string moduleName) {
+      var mod = ModuleType.Create(moduleName);
+      if (moduleName != BUILTINS_MODNAME) {
+        LispObject.SetAttribute(mod, PropConsts.Builtins, Import(BUILTINS_MODNAME)),
+      }
+      importedModules.Add(moduleIdentifier, mod);
+      return mod;
+    }
+
+    /// <summary>
+    /// Prepare for parsing by getting a parse steam and context to begin evaluating the
+    /// module within.
+    /// </summary>
+    public virtual void StartParse(
+        LispObject module, Source source,
+        out IEnumerator<LispObject> parseStream, out Context context) {
+      parseStream = parser.Parse(lexer.Lex(source)).GetEnumerator();
+      context = new GlobalContext(module);
+    }
+
+    /// <summary>
+    /// Evaluate every expression in source in the context of the given module.
+    /// </summary>
+    public virtual void Evaluate(LispObject module, Source source) {
+      IEnumerator<LispObject> parseStream;
+      Context context;
+      StartParse(module, source, out parseStream, out context);
+      while (Evaluate1(parseStream, context));
+    }
+
+    /// <summary>
+    /// Evaluate a single expression from the parse stream in the given context,
+    /// discarding the result.
+    /// </summary>
+    /// <returns>false if end of parse stream, true otherwise</returns>
+    public virtual bool Evaluate1(IEnumerator<LispObject> parseStream, Context context) {
+      LispObject unusedResult;
+      return Evaluate1(parseStream, context, out unusedResult);
+    }
+
+    /// <summary>
+    /// Evaluate a single expression from the parse stream in the given context, saving
+    /// the result in result.
+    /// </summary>
+    /// <returns>false if end of parse stream, true otherwise</returns>
+    public virtual bool Evaluate1(
+        IEnumerator<LispObject> parseStream, Context context, out LispObject result) {
+      if (parseStream.MoveNext()) {
+        var parsed = parseStream.Current;
+        var ast = semantizer.ToAst(parsed, context);
+        var func = Expression.Lambda<Func<LispObject>>(
+            generatorFactory.Create(ast).Emit());
+        result = func();
+        return true;
+      } else {
+        return false;
+      }
     }
   }
 }
