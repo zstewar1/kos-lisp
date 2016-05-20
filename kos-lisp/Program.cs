@@ -75,22 +75,27 @@ namespace ZStewart.KOSLisp {
           String.Join(" ", extra.GetRange(1, extra.Count - 1)));
       } else if (extra.Count == 1) {
         using (var file = File.OpenText(extra[0])) {
-          TEMPRun(extra[0], file, printAst, printExpr, alwaysPrint);
+          TEMPRun(new TextReaderSource(extra[0], file), printAst, printExpr, alwaysPrint);
         }
       } else {
-        TEMPRun("<stdin>", Console.In, printAst, printExpr, alwaysPrint, true);
+        var textSource = new GetlineSource("koslisp");
+        var nextPrompt = "=> ";
+        textSource.OnBeforeReadLine += () => {
+          textSource.Prompt = nextPrompt;
+          nextPrompt = ".. ";
+        };
+        TEMPRun(textSource, printAst, printExpr, alwaysPrint, true, () => nextPrompt = "=> ");
       }
     }
 
     private static void TEMPRun(
-        string name, TextReader reader, bool printAst, bool printExpr, bool alwaysPrint,
-        bool interactive = false) {
-      var textSource = new TextReaderSource(name, reader);
+        Source textSource, bool printAst, bool printExpr, bool alwaysPrint,
+        bool interactive = false, Action expressionComplete = null) {
       var lexer = LispLexer.CreateDefaultLexer();
       var parser = new LispParser();
 
       var mainModule = ModuleType.Create(
-        SymbolType.Create(name), BuiltinsModule.ImportModule());
+        SymbolType.Create(textSource.Name), BuiltinsModule.ImportModule());
       var context = new GlobalContext(mainModule);
       var generatorFactory = new CSharpGeneratorFactory();
       var macroExpander = new CSharpMacroExpander(generatorFactory);
@@ -104,6 +109,7 @@ namespace ZStewart.KOSLisp {
           if (!parseStream.MoveNext()) {
             break;
           }
+          expressionComplete?.Invoke();
           parsed = parseStream.Current;
           if (printExpr) {
             Console.Error.WriteLine(StringType.GetReprString(parsed));
@@ -157,7 +163,6 @@ namespace ZStewart.KOSLisp {
           }
         }
       }
-      Console.WriteLine();
     }
   }
 }

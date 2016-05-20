@@ -51,8 +51,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Options.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Options.cs" />
+    <Compile Include="getline.cs" />
+    <Compile Include="GetlineSource.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
