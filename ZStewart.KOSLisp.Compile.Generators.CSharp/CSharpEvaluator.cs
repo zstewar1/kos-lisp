@@ -7,6 +7,7 @@ using System.Reflection;
 
 using static ZStewart.KOSLisp.Types.ExceptionType;
 
+using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Compile.Contexts;
 using ZStewart.KOSLisp.Modules;
 using ZStewart.KOSLisp.Parse;
@@ -19,6 +20,24 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
   /// assemblies.
   /// </summary>
   public class CSharpEvaluator : ModuleImporter {
+
+    /// <summary>
+    /// Callback that happens after every time the parse reads an expression with the
+    /// value of the expression read.
+    /// </summary>
+    public event Action<LispObject> OnParse;
+
+    /// <summary>
+    /// Callback that happens after ever time the parsed expression is converted to an AST
+    /// and before it is evaluated.
+    /// </summary>
+    public event Action<AstOp> OnSemantics;
+
+    /// <summary>
+    /// Callback that is called with the result of evaluating each expression.
+    /// </summary>
+    public event Action<LispObject> OnEvaluate;
+
     /// <summary>
     /// Comparer used when checking for modules.
     /// </summary>
@@ -301,10 +320,13 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         IEnumerator<LispObject> parseStream, Context context, out LispObject result) {
       if (parseStream.MoveNext()) {
         var parsed = parseStream.Current;
+        OnParse?.Invoke(parsed);
         var ast = semantizer.ToAst(parsed, context);
+        OnSemantics?.Invoke(ast);
         var func = Expression.Lambda<Func<LispObject>>(
           generatorFactory.Create(ast).Emit()).Compile();
         result = func();
+        OnEvaluate?.Invoke(result);
         return true;
       } else {
         result = null;

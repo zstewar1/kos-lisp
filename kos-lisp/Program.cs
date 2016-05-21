@@ -97,6 +97,16 @@ namespace ZStewart.KOSLisp {
         bool printAst, bool printExpr, bool alwaysPrint) {
       var eval = new CSharpEvaluator(path);
 
+      if (printAst) {
+        eval.OnSemantics += (ast) => Console.WriteLine(ast);
+      }
+      if (printExpr) {
+        eval.OnParse += (expr) => Console.WriteLine(StringType.GetReprString(expr));
+      }
+      if (alwaysPrint) {
+        eval.OnEvaluate += (res) => Console.WriteLine(StringType.GetReprString(res));
+      }
+
       using (var file = File.OpenText(filename)) {
         var source = new TextReaderSource(filename, file);
 
@@ -111,6 +121,16 @@ namespace ZStewart.KOSLisp {
         bool printAst, bool printExpr, bool alwaysPrint) {
       // TODO(zstewar1): handle printing.
       var eval = new CSharpEvaluator(path);
+
+      if (printAst) {
+        eval.OnSemantics += (ast) => Console.WriteLine(ast);
+      }
+      if (printExpr) {
+        eval.OnParse += (expr) => Console.WriteLine(StringType.GetReprString(expr));
+      }
+      if (alwaysPrint) {
+        eval.OnEvaluate += (res) => Console.WriteLine(StringType.GetReprString(res));
+      }
 
       var source = new GetlineSource("koslisp");
       var nextPrompt = "=> ";
@@ -129,7 +149,7 @@ namespace ZStewart.KOSLisp {
         LispObject result;
         try {
           if (eval.Evaluate1(parseStream, context, out result)) {
-            if (alwaysPrint || !ReferenceEquals(result, NilType.Nil)) {
+            if (!ReferenceEquals(result, NilType.Nil)) {
               Console.WriteLine(StringType.GetReprString(result));
             }
             // Reset prompt for next time a line is read.
