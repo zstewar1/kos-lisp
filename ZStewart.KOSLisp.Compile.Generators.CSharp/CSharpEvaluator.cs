@@ -7,8 +7,10 @@ using System.Reflection;
 
 using static ZStewart.KOSLisp.Types.ExceptionType;
 
+using ZStewart.KOSLisp.Compile.Contexts;
 using ZStewart.KOSLisp.Modules;
 using ZStewart.KOSLisp.Parse;
+using ZStewart.KOSLisp.Parse.Lisp;
 using ZStewart.KOSLisp.Types;
 
 namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
@@ -39,14 +41,14 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
 
     protected const string BUILTINS_MODNAME = "builtins";
 
-    protected readonly Parser<Token<LispTokType>> parser;
+    protected readonly Parser<LispTokType> parser;
     protected readonly Lexer<LispTokType> lexer;
     protected readonly SemanticAnalyzer semantizer;
     protected readonly GeneratorFactory<CodeGenerator<Expression>> generatorFactory;
 
     protected CSharpEvaluator(
         IEnumerable<string> libraryPath,
-        Parser<Token<LispTokType>> parser = null,
+        Parser<LispTokType> parser = null,
         Lexer<LispTokType> lexer = null,
         SemanticAnalyzer semantizer = null,
         GeneratorFactory<CodeGenerator<Expression>> generatorFactory = null,
@@ -55,10 +57,12 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
 
       this.parser = parser ?? new LispParser();
       this.lexer = lexer ?? LispLexer.CreateDefaultLexer();
-      this.generatorFactory = generatorFactory ?? new CSharpGeneratorFacotyr();
+      this.generatorFactory = generatorFactory ?? new CSharpGeneratorFactory();
       this.semantizer = semantizer ?? BasicSemanticAnalyzer.CreateDefaultAnalyzer(
-        macroExander ?? new MacroExpander(this.GeneratorFactory));
+        macroExpander ?? new CSharpMacroExpander(this.generatorFactory));
     }
+
+    public CSharpEvaluator(IEnumerable<string> libraryPath) : this(libraryPath, null) {}
 
     public CSharpEvaluator(params string[] libraryPath)
         : this((IEnumerable<string>)libraryPath) {}
@@ -169,6 +173,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// </summary>
     protected virtual LispObject ImportFromDotNetAssembly(
         string assemblyPath, string moduleIdentifier, string moduleName) {
+      assemblyPath = Path.GetFullPath(assemblyPath);
       var assembly = Assembly.LoadFrom("file://" + assemblyPath);
 
       foreach (var type in assembly.GetTypes()) {
@@ -177,7 +182,12 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         }
 
         var method = type.GetMethod(
-          "ImportModule", BindingFlags.NonPublic | BindingFlags.Static);
+          "ImportModule",
+          BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+
+        if (method == null) {
+          continue;
+        }
 
         if (method.ContainsGenericParameters) {
           throw ThrowImportError(
@@ -224,28 +234,28 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// </summary>
     protected virtual LispObject ImportFromLispFile(
         string filePath, string moduleIdentifier, string moduleName) {
-      var mod = GetFreshModule(moduleName);
+      var mod = GetFreshModule(moduleIdentifier, moduleName);
       using (var file = File.OpenText(filePath)) {
         var textSource = new TextReaderSource(moduleName, file);
         try {
           Evaluate(mod, textSource);
         } catch {
           // module gets removed if it throws.
-          importedModules.Remove(mod);
+          importedModules.Remove(moduleIdentifier);
           throw;
         }
       }
-      return result;
+      return mod;
     }
 
     /// <summary>
     /// Gets and sets up a new empty module.
     /// </summary>
-    public virtual LispObject GetFreshModule(
+    public virtual ModuleType GetFreshModule(
         string moduleIdentifier, string moduleName) {
       var mod = ModuleType.Create(moduleName);
       if (moduleName != BUILTINS_MODNAME) {
-        LispObject.SetAttribute(mod, PropConsts.Builtins, Import(BUILTINS_MODNAME)),
+        LispObject.SetAttribute(mod, PropConsts.Builtins, Import(BUILTINS_MODNAME));
       }
       importedModules.Add(moduleIdentifier, mod);
       return mod;
@@ -256,7 +266,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// module within.
     /// </summary>
     public virtual void StartParse(
-        LispObject module, Source source,
+        ModuleType module, Source source,
         out IEnumerator<LispObject> parseStream, out Context context) {
       parseStream = parser.Parse(lexer.Lex(source)).GetEnumerator();
       context = new GlobalContext(module);
@@ -265,7 +275,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// <summary>
     /// Evaluate every expression in source in the context of the given module.
     /// </summary>
-    public virtual void Evaluate(LispObject module, Source source) {
+    public virtual void Evaluate(ModuleType module, Source source) {
       IEnumerator<LispObject> parseStream;
       Context context;
       StartParse(module, source, out parseStream, out context);
@@ -293,10 +303,11 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         var parsed = parseStream.Current;
         var ast = semantizer.ToAst(parsed, context);
         var func = Expression.Lambda<Func<LispObject>>(
-            generatorFactory.Create(ast).Emit());
+          generatorFactory.Create(ast).Emit()).Compile();
         result = func();
         return true;
       } else {
+        result = null;
         return false;
       }
     }

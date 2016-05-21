@@ -94,9 +94,9 @@
       <Project>{E46FD6E2-AA5A-4568-8DC5-26AFE04B55C8}</Project>
       <Name>ZStewart.KOSLisp.Compile.Generators.CSharp</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ZStewart.KOSLisp.Modules.Builtins\ZStewart.KOSLisp.Modules.Builtins.csproj">
-      <Project>{E0270882-93E6-444B-AD28-64C033681276}</Project>
-      <Name>ZStewart.KOSLisp.Modules.Builtins</Name>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Modules\ZStewart.KOSLisp.Modules.csproj">
+      <Project>{39638BBB-F272-4627-AAB8-20054B3FBBD5}</Project>
+      <Name>ZStewart.KOSLisp.Modules</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

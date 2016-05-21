@@ -10,7 +10,6 @@ using ZStewart.KOSLisp.Compile;
 using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Compile.Contexts;
 using ZStewart.KOSLisp.Compile.Generators.CSharp;
-using ZStewart.KOSLisp.Modules.Builtins;
 using ZStewart.KOSLisp.Parse;
 using ZStewart.KOSLisp.Parse.Lisp;
 using ZStewart.KOSLisp.Types;
@@ -68,36 +67,50 @@ namespace ZStewart.KOSLisp {
           String.Join(" ", unrecognized));
         Environment.Exit((int)ExitCode.UNRECOGNIZED_OPTION);
       }
+
+      var path = new List<string>();
+      path.Add(Path.Combine(
+        Path.GetDirectoryName(Assembly.GetEntryAssembly().Location),
+        "lib"));
+
+      var kosLispPath = Environment.GetEnvironmentVariable("KOS_LISP_PATH");
+      if (kosLispPath != null) {
+        path.AddRange(kosLispPath.Split(':').Where(s => !string.IsNullOrEmpty(s)));
+      }
+
+      path.Add(".");
+
       if (extra.Count > 1) {
         Console.Error.WriteLine(
           "Unexpected extra argument{0}: {1}",
           extra.Count == 2 ? "" : "s",
           String.Join(" ", extra.GetRange(1, extra.Count - 1)));
       } else if (extra.Count == 1) {
-        RunFile(extra[0], printAst, printExpr, alwaysPrint);
-        using (var file = File.OpenText(extra[0])) {
-          TEMPRun(new TextReaderSource(extra[0], file), printAst, printExpr, alwaysPrint);
-        }
+        RunFile(extra[0], path, printAst, printExpr, alwaysPrint);
       } else {
-        RunInteractive(printAst, printExpr, alwaysPrint);
+        RunInteractive(path, printAst, printExpr, alwaysPrint);
       }
     }
 
     private static void RunFile(
-        string filename, bool printAst, bool printExpr, bool alwaysPrint) {
-      var eval = new CSharpEvaluator(".");
+        string filename, IEnumerable<string> path,
+        bool printAst, bool printExpr, bool alwaysPrint) {
+      var eval = new CSharpEvaluator(path);
 
       using (var file = File.OpenText(filename)) {
-      var source = new TextReaderSource(file, filename);
+        var source = new TextReaderSource(filename, file);
 
-      var module = eval.GetFreshModule("--main--", "--main--");
+        var module = eval.GetFreshModule("--main--", "--main--");
 
-      eval.Evaluate(module, source);
+        eval.Evaluate(module, source);
+      }
     }
 
-    private static void RunInteractive(bool printAst, bool printExpr, bool alwaysPrint) {
+    private static void RunInteractive(
+        IEnumerable<string> path,
+        bool printAst, bool printExpr, bool alwaysPrint) {
       // TODO(zstewar1): handle printing.
-      var eval = new CSharpEvaluator(".");
+      var eval = new CSharpEvaluator(path);
 
       var source = new GetlineSource("koslisp");
       var nextPrompt = "=> ";
@@ -115,7 +128,7 @@ namespace ZStewart.KOSLisp {
       for (;;) {
         LispObject result;
         try {
-          if (Evaluate1(parseStream, context, out result)) {
+          if (eval.Evaluate1(parseStream, context, out result)) {
             if (alwaysPrint || !ReferenceEquals(result, NilType.Nil)) {
               Console.WriteLine(StringType.GetReprString(result));
             }

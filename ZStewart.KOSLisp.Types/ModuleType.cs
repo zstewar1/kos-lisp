@@ -28,6 +28,10 @@ namespace ZStewart.KOSLisp.Types {
     #endregion Static Type Setup
 
     #region Static Helper Methods
+    public static ModuleType Create(string name) {
+      return Create(SymbolType.Create(name));
+    }
+
     public static ModuleType Create(SymbolType name) {
       return new ModuleType (name) {
         __class__ = Module,
