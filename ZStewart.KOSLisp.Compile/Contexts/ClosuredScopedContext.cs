@@ -14,6 +14,11 @@ namespace ZStewart.KOSLisp.Compile.Contexts {
   /// </summary>
   public class ClosuredScopedContext : ScopedContext {
 
+    /// <summary>
+    /// A set of bindings from parent contexts which are closed over in this context.
+    /// </summary>
+    public HashSet<AstBinding> Closure { get; } = new HashSet<AstBinding>();
+
     public ClosuredScopedContext(Context parentScope, IEnumerable<SymbolType> newBindings)
         : base(parentScope, newBindings) {}
 
@@ -26,7 +31,7 @@ namespace ZStewart.KOSLisp.Compile.Contexts {
     /// </summary>
     protected override AstBinding GetParentBinding(SymbolType symbol) {
       var binding = base.GetParentBinding(symbol);
-      binding.HasClosure = true;
+      Closure.Add(binding);
       return binding;
     }
   }

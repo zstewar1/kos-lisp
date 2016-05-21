@@ -22,14 +22,6 @@ namespace ZStewart.KOSLisp.Compile.AST {
     public ModuleType Module { get; }
 
     /// <summary>
-    /// Global bindings always have closure over the module that they reference.
-    /// </summary>
-    public bool HasClosure {
-      get { return true; }
-      set {}
-    }
-
-    /// <summary>
     /// Create a global binding for the given symbol and module.
     /// </summary>
     internal AstGlobalBinding(ModuleType module, SymbolType symbol) {

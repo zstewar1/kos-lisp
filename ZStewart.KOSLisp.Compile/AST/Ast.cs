@@ -8,7 +8,8 @@ namespace ZStewart.KOSLisp.Compile.AST {
   /// <summary>
   /// A class with factory methods for the various AST types.
   ///
-  /// This allows the AST op implementations to remain effectively sealed even when they allow inheritance
+  /// This allows the AST op implementations to remain effectively sealed even when they
+  /// allow inheritance
   /// </summary>
   public static class Ast {
     /// <summary>
@@ -45,6 +46,14 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     public static AstIf If(AstOp condition, AstOp valueIfTrue, AstOp valueIfFalse) {
       return new AstIf(condition, valueIfTrue, valueIfFalse);
+    }
+
+    /// <summary>
+    /// Creates a new AstOp that imports a module and saves it in the given binding.
+    /// </summary>
+    public static AstImport Import(
+        IEnumerable<string> moduleIdentifier, AstBinding name) {
+      return new AstImport(moduleIdentifier, name);
     }
 
     /// <summary>
@@ -160,14 +169,16 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// Create a local variable for the given symbol. The binding defaults to non-closure.
     /// </summary>
     public static AstLocalBinding BindLocal(SymbolType symbol) {
-      return BindLocal(symbol, false);
+      return BindLocal(symbol);
     }
 
     /// <summary>
-    /// Create a local variable for the given symbol, with the given closure status.
+    /// Convenience function to allow appending an AST op as if it is a method on the
+    /// string builder.
     /// </summary>
-    public static AstLocalBinding BindLocal(SymbolType symbol, bool hasClosure) {
-      return new AstLocalBinding(symbol, hasClosure);
+    internal static StringBuilder AppendIndented(
+        this StringBuilder sb, AstOp op, int baseIndent) {
+      return op.AppendAstStringIndented(sb, baseIndent);
     }
   }
 }

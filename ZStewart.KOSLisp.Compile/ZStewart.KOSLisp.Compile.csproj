@@ -58,6 +58,7 @@
     <Compile Include="AST\AstSetVar.cs" />
     <Compile Include="AST\AstFuncCall.cs" />
     <Compile Include="AST\AstIf.cs" />
+    <Compile Include="AST\AstImport.cs" />
     <Compile Include="AST\AstProgn.cs" />
     <Compile Include="AST\AstLet.cs" />
     <Compile Include="AST\AstLambda.cs" />
