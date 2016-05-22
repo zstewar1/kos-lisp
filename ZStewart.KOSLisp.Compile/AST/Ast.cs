@@ -53,7 +53,37 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     public static AstImport Import(
         IEnumerable<string> moduleIdentifier, AstBinding name) {
-      return new AstImport(moduleIdentifier, name);
+      return new AstImport(moduleIdentifier, name: name);
+    }
+
+    /// <summary>
+    /// Creates an AstOp that loads the given module then imports the specified symbols
+    /// from it into the given bindings.
+    /// </summary>
+    public static AstImport Import(
+        IEnumerable<string> moduleIdentifier,
+        IEnumerable<KeyValuePair<SymbolType, AstBinding>> fromImport) {
+      return new AstImport(moduleIdentifier, fromImport: fromImport);
+    }
+
+    /// <summary>
+    /// Creates an AstOp that loads the given module then imports all bindings from it
+    /// into the global context of the specified module.
+    /// </summary>
+    public static AstImport Import(
+        IEnumerable<string> moduleIdentifier, ModuleType allTo) {
+      return new AstImport(moduleIdentifier, allTo: allTo);
+    }
+
+    /// <summary>
+    /// Creates an AstImport with an arbitrary combination of load and bind options.
+    /// </summary>
+    public static AstImport Import(
+        IEnumerable<string> moduleIdentifier,
+        AstBinding name = null,
+        IEnumerable<KeyValuePair<SymbolType, AstBinding>> fromImport = null,
+        ModuleType allTo = null) {
+      return new AstImport(moduleIdentifier, name, fromImport, allTo);
     }
 
     /// <summary>
