@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 using ZStewart.KOSLisp.Compile.AST;
+using ZStewart.KOSLisp.Modules;
 
 namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
   /// <summary>
@@ -9,6 +10,18 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
   /// expressions.
   /// </summary>
   public class CSharpGeneratorFactory : GeneratorFactory<CSharpGenerator> {
+    /// <summary>
+    /// An importer used to load modules for AstImports.
+    /// </summary>
+    protected ModuleImporter Importer { get; }
+
+    /// <summary>
+    /// Create a generator factory which uses the specified importer.
+    /// </summary>
+    public CSharpGeneratorFactory(ModuleImporter importer) {
+      Importer = importer;
+    }
+
     /// <summary>
     /// Creates a CSharpGenerator for the expression represented by the provided AST.
     /// </summary>
@@ -44,6 +57,9 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         return new CSharpFuncCallGenerator((AstFuncCall)op, GetFactoryForConstructor());
       } else if (type == typeof(AstIf)) {
         return new CSharpIfGenerator((AstIf)op, GetFactoryForConstructor());
+      } else if (type == typeof(AstImport)) {
+        return new CSharpImportGenerator(
+          (AstImport)op, GetFactoryForConstructor(), Importer);
       } else if (type == typeof(AstLambda)) {
         return new CSharpLambdaGenerator((AstLambda)op, GetFactoryForConstructor());
       } else if (type == typeof(AstLet)) {
@@ -82,7 +98,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// AstBindings always get the same CSharpLocalBindingGenerator.
     /// </summary>
     protected virtual CSharpGeneratorFactory GetFactoryForConstructor() {
-      return new CSharpMemoizingGeneratorFactory();
+      return new CSharpMemoizingGeneratorFactory(Importer);
     }
   }
 
@@ -101,6 +117,8 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
   internal class CSharpMemoizingGeneratorFactory : CSharpGeneratorFactory {
     private Dictionary<AstOp, CSharpGenerator> memoized =
       new Dictionary<AstOp, CSharpGenerator>();
+
+    public CSharpMemoizingGeneratorFactory(ModuleImporter importer) : base(importer) {}
 
     /// <summary>
     /// If the generator for the given AstOp is already created, return it. Otherwise

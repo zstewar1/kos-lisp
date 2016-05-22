@@ -76,7 +76,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
 
       this.parser = parser ?? new LispParser();
       this.lexer = lexer ?? LispLexer.CreateDefaultLexer();
-      this.generatorFactory = generatorFactory ?? new CSharpGeneratorFactory();
+      this.generatorFactory = generatorFactory ?? new CSharpGeneratorFactory(this);
       this.semantizer = semantizer ?? BasicSemanticAnalyzer.CreateDefaultAnalyzer(
         macroExpander ?? new CSharpMacroExpander(this.generatorFactory));
     }
@@ -85,6 +85,10 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
 
     public CSharpEvaluator(params string[] libraryPath)
         : this((IEnumerable<string>)libraryPath) {}
+
+    public virtual LispObject Import(IEnumerable<string> moduleIdentifier) {
+      return Import(moduleIdentifier.ToArray());
+    }
 
     public virtual LispObject Import(params string[] moduleIdentifier) {
       if (moduleIdentifier.Length == 0) {

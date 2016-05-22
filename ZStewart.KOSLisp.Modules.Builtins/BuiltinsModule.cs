@@ -84,7 +84,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddBuiltin(builtins, typeof(MappingOperations), "SetItem");
 
       // Attribute retrieval
-      AddBuiltin(builtins, typeof(LispObject), "GetAttribute", "%getattr");
+      AddBuiltin(builtins, typeof(LispObject), "GetAttribute", "getattr");
       AddBuiltin(builtins, typeof(LispObject), "SetAttribute", "%setattr");
 
       // Base (binary) comparison operations.
