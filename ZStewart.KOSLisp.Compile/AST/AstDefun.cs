@@ -27,7 +27,7 @@ namespace ZStewart.KOSLisp.Compile.AST {
       sb.AppendLine("[AST-Defun:");
       sb.Append(' ', baseIndent + 2);
       sb.Append("Name: ");
-      Name.AppendAstStringIndented(sb, baseIndent + 4);
+      Name.AppendAstStringIndented(sb, baseIndent + 2);
       sb.AppendLine();
       AppendArgs(sb, baseIndent);
       AppendForms(sb, baseIndent);

@@ -169,7 +169,7 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// Create a local variable for the given symbol. The binding defaults to non-closure.
     /// </summary>
     public static AstLocalBinding BindLocal(SymbolType symbol) {
-      return BindLocal(symbol);
+      return new AstLocalBinding(symbol);
     }
 
     /// <summary>

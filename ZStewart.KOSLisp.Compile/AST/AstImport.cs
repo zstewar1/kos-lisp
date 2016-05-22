@@ -34,8 +34,10 @@ namespace ZStewart.KOSLisp.Compile.AST {
         .Append("Identifier: ")
         .Append(string.Join(".", ModuleIdentifier))
         .AppendLine()
+        .Append(' ', baseIndent + 2)
         .Append("Bind Name: ")
-        .AppendIndented(Name, baseIndent + 4)
+        .AppendIndented(Name, baseIndent + 2)
+        .AppendLine()
         .Append(' ', baseIndent)
         .Append("]");
     }

@@ -31,6 +31,7 @@ namespace ZStewart.KOSLisp.Compile {
           [SymbolType.Create("let")] = new LetSpecialForm(),
           [SymbolType.Create("progn")] = new PrognSpecialForm(),
           [SymbolType.Create("if")] = new IfSpecialForm(),
+          [SymbolType.Create("import")] = new ImportSpecialForm(),
           [SymbolType.Create("%setvar")] = new SetVarSpecialForm(),
         }),
         new FuncCallOrMacroSpecialForm(macroExpander),
