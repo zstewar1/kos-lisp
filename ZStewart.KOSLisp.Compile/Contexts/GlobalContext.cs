@@ -17,13 +17,13 @@ namespace ZStewart.KOSLisp.Compile.Contexts {
     /// <summary>
     /// The module that this context binds symbols for.
     /// </summary>
-    private ModuleType module;
+    public ModuleType Module { get; }
 
     /// <summary>
     /// Creates a global context that binds symbols in the specified module.
     /// </summary>
     public GlobalContext(ModuleType module) {
-      this.module = module;
+      Module = module;
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ namespace ZStewart.KOSLisp.Compile.Contexts {
         throw ExceptionType.ThrowSyntaxError(
           "cannot bind self evaluating symbol {0}", symbol);
       }
-      return Ast.BindGlobal(module, symbol);
+      return Ast.BindGlobal(Module, symbol);
     }
   }
 }

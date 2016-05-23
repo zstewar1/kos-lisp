@@ -36,37 +36,34 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       if (len < 1) {
         throw ThrowSyntaxError(
           "import expression expected at least 1 arguments, got {0}", len);
-      } else if (len != 1 && len != 3) {
-        throw ThrowSyntaxError(
-          "import expression must either be in the form (import module) or " +
-          "(import module as name)");
       }
 
       var modname = GetModuleName(ListOperations.GetCar(expression));
-      SymbolType ident;
+
       if (len == 1) {
-        ident = SymbolType.Create(modname[modname.Count - 1]);
-      } else {
-        expression = ListOperations.GetCdr(expression);
-        if (ListOperations.GetCar(expression) != SymbolType.Create("as")) {
-          throw ThrowSyntaxError(
-            "module name must be followed with 'as for import-as");
-        }
-        var modas = ListOperations.GetCar(ListOperations.GetCdr(expression));
-        if (!(modas is SymbolType)) {
-          throw ThrowSyntaxError(
-            "module name for import-as must be a symbol, got {0}", modas.__class__);
-        }
-        ident = (SymbolType)modas;
-        if (ident.IsSelfEvaluating) {
-          throw ThrowSyntaxError(
-            "cannot bind imported module to self-evaluating symbol {0}", ident);
-        }
+        return Ast.Import(
+          modname, context.AddBinding(SymbolType.Create(modname[modname.Count-1])));
       }
 
-      return Ast.Import(modname, context.AddBinding(ident));
+      expression = ListOperations.GetCdr(expression);
+      var op = ListOperations.GetCar(expression);
+      if (op == KeywordSymbolType.Create(":")) {
+        return CreateFromImport(modname, ListOperations.GetCdr(expression), context);
+      } else if (op == KeywordSymbolType.Create(":all")) {
+        return CreateAllImport(modname, ListOperations.GetCdr(expression), context);
+      } else if (op == KeywordSymbolType.Create(":as")) {
+        return CreateAsImport(modname, ListOperations.GetCdr(expression), context);
+      } else {
+        throw ThrowSyntaxError(
+          "unknown import operation, must be one of ': ':all or ':as");
+      }
     }
 
+    /// <summary>
+    /// Reads the specified lisp object as a module name. Raises a syntax error if it is
+    /// not a recursive sequence of getattr conses where the inner-most element is a
+    /// symbol and the keys are all symbols.
+    /// </summary>
     private List<string> GetModuleName(LispObject modname) {
       if (modname is SymbolType) {
         return new List<string>() {CheckModnameSymbol(modname)};
@@ -109,6 +106,59 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
         throw ThrowSyntaxError("module names cannot be self-evaluating symbols");
       }
       return sym.Identifier;
+    }
+
+    /// <summary>
+    /// Create an import expression which imports the specified module and binds a set of
+    /// keys from the module to (optionally specified) bindings in the current context.
+    /// </summary>
+    private AstOp CreateFromImport(
+        List<string> modname, LispObject args, Context context) {
+
+    }
+
+    /// <summary>
+    /// Create an import expression which loads all symbols from the imported module into
+    /// the current module.
+    /// </summary>
+    private AstOp CreateAllImport(
+        List<string> modname, LispObject args, Context context) {
+      if (!(context is GlobalContext)) {
+        throw ThrowSyntaxError("import :all only allowed at the module level");
+      }
+      if (!ReferenceEquals(args, NilType.Nil)) {
+        throw ThrowSyntaxError("import :all takes no additional arguments");
+      }
+      return Ast.Import(modname, ((GlobalContext)context).Module);
+    }
+
+    /// <summary>
+    /// Create an import expression which imports the given module and binds it to a
+    /// symbol specified in args.
+    /// </summary>
+    private AstOp CreateAsImport(
+        List<string> modname, LispObject args, Context context) {
+      int len;
+      try {
+        len = ListOperations.Count(args);
+      } catch (ExceptionWrapper ex) {
+        throw ThrowSyntaxError(ex, "arguments to import :as must be a proper list");
+      }
+      if (len != 1) {
+        throw ThrowSyntaxError("import :as expected 1 additional argument, got {0}", len);
+      }
+      var arg = ListOperations.GetCar(args);
+      if (!(arg is SymbolType)) {
+        throw ThrowSyntaxError(
+          "symbol to bind imported module as must be a symbol, got {0}",
+          arg.__class__);
+      }
+      var sym = (SymbolType)arg;
+      if (sym.IsSelfEvaluating) {
+        throw ThrowSyntaxError(
+          "cannot bind imported module to self-evaluating symbol '{0}", sym);
+      }
+      return Ast.Import(modname, context.AddBinding(sym));
     }
   }
 }
