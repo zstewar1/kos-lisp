@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Linq.Expressions;
 
 using ZStewart.KOSLisp.Compile.AST;
@@ -19,8 +20,23 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
 
     /// <summary>
     /// A binding generator for the symbol to bind the module to.
+    ///
+    /// Optional, may be null.
     /// </summary>
     public CSharpBindingGenerator Binding { get; }
+
+    /// <summary>
+    /// A collection of bindings to load from the specified module.
+    ///
+    /// Optional, may be null.
+    /// </summary>
+    public ImmutableDictionary<SymbolType, CSharpBindingGenerator> FromImport;
+    /// <summary>
+    /// A module to do an :all import into.
+    ///
+    /// Optional, may be null;
+    /// </summary>
+    public ModuleType AllTo { get; }
 
     /// <summary>
     /// The module importer to be used to retrieve the module.
@@ -43,7 +59,15 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     internal CSharpImportGenerator(
         AstImport op, CSharpGeneratorFactory factory, ModuleImporter importer) {
       ModuleIdentifier = op.ModuleIdentifier;
-      Binding = factory.Create(op.Name);
+      if (op.Name != null) {
+        Binding = factory.Create(op.Name);
+      }
+      if (op.FromImport != null) {
+        FromImport = ImmutableDictionary.CreateRange(
+          op.FromImport.Select(
+            kvp => new KeyValuePair<SymbolType, CSharpBindingGenerator>(
+              kvp.Key, factory.Create(kvp.Value))));
+      }
       Importer = importer;
     }
 
