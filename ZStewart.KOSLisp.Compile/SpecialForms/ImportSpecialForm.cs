@@ -114,7 +114,54 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// </summary>
     private AstOp CreateFromImport(
         List<string> modname, LispObject args, Context context) {
-
+      // Already assured that we have a propper list by the initial count check in Emit.
+      if (ReferenceEquals(args, NilType.Nil)) {
+        throw ThrowSyntaxError("must specify at least one symbol to import");
+      }
+      var imports = new Dictionary<SymbolType, AstBinding>();
+      SymbolType symbolToImport = null;
+      bool asRead = false;
+      for (; !ReferenceEquals(args, NilType.Nil); args = ListOperations.GetCdr(args)) {
+        var next = ListOperations.GetCar(args);
+        if (!(next is SymbolType)) {
+          throw ThrowSyntaxError("from import can only import symbols");
+        }
+        var sym = (SymbolType)next;
+        if (symbolToImport != null) {
+          if (asRead) {
+            if (sym.IsSelfEvaluating) {
+              throw ThrowSyntaxError(
+                "cannot import symbol {0} as self-evaluating symbol {1}",
+                symbolToImport, sym);
+            }
+            imports[symbolToImport] = context.AddBinding(sym);
+            symbolToImport = null;
+            asRead = false;
+          } else if (next == KeywordSymbolType.Create(":as")) {
+            asRead = true;
+          } else {
+            if (sym.IsSelfEvaluating) {
+              throw ThrowSyntaxError("cannot import self-evaluating symbol {0}", sym);
+            }
+            imports[symbolToImport] = context.AddBinding(symbolToImport);
+            symbolToImport = sym;
+          }
+        } else {
+          if (sym.IsSelfEvaluating) {
+            throw ThrowSyntaxError("cannot import self-evaluating symbol {0}", sym);
+          }
+          symbolToImport = sym;
+        }
+      }
+      if (symbolToImport != null) {
+        if (asRead) {
+          throw ThrowSyntaxError(
+            "incomplete as-import of symbol {0}, must specifiy a symbol to bind to",
+            symbolToImport);
+        }
+        imports[symbolToImport] = context.AddBinding(symbolToImport);
+      }
+      return Ast.Import(modname, imports);
     }
 
     /// <summary>

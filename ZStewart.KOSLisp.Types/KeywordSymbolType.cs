@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using static ZStewart.KOSLisp.Types.ExceptionType;
+
 using ZStewart.KOSLisp.Types.Attributes;
 
 namespace ZStewart.KOSLisp.Types {
@@ -30,7 +32,7 @@ namespace ZStewart.KOSLisp.Types {
         [Required] LispType kwd,
         [Required] string ident) {
       if (kwd != KeywordSymbol) {
-        throw ExceptionType.ThrowTypeError(
+        throw ThrowTypeError(
           "keyword can only be used to look up keyword symbols");
       }
       return Create(ident);
@@ -48,12 +50,19 @@ namespace ZStewart.KOSLisp.Types {
 
     #region Static Helpers
     public static new KeywordSymbolType Create(string ident) {
+      SymbolType val;
+      if (UniqueSymbolDictionary.TryGetValue(ident, out val)) {
+        if (!(val is KeywordSymbolType)) {
+          throw ThrowTypeError("symbol {0} already exists and is not a keyword", ident);
+        }
+        return (KeywordSymbolType)val;
+      }
       if (KeywordSymbolType.keywordMatcher.Match(ident).Success) {
         return new KeywordSymbolType(ident) {
           __class__ = KeywordSymbol,
         };
       }
-      throw ExceptionType.ThrowValueError("not a valid keyword symbol name: {0}", ident);
+      throw ThrowValueError("not a valid keyword symbol name: {0}", ident);
     }
     #endregion Static Helpers
 

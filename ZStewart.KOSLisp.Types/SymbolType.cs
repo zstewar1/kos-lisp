@@ -117,7 +117,7 @@ namespace ZStewart.KOSLisp.Types {
     ///
     /// Does not apply to gensyms.
     /// </summary>
-    private static readonly Dictionary<string, SymbolType> UniqueSymbolDictionary =
+    internal static readonly Dictionary<string, SymbolType> UniqueSymbolDictionary =
       new Dictionary<string, SymbolType>(comparer);
 
     /// <summary>
