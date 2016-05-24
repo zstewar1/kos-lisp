@@ -47,8 +47,8 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// dictionary of imported modules by name, used to avoid a file-system lookup when
     /// calling import, and to prevent making duplicate copies of modules.
     /// </summary>
-    protected readonly Dictionary<string, LispObject> importedModules =
-      new Dictionary<string, LispObject>(StringComparer.InvariantCultureIgnoreCase);
+    protected readonly Dictionary<string, ModuleType> importedModules =
+      new Dictionary<string, ModuleType>(comparer);
 
     /// <summary>
     /// List of directory to search for modules.
@@ -86,11 +86,11 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     public CSharpEvaluator(params string[] libraryPath)
         : this((IEnumerable<string>)libraryPath) {}
 
-    public virtual LispObject Import(IEnumerable<string> moduleIdentifier) {
+    public virtual ModuleType Import(IEnumerable<string> moduleIdentifier) {
       return Import(moduleIdentifier.ToArray());
     }
 
-    public virtual LispObject Import(params string[] moduleIdentifier) {
+    public virtual ModuleType Import(params string[] moduleIdentifier) {
       if (moduleIdentifier.Length == 0) {
         throw ThrowImportError("empty module name");
       }
@@ -105,7 +105,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         throw ThrowImportError("invalid module name: {0}", modident);
       }
 
-      LispObject module;
+      ModuleType module;
       if (importedModules.TryGetValue(modident, out module)) {
         return module;
       }
@@ -194,7 +194,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// Given a known extant .net assembly file name, load it and look for a class with
     /// the appropriately annotated function.
     /// </summary>
-    protected virtual LispObject ImportFromDotNetAssembly(
+    protected virtual ModuleType ImportFromDotNetAssembly(
         string assemblyPath, string moduleIdentifier, string moduleName) {
       assemblyPath = Path.GetFullPath(assemblyPath);
       var assembly = Assembly.LoadFrom("file://" + assemblyPath);
@@ -217,7 +217,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
             "importer functions for .net modules cannot be generic");
         }
 
-        if (!typeof(LispObject).IsAssignableFrom(method.ReturnType)) {
+        if (!typeof(ModuleType).IsAssignableFrom(method.ReturnType)) {
           throw ThrowImportError(
             "importer functions for .net modules must return LispObjects, got {0}",
             method.ReturnType);
@@ -242,20 +242,20 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// Given a valid import function (returns a lisp object, has zero or one parameters,
     /// the one parameter takes a module importer) call it and return the result.
     /// </summary>
-    protected virtual LispObject CallImportFunction(MethodInfo method) {
+    protected virtual ModuleType CallImportFunction(MethodInfo method) {
       Expression callExpression;
       if (method.GetParameters().Length == 0) {
         callExpression = Expression.Call(method);
       } else {
         callExpression = Expression.Call(method, Expression.Constant(this));
       }
-      return Expression.Lambda<Func<LispObject>>(callExpression).Compile()();
+      return Expression.Lambda<Func<ModuleType>>(callExpression).Compile()();
     }
 
     /// <summary>
     /// Given a known extant lisp file name, load it and import it as a lisp module.
     /// </summary>
-    protected virtual LispObject ImportFromLispFile(
+    protected virtual ModuleType ImportFromLispFile(
         string filePath, string moduleIdentifier, string moduleName) {
       var mod = GetFreshModule(moduleIdentifier, moduleName);
       using (var file = File.OpenText(filePath)) {

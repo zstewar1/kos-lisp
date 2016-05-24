@@ -177,16 +177,49 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
                     Expression.Call(
                       typeof(ModuleType), "SetGlobal", null,
                       Expression.Constant(AllTo),
-                      Expression.Call(
-                        typeof(ListOperations), "GetCar", null, enumcar),
-                      Expression.Call(
-                        typeof(ListOperations), "GetCdr", null, enumcar)),
+                      CheckSymbol(
+                        Expression.Call(typeof(ListOperations), "GetCar", null, enumcar)),
+                      Expression.Call(typeof(ListOperations), "GetCdr", null, enumcar)),
                     Expression.Assign(
                       enumerator,
                       Expression.Call(
                         typeof(ListOperations), "GetCdr", null, enumerator)))),
                 @break))));
       }
+    }
+
+    /// <summary>
+    /// Creates an expression that checks that the given expression is a symbol and throws
+    /// if it is not. The returned expression has type SymbolType.
+    /// </summary>
+    private Expression CheckSymbol(Expression shouldBeSymbol) {
+      var castSymbol = Expression.Variable(typeof(SymbolType), "cast symbol");
+      return Expression.Condition(
+        Expression.TypeIs(shouldBeSymbol, typeof(SymbolType)),
+        Expression.Block(
+          typeof(SymbolType),
+          ImmutableList.Create(castSymbol),
+          Expression.Assign(
+            castSymbol,
+            Expression.Convert(shouldBeSymbol, typeof(SymbolType))),
+          Expression.IfThen(
+            Expression.Property(castSymbol, "IsSelfEvaluating"),
+            Expression.Call(
+              typeof(ExceptionType), "ThrowImportError", null,
+              Expression.Constant("cannot import self-evaluating symbol '{0}"),
+              Expression.NewArrayInit(typeof(object), castSymbol))),
+          castSymbol),
+        Expression.Block(
+          typeof(SymbolType),
+          Expression.Call(
+            typeof(ExceptionType), "ThrowImportError", null,
+            Expression.Constant("cannot import non-symbols"),
+            Expression.NewArrayBounds(
+              typeof(object),
+              Expression.Constant(0))),
+          // Nil here should be unreachable, but we have it to return the correct type.
+          Expression.Constant(NilType.Nil)));
+
     }
   }
 }

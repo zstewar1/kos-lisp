@@ -15,7 +15,7 @@ namespace ZStewart.KOSLisp.Modules {
     /// An array of module name components to map to the components of the full, dotted
     /// module name.
     /// </param>
-    LispObject Import(params string[] moduleIdentifier);
+    ModuleType Import(params string[] moduleIdentifier);
 
     /// <summary>
     /// Load the given module and return it. Raise an import error if the module is not
@@ -25,6 +25,6 @@ namespace ZStewart.KOSLisp.Modules {
     /// An enumerable of module name components to map to the components of the full,
     /// dotted module name.
     /// </param>
-    LispObject Import(IEnumerable<string> moduleIdentifier);
+    ModuleType Import(IEnumerable<string> moduleIdentifier);
   }
 }
