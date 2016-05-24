@@ -1,8 +1,8 @@
-
 using System.Collections.Generic;
 
-using ZStewart.KOSLisp.Types.TypeCategories;
+using ZStewart.KOSLisp.Types.Attributes;
 using ZStewart.KOSLisp.Types.Helpers;
+using ZStewart.KOSLisp.Types.TypeCategories;
 
 namespace ZStewart.KOSLisp.Types {
   public class ModuleType : LispObject {
@@ -107,6 +107,11 @@ namespace ZStewart.KOSLisp.Types {
 
     protected ModuleType(SymbolType name) {
       Name = name;
+    }
+
+    [BuiltinFunction(Name = "--repr--")]
+    private LispObject ToRepr() {
+      return StringType.Format("[module {0}]", Name);
     }
   }
 }
