@@ -90,13 +90,14 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       }
       var m = (AstFuncCall)macro;
       if (!(m.Function is AstGlobalBinding) ||
-          m.Arguments.Count != 2 ||
-          !(m.Arguments[1] is AstConst) ||
-          !CheckValidMacroNameExpression(m.Arguments[0])) {
+          m.PositionalArguments.Count != 2 ||
+          m.KeywordArguments.Count != 0 ||
+          !(m.PositionalArguments[1] is AstConst) ||
+          !CheckValidMacroNameExpression(m.PositionalArguments[0])) {
         return false;
       }
       var f = (AstGlobalBinding)m.Function;
-      var c = (AstConst)m.Arguments[1];
+      var c = (AstConst)m.PositionalArguments[1];
       if (f.Symbol != SymbolType.Create("getattr") ||
           !(c.Value is SymbolType) ||
           ((SymbolType)c.Value).IsSelfEvaluating) {

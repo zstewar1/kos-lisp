@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 
+using ZStewart.KOSLisp.Types;
+
 namespace ZStewart.KOSLisp.Compile.AST {
   /// <summary>
   /// Represents a function call in the AST.
@@ -13,17 +15,29 @@ namespace ZStewart.KOSLisp.Compile.AST {
     public AstOp Function { get; }
 
     /// <summary>
-    /// The list of expressions that evaluate to the arguments being passed to the
-    /// function.
+    /// The list of expressions which evaluate to the function's positional arguments.
     /// </summary>
-    public ImmutableList<AstOp> Arguments { get; }
+    public ImmutableList<AstOp> PositionalArguments { get; }
+
+    /// <summary>
+    /// The list of expressions which evaluate to the function's keyword arguments.
+    /// </summary>
+    public ImmutableDictionary<SymbolType, AstOp> KeywordArguments { get; }
 
     /// <summary>
     /// Creates a function call that calls the function with the provided arguments.
     /// </summary>
-    internal AstFuncCall(AstOp function, IEnumerable<AstOp> arguments) {
+    internal AstFuncCall(
+        AstOp function,
+        IEnumerable<AstOp> positionalArguments = null,
+        IEnumerable<KeyValuePair<SymbolType, AstOp>> keywordArguments = null) {
       Function = function;
-      Arguments = ImmutableList.CreateRange(arguments);
+      PositionalArguments = positionalArguments == null ?
+        ImmutableList.Create<AstOp>() :
+        ImmutableList.CreateRange(positionalArguments);
+      KeywordArguments = keywordArguments == null ?
+        ImmutableDictionary.Create<SymbolType, AstOp>() :
+        ImmutableDictionary.CreateRange(keywordArguments);
     }
 
     public override StringBuilder AppendAstStringIndented(
@@ -31,12 +45,18 @@ namespace ZStewart.KOSLisp.Compile.AST {
       sb.AppendLine("[AST-Function-Call:");
       sb.Append(' ', baseIndent + 2);
       sb.Append("Function: ");
-      Function.AppendAstStringIndented(sb, baseIndent + 2);
+      sb.AppendIndented(Function, baseIndent + 2);
       sb.AppendLine();
-      for (int i = 0; i < Arguments.Count; i++) {
+      for (int i = 0; i < PositionalArguments.Count; i++) {
         sb.Append(' ', baseIndent + 2);
         sb.AppendFormat("Arg {0}: ", i);
-        Arguments[i].AppendAstStringIndented(sb, baseIndent + 2);
+        sb.AppendIndented(PositionalArguments[i], baseIndent + 2);
+        sb.AppendLine();
+      }
+      foreach (var kvp in KeywordArguments) {
+        sb.Append(' ', baseIndent + 2);
+        sb.AppendFormat("Kwarg {0}: ", kvp.Key);
+        sb.AppendIndented(kvp.Value, baseIndent + 2);
         sb.AppendLine();
       }
       sb.Append(' ', baseIndent);

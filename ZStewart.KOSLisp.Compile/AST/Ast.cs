@@ -25,19 +25,46 @@ namespace ZStewart.KOSLisp.Compile.AST {
     }
 
     /// <summary>
-    /// Creates a new AstOp that calls the given function expression with the given
-    /// arguments.
+    /// Creates a new AstOp that calls the given function expression with no arguments.
     /// </summary>
-    public static AstFuncCall Call(AstOp function, IEnumerable<AstOp> args) {
-      return new AstFuncCall(function, args);
+    public static AstFuncCall Call(AstOp function) {
+      return new AstFuncCall(function);
     }
 
     /// <summary>
     /// Creates a new AstOp that calls the given function expression with the given
-    /// arguments.
+    /// positional arguments.
+    /// </summary>
+    public static AstFuncCall Call(AstOp function, IEnumerable<AstOp> args) {
+      return new AstFuncCall(function, positionalArguments: args);
+    }
+
+    /// <summary>
+    /// Creates a new AstOp that calls the given function expression with the given
+    /// positional arguments.
     /// </summary>
     public static AstFuncCall Call(AstOp function, params AstOp[] args) {
       return Call(function, (IEnumerable<AstOp>)args);
+    }
+
+    /// <summary>
+    /// Creates a new AstOp that calls the given function expression with the tiven
+    /// positional arguments.
+    /// </summary>
+    public static AstFuncCall Call(
+        AstOp function, IEnumerable<KeyValuePair<SymbolType, AstOp>> kwargs) {
+      return new AstFuncCall(function, keywordArguments: kwargs);
+    }
+
+    /// <summary>
+    /// Creates a new AstOp that calls the given function expression with the given
+    /// positional arguments and keyword arguments.
+    /// </summary>
+    public static AstFuncCall Call(
+        AstOp function,
+        IEnumerable<AstOp> pargs,
+        IEnumerable<KeyValuePair<SymbolType, AstOp>> kwargs) {
+      return new AstFuncCall(function, pargs, kwargs);
     }
 
     /// <summary>
