@@ -63,7 +63,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
     /// basic functionality.
     /// </summary>
     public static ModuleType ImportModule() {
-      var builtins = ModuleType.Create(SymbolType.Create("builtins"));
+      var builtins = ModuleType.Create(SymbolType.Create("_builtins"));
 
       // List Operations.
       AddBuiltin(builtins, typeof(ListOperations), "GetCar", "car");

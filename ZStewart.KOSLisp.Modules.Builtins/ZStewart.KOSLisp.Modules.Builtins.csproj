@@ -6,7 +6,7 @@
     <ProjectGuid>{E0270882-93E6-444B-AD28-64C033681276}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>ZStewart.KOSLisp.Modules.Builtins</RootNamespace>
-    <AssemblyName>builtins</AssemblyName>
+    <AssemblyName>_builtins</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
