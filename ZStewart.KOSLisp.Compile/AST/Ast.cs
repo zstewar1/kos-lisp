@@ -156,10 +156,9 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// evaluates the specified forms.
     /// </summary>
     public static AstLambda Lambda(
-        IEnumerable<AstBinding> pargs,
-        IEnumerable<KeyValuePair<SymbolType, AstBinding>> kwargs,
+        IEnumerable<Tuple<ArgumentProperties, AstBinding, AstOp>> args,
         IEnumerable<AstOp> forms) {
-      return new AstLambda(pargs, kwargs, forms);
+      return new AstLambda(args, forms);
     }
 
     /// <summary>
@@ -167,10 +166,9 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// evaluates the specified forms.
     /// </summary>
     public static AstLambda Lambda(
-        IEnumerable<AstBinding> pargs,
-        IEnumerable<KeyValuePair<SymbolType, AstBinding>> kwargs,
+        IEnumerable<Tuple<ArgumentProperties, AstBinding, AstOp>> args,
         params AstOp[] forms) {
-      return Lambda(pargs, kwargs, (IEnumerable<AstOp>)forms);
+      return Lambda(args, (IEnumerable<AstOp>)forms);
     }
 
     /// <summary>
@@ -179,10 +177,9 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     public static AstDefun Defun(
         AstBinding name,
-        IEnumerable<AstBinding> pargs,
-        IEnumerable<KeyValuePair<SymbolType, AstBinding>> kwargs,
+        IEnumerable<Tuple<ArgumentProperties, AstBinding, AstOp>> args,
         IEnumerable<AstOp> forms) {
-      return new AstDefun(name, pargs, kwargs, forms);
+      return new AstDefun(name, args, forms);
     }
 
     /// <summary>
@@ -191,10 +188,9 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     public static AstDefun Defun(
         AstBinding name,
-        IEnumerable<AstBinding> pargs,
-        IEnumerable<KeyValuePair<SymbolType, AstBinding>> kwargs,
+        IEnumerable<Tuple<ArgumentProperties, AstBinding, AstOp>> args,
         params AstOp[] forms) {
-      return Defun(name, pargs, kwargs, (IEnumerable<AstOp>)forms);
+      return Defun(name, args, (IEnumerable<AstOp>)forms);
     }
 
     /// <summary>
@@ -203,7 +199,7 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     public static AstDefmacro Defmacro(
         AstBinding name,
-        IEnumerable<AstBinding> args,
+        IEnumerable<Tuple<ArgumentProperties, AstBinding, AstOp>> args,
         IEnumerable<AstOp> forms) {
       return new AstDefmacro(name, args, forms);
     }
@@ -214,7 +210,7 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     public static AstDefmacro Defmacro(
         AstBinding name,
-        IEnumerable<AstBinding> args,
+        IEnumerable<Tuple<ArgumentProperties, AstBinding, AstOp>> args,
         params AstOp[] forms) {
       return Defmacro(name, args, (IEnumerable<AstOp>)forms);
     }

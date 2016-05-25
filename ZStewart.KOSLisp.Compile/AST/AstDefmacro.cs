@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
+
+using ZStewart.KOSLisp.Types;
 
 namespace ZStewart.KOSLisp.Compile.AST {
   /// <summary>
@@ -15,11 +18,15 @@ namespace ZStewart.KOSLisp.Compile.AST {
 
     /// <summary>
     /// Creates an expression that evaluates to a macro.
+    ///
+    /// Macro definitions cannot take positional arguments, but assurance of this is left
+    /// to the special form that creates the AST.
     /// </summary>
     internal AstDefmacro(
-        AstBinding name, IEnumerable<AstBinding> args, IEnumerable<AstOp> forms)
-        : base(
-          args, ImmutableList.Create<KeyValuePair<SymbolType, AstBinding>>(), forms) {
+        AstBinding name,
+        IEnumerable<Tuple<ArgumentProperties, AstBinding, AstOp>> args,
+        IEnumerable<AstOp> forms)
+        : base(args, forms) {
       Name = name;
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
@@ -20,10 +21,9 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     internal AstDefun(
         AstBinding name,
-        IEnumerable<AstBinding> pargs,
-        IEnumerable<KeyValuePair<SymbolType, AstBinding>> kwargs,
+        IEnumerable<Tuple<ArgumentProperties, AstBinding, AstOp>> args,
         IEnumerable<AstOp> forms)
-        : base(pargs, kwargs, forms) {
+        : base(args, forms) {
       Name = name;
     }
 
