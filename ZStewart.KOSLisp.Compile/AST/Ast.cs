@@ -156,9 +156,10 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// evaluates the specified forms.
     /// </summary>
     public static AstLambda Lambda(
-        IEnumerable<AstBinding> args,
+        IEnumerable<AstBinding> pargs,
+        IEnumerable<KeyValuePair<SymbolType, AstBinding>> kwargs,
         IEnumerable<AstOp> forms) {
-      return new AstLambda(args, forms);
+      return new AstLambda(pargs, kwargs, forms);
     }
 
     /// <summary>
@@ -166,9 +167,10 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// evaluates the specified forms.
     /// </summary>
     public static AstLambda Lambda(
-        IEnumerable<AstBinding> args,
+        IEnumerable<AstBinding> pargs,
+        IEnumerable<KeyValuePair<SymbolType, AstBinding>> kwargs,
         params AstOp[] forms) {
-      return Lambda(args, (IEnumerable<AstOp>)forms);
+      return Lambda(pargs, kwargs, (IEnumerable<AstOp>)forms);
     }
 
     /// <summary>
@@ -177,9 +179,10 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     public static AstDefun Defun(
         AstBinding name,
-        IEnumerable<AstBinding> args,
+        IEnumerable<AstBinding> pargs,
+        IEnumerable<KeyValuePair<SymbolType, AstBinding>> kwargs,
         IEnumerable<AstOp> forms) {
-      return new AstDefun(name, args, forms);
+      return new AstDefun(name, pargs, kwargs, forms);
     }
 
     /// <summary>
@@ -188,9 +191,10 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     public static AstDefun Defun(
         AstBinding name,
-        IEnumerable<AstBinding> args,
+        IEnumerable<AstBinding> pargs,
+        IEnumerable<KeyValuePair<SymbolType, AstBinding>> kwargs,
         params AstOp[] forms) {
-      return Defun(name, args, (IEnumerable<AstOp>)forms);
+      return Defun(name, pargs, kwargs, (IEnumerable<AstOp>)forms);
     }
 
     /// <summary>

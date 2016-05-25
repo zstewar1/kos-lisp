@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 
+using ZStewart.KOSLisp.Types;
+
 namespace ZStewart.KOSLisp.Compile.AST {
   /// <summary>
   /// Representes an expression that generates a lambda function.
@@ -10,19 +12,30 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// <summary>
     /// The list of positional argument bindings for this function.
     /// </summary>
-    public ImmutableList<AstBinding> Args { get; }
+    public ImmutableList<AstBinding> PositionalArguments { get; }
+
+    /// <summary>
+    /// The list of keyword arguments and their bindings for this function.
+    /// </summary>
+    public ImmutableDictionary<SymbolType, AstBinding> KeywordArguments { get; }
 
     /// <summary>
     /// Creates an expression that evaluates to a lambda function.
     /// </summary>
-    internal AstLambda(IEnumerable<AstBinding> args, IEnumerable<AstOp> forms)
+    internal AstLambda(
+        IEnumerable<AstBinding> positionalArguments,
+        IEnumerable<KeyValuePair<SymbolType, AstBinding>> keywordArguments,
+        IEnumerable<AstOp> forms)
         : base(forms) {
-      Args = ImmutableList.CreateRange(args);
+      PositionalArguments = ImmutableList.CreateRange(positionalArguments);
+      KeywordArguments = ImmutableDictionary.CreateRange(keywordArguments);
     }
 
     public override StringBuilder AppendAstStringIndented(
         StringBuilder sb, int baseIndent) {
-      if (Args.Count == 0 && Forms.Count == 0) {
+      if (PositionalArguments.Count == 0
+          && KeywordArguments.Count == 0
+          && Forms.Count == 0) {
         sb.Append("[AST-Lambda]");
       } else {
         sb.AppendLine("[AST-Lambda:");
@@ -40,10 +53,16 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// the end.
     /// </summary>
     protected virtual StringBuilder AppendArgs(StringBuilder sb, int baseIndent) {
-      for (int i = 0; i < Args.Count; i++) {
+      for (int i = 0; i < PositionalArguments.Count; i++) {
         sb.Append(' ', baseIndent + 2);
-        sb.AppendFormat("Arg {0}: ", i);
-        Args[i].AppendAstStringIndented(sb, baseIndent + 4);
+        sb.AppendFormat("Positional Argument {0}: ", i);
+        sb.AppendIndented(PositionalArguments[i], baseIndent + 4);
+        sb.AppendLine();
+      }
+      foreach (var kvp in KeywordArguments) {
+        sb.Append(' ', baseIndent + 2);
+        sb.AppendFormat("Keyword Argument {0}: ", kvp.Key);
+        sb.AppendIndented(kvp.Value, baseIndent + 4);
         sb.AppendLine();
       }
       return sb;

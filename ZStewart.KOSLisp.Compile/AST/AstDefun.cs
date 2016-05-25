@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 
+using ZStewart.KOSLisp.Types;
+
 namespace ZStewart.KOSLisp.Compile.AST {
   /// <summary>
   /// Representes an expression that generates a lambda function.
@@ -17,8 +19,11 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// Creates an expression that evaluates to a lambda function.
     /// </summary>
     internal AstDefun(
-        AstBinding name, IEnumerable<AstBinding> args, IEnumerable<AstOp> forms)
-        : base(args, forms) {
+        AstBinding name,
+        IEnumerable<AstBinding> pargs,
+        IEnumerable<KeyValuePair<SymbolType, AstBinding>> kwargs,
+        IEnumerable<AstOp> forms)
+        : base(pargs, kwargs, forms) {
       Name = name;
     }
 
@@ -27,7 +32,7 @@ namespace ZStewart.KOSLisp.Compile.AST {
       sb.AppendLine("[AST-Defun:");
       sb.Append(' ', baseIndent + 2);
       sb.Append("Name: ");
-      Name.AppendAstStringIndented(sb, baseIndent + 2);
+      sb.AppendIndented(Name, baseIndent + 2);
       sb.AppendLine();
       AppendArgs(sb, baseIndent);
       AppendForms(sb, baseIndent);

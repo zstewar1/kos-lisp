@@ -18,7 +18,8 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     internal AstDefmacro(
         AstBinding name, IEnumerable<AstBinding> args, IEnumerable<AstOp> forms)
-        : base(args, forms) {
+        : base(
+          args, ImmutableList.Create<KeyValuePair<SymbolType, AstBinding>>(), forms) {
       Name = name;
     }
 
