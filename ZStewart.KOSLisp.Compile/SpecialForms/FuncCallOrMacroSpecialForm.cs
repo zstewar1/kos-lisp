@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 using static ZStewart.KOSLisp.Types.ExceptionType;
@@ -37,7 +38,8 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// <param name="compiler">
     /// The Lisp compiler, which this special form can use to parse sub-expressions.
     /// </param>
-    public AstOp ToAst(LispObject expression, Context context, SemanticAnalyzer compiler) {
+    public AstOp ToAst(
+        LispObject expression, Context context, SemanticAnalyzer compiler) {
       if (!ListOperations.Proper(expression)) {
         throw ExceptionType.ThrowSyntaxError(
           "function call or macro expression must be a proper list");
@@ -52,12 +54,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
         return compiler.ToAst(replacement, context);
       }
 
-      // Otherwise just expand as a plain function call.
-      // TODO(zstewar1): expand with keyword arguments.
-      var args = ListOperations.IterList(rest)
-        .Select(arg => compiler.ToAst(arg, context));
-
-      return Ast.Call(fnOrMacro, args);
+      return CreateFuncCall(fnOrMacro, rest, context, compiler);
     }
 
     /// <summary>
@@ -113,6 +110,64 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       //   macro_name
       //   <AST-Constant: SymbolType && !SymbolType::IsSelfEvaluating>>
       return true;
+    }
+
+    /// <summary>
+    /// Create an AstOp representing the call to the given function.
+    /// </summary>
+    protected virtual AstOp CreateFuncCall(
+        AstOp fn, LispObject args, Context context, SemanticAnalyzer compiler) {
+      var positionalArgs = ReadPositionalArgs(ref args, context, compiler);
+      var keywordArgs = ReadKeywordArgs(ref args, context, compiler);
+      return Ast.Call(fn, positionalArgs, keywordArgs);
+    }
+
+    /// <summary>
+    /// Read the argument list until a keyword is found, adding the value of each argument
+    /// to the positional argument list.
+    /// </summary>
+    protected virtual List<AstOp> ReadPositionalArgs(
+        ref LispObject args, Context context, SemanticAnalyzer compiler) {
+      List<AstOp> result = new List<AstOp>();
+      for (; !ReferenceEquals(args, NilType.Nil); args = ListOperations.GetCdr(args)) {
+        var current = ListOperations.GetCar(args);
+        // Stop parsing keyword arguments once we find a keyword.
+        if (current is KeywordSymbolType) {
+          break;
+        }
+        result.Add(compiler.ToAst(current, context));
+      }
+      return result;
+    }
+
+    /// <summary>
+    /// Read keyword-argument pairs from the argument list, raising errors for invalid
+    /// states of keyword arguments.
+    /// </summary>
+    protected virtual Dictionary<SymbolType, AstOp> ReadKeywordArgs(
+        ref LispObject args, Context context, SemanticAnalyzer compiler) {
+      var result = new Dictionary<SymbolType, AstOp>();
+      for (; !ReferenceEquals(args, NilType.Nil); args = ListOperations.GetCdr(args)) {
+        var current = ListOperations.GetCar(args);
+        if (!(current is KeywordSymbolType)) {
+          throw ThrowSyntaxError("positional argument follows keyword argument");
+        }
+        var sym = ((KeywordSymbolType)current).Unprefix();
+        if (result.ContainsKey(sym)) {
+          throw ThrowSyntaxError("duplicate keyword {0}", sym);
+        }
+        args = ListOperations.GetCdr(args);
+        if (ReferenceEquals(args, NilType.Nil)) {
+          throw ThrowSyntaxError("end of argument list while reading keyword {0}", sym);
+        }
+        current = ListOperations.GetCar(args);
+        if (current is KeywordSymbolType) {
+          throw ThrowSyntaxError(
+            "unmatched keyword {0} (did you mean to quote {1}?)", sym, current);
+        }
+        result.Add(sym, compiler.ToAst(current, context));
+      }
+      return result;
     }
   }
 }
