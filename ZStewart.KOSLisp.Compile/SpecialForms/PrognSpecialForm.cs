@@ -34,14 +34,16 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
     /// of forms. This method allows child classes which overide the ToAst method to
     /// explicitly reference the form-parsing mechanism.
     /// </summary>
-    protected IEnumerable<AstOp> ParseForms(
+    protected List<AstOp> ParseForms(
         LispObject forms, Context context, SemanticAnalyzer compiler) {
       if (!ListOperations.Proper(forms)) {
         throw ExceptionType.ThrowSyntaxError(
           "progn forms list must be a proper list");
       }
 
-      return ListOperations.IterList(forms).Select(form => compiler.ToAst(form, context));
+      return ListOperations.IterList(forms)
+        .Select(form => compiler.ToAst(form, context))
+        .ToList();
     }
   }
 }
