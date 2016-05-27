@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
+using static ZStewart.KOSLisp.Types.ExceptionType;
 
 using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Compile.Contexts;
@@ -30,22 +33,22 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       try {
         len = ListOperations.Count(expression);
       } catch (ExceptionWrapper ex) {
-        throw ExceptionType.ThrowSyntaxError(
+        throw ThrowSyntaxError(
           ex, "macro definition expression must be a proper list");
       }
       if (len < 2) {
-        throw ExceptionType.ThrowSyntaxError(
+        throw ThrowSyntaxError(
           "macro definition expression requires at least a macro name and args list");
       }
 
       var nameObj = ListOperations.GetCar(expression);
       if (!(nameObj is SymbolType)) {
-        throw ExceptionType.ThrowSyntaxError(
+        throw ThrowSyntaxError(
           "macro name must be a symbol, got {0}", nameObj.__class__);
       }
       var name = (SymbolType)nameObj;
       if (name.IsSelfEvaluating) {
-        throw ExceptionType.ThrowSyntaxError(
+        throw ThrowSyntaxError(
           "cannot declare macro with self-evaluating name {0}", name);
       }
 
@@ -53,6 +56,13 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       List<Tuple<ArgumentProperties, AstBinding, AstOp>> args;
       List<AstOp> forms;
       ParseArgsAndForms(rest, context, compiler, out args, out forms);
+
+      if (args.Select(arg => arg.Item1.Type)
+            .Any(type => type == ArgumentType.Keyword ||
+              type == ArgumentType.RestKwCapture ||
+              type == ArgumentType.RestKwIgnore)) {
+        throw ThrowSyntaxError("macros cannot take keyword arguments");
+      }
 
       // Macro definition adds binding after parsing args and forms. Macros cannot
       // recurse, because the macro definition is needed at macro definition time.
