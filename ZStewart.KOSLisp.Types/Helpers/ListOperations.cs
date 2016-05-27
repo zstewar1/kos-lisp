@@ -164,5 +164,35 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     public static IEnumerable<LispType> IterMro(LispObject target) {
       return IterList<LispType>(target.__class__.__mro__);
     }
+
+    /// <summary>
+    /// Returns true if the the given object defines getcar and getcdr.
+    /// </summary>
+    public static bool IConsIsh([Required] LispObject target) {
+      return LookupHelpers.Query(
+          target,
+          t => t._list_methods?.__getcar__ != null,
+          getcarattr) &&
+        LookupHelpers.Query(
+          target,
+          t => t._list_methods?.__getcdr__ != null,
+          getcdrattr);
+
+    }
+
+    /// <summary>
+    /// Returns true if the given object defines getcar, setcar, getcdr, and setcdr.
+    /// </summary>
+    public static bool ConsIsh([Required] LispObject target) {
+      return IConsIsh(target) &&
+        LookupHelpers.Query(
+          target,
+          t => t._list_methods?.__setcar__ != null,
+          setcarattr) &&
+        LookupHelpers.Query(
+          target,
+          t => t._list_methods?.__setcdr__ != null,
+          setcdrattr);
+    }
   }
 }

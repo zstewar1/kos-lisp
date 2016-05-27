@@ -375,7 +375,9 @@ namespace ZStewart.KOSLisp.Types {
     /// false if it does not. Null is returned if there is an error while looking up the
     /// attribute other than AttributeError.
     /// </summary>
-    public static bool HasAttribute(LispObject obj, LispObject attribute) {
+    public static bool HasAttribute(
+        [Required] LispObject obj,
+        [Required] LispObject attribute) {
       try {
         GetAttribute(obj, attribute);
         return true;

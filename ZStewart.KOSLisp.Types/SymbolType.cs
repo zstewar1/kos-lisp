@@ -73,7 +73,7 @@ namespace ZStewart.KOSLisp.Types {
     }
     #endregion Static Type Setup
 
-    public const string SUBSYMBOL_REGEX = @"[\p{L}@<>=_+!~*^%$/\-\d]";
+    public const string SUBSYMBOL_REGEX = @"[\p{L}@<>=_+!?~*^%$/\-\d]";
     public const string SYMBOL_REGEX = SUBSYMBOL_REGEX + "+";
     public const RegexOptions SYMBOL_REGEX_OPTIONS =
       RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase;

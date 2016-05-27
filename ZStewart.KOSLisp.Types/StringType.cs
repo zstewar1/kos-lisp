@@ -215,7 +215,7 @@ namespace ZStewart.KOSLisp.Types {
       return GetRepr(obj).Value;
     }
 
-    public static StringType GetRepr(LispObject obj) {
+    public static StringType GetRepr([Required] LispObject obj) {
       var repr = LookupHelpers.Lookup(
         obj,
         unused => null,

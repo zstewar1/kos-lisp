@@ -182,7 +182,7 @@ namespace ZStewart.KOSLisp.Types {
     /// </summary>
     /// <param name="orignalList">The list to copy.</param>
     /// <returns>A copy of the given list as only normal conses.</returns>
-    public static LispObject Copy(LispObject originalList) {
+    public static LispObject Copy([Required] LispObject originalList) {
       if (ReferenceEquals(originalList, NilType.Nil)) return NilType.Nil;
       var car = ListOperations.GetCar(originalList);
       var cdr = ListOperations.GetCdr(originalList);

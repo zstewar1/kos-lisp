@@ -137,7 +137,7 @@ namespace ZStewart.KOSLisp.Types {
     /// </summary>
     /// <param name="originalList">The list to convert.</param>
     /// <returns>The converted list.</returns>
-    public static LispObject Copy(LispObject originalList) {
+    public static LispObject Copy([Required] LispObject originalList) {
       if (originalList == NilType.Nil) return NilType.Nil;
       var car = ListOperations.GetCar(originalList);
       var cdr = ListOperations.GetCdr(originalList);

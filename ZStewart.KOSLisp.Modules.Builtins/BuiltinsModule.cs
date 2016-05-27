@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using ZStewart.KOSLisp.Types;
@@ -70,6 +71,8 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddBuiltin(builtins, typeof(ListOperations), "GetCdr", "cdr");
       AddBuiltin(builtins, typeof(ListOperations), "SetCar", "%setcar");
       AddBuiltin(builtins, typeof(ListOperations), "SetCdr", "%setcdr");
+      AddBuiltin(builtins, typeof(BuiltinsModule), "Append");
+      AddBuiltin(builtins, typeof(BuiltinsModule), "IAppend");
 
       // The convienience list/tuple constructors.
       var toList = typeof(ConsType).GetMethod(
@@ -78,6 +81,8 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
           "ToLispTuple", new Type[] {typeof(IReadOnlyList<LispObject>)});
       AddBuiltin(builtins, toList, "list");
       AddBuiltin(builtins, toTuple, "tuple");
+      AddBuiltin(builtins, typeof(ConsType), "Copy");
+      AddBuiltin(builtins, typeof(IConsType), "Copy", "icopy");
 
       // Mapping Operations.
       AddBuiltin(builtins, typeof(MappingOperations), "GetItem");
@@ -85,6 +90,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
 
       // Attribute retrieval
       AddBuiltin(builtins, typeof(LispObject), "GetAttribute", "getattr");
+      AddBuiltin(builtins, typeof(LispObject), "HasAttribute", "hasattr");
       AddBuiltin(builtins, typeof(LispObject), "SetAttribute", "%setattr");
 
       // Base (binary) comparison operations.
@@ -96,13 +102,17 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddBuiltin(builtins, typeof(ComparisonOperations), "Hash");
       AddBuiltin(builtins, typeof(ComparisonOperations), "Is");
 
+      // String Ops
+      AddBuiltin(builtins, typeof(StringType), "GetRepr", "repr");
+
       // Type Checking
       AddBuiltin(builtins, typeof(LispType), "IsInstance");
       AddBuiltin(builtins, typeof(LispType), "IsSubtype");
+      AddBuiltin(builtins, typeof(ListOperations), "IConsIsh", "tuple?");
+      AddBuiltin(builtins, typeof(ListOperations), "ConsIsh", "list?");
 
       // Extras defined in this module.
-      AddBuiltin(builtins, typeof(BuiltinsModule), "Print", "print");
-      AddBuiltin(builtins, typeof(BuiltinsModule), "Repr", "repr");
+      AddBuiltin(builtins, typeof(BuiltinsModule), "Print");
 
       // Types from the Types library.
       AddType(builtins, LispType.Type);
@@ -137,12 +147,44 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
     }
 
     /// <summary>
-    /// Simple function to return the repr of an object.
+    /// Appends the given lists together nondestructively.
     /// </summary>
-    public static LispObject Repr([Required] LispObject value) {
-      return StringType.GetRepr(value);
+    public static LispObject Append([RestCapture] List<LispObject> lists) {
+      return AppendInner(lists, ConsType.Create);
+    }
+
+    /// <summary>
+    /// Appends the given lists together nondestructively, converting them all to tuples
+    /// in the process.
+    /// </summary>
+    public static LispObject IAppend([RestCapture] List<LispObject> lists) {
+      if (lists.Count > 0) {
+        lists[lists.Count - 1] = IConsType.Copy(lists[lists.Count - 1]);
+      }
+      return AppendInner(lists, IConsType.Create);
+    }
+
+    /// <summary>
+    /// Helper for both append methods above. Nondestructively appends together the given
+    /// lists using the provided method for creating new cons cells.
+    /// </summary>
+    private static LispObject AppendInner(
+        List<LispObject> lists, Func<LispObject, LispObject, LispObject> cons) {
+      if (lists.Count == 0) {
+        return NilType.Nil;
+      }
+      var result = lists[lists.Count - 1];
+      for (int i = lists.Count - 2; i >= 0; i--) {
+        foreach(var val in ListOperations.IterList(lists[i]).Reverse()) {
+          result = cons(val, result);
+        }
+      }
+      return result;
     }
     #endregion Simple Builtin Functions
+
+    #region Builtin Macros
+    #endregion Builtin Macros
   }
 }
 

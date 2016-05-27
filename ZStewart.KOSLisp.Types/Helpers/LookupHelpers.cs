@@ -245,6 +245,10 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       return notFoundResult();
     }
 
+    /// <summary>
+    /// Check if the given object has the given method using the same lookup strategy as
+    /// the calling methods.
+    /// </summary>
     public static bool Query(
         LispObject target, Predicate<LispType> hasBuiltin, LispObject fallbackSymbol) {
       foreach (var targetType in ListOperations.IterMro(target)) {
