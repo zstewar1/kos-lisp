@@ -52,6 +52,10 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
           "cannot declare macro with self-evaluating name {0}", name);
       }
 
+      // Macro binding is done before evaluating. This allows calling macros recursively
+      // using macro-name.--macroexpand--
+      var binding = context.AddBinding(name);
+
       var rest = ListOperations.GetCdr(expression);
       List<Tuple<ArgumentProperties, AstBinding, AstOp>> args;
       List<AstOp> forms;
@@ -63,12 +67,6 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
               type == ArgumentType.RestKwIgnore)) {
         throw ThrowSyntaxError("macros cannot take keyword arguments");
       }
-
-      // Macro definition adds binding after parsing args and forms. Macros cannot
-      // recurse, because the macro definition is needed at macro definition time.
-      // However, they can have recursive behavior by returning an expression which
-      // contains another invocation of the macro.
-      var binding = context.AddBinding(name);
 
       return Ast.Defmacro(binding, args, forms);
     }
