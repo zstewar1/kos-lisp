@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -89,21 +90,27 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       for (; !ReferenceEquals(arglist, NilType.Nil);
           arglist = ListOperations.GetCdr(arglist)) {
         var current = ListOperations.GetCar(arglist);
+        // Single symbol could be an argument or &rest+, &rest-, &rest args, &kw kwargs,
+        // &kw+.
         if (current is SymbolType) {
           var sym = (SymbolType)current;
           if (sym == KeywordSymbolType.Create("&rest+")) {
+            // &rest+ means ignore rest.
             CheckRestAllowed(lastType);
             args.Add(
               Tuple.Create<ArgumentProperties, AstBinding, AstOp>(
                 new ArgumentProperties(ArgumentType.RestIgnore), null, null));
             lastType = ArgumentType.RestIgnore;
           } else if (sym == KeywordSymbolType.Create("&rest-")) {
+            // &rest- means block rest.
             CheckRestAllowed(lastType);
             args.Add(
               Tuple.Create<ArgumentProperties, AstBinding, AstOp>(
                 new ArgumentProperties(ArgumentType.RestBlock), null, null));
             lastType = ArgumentType.RestBlock;
           } else if (sym == KeywordSymbolType.Create("&rest")) {
+            // For &rest, read the next element to find out what symbol to bind the rest
+            // argument to.
             CheckRestAllowed(lastType);
             arglist = ListOperations.GetCdr(arglist);
             if (ReferenceEquals(arglist, NilType.Nil)) {
@@ -124,21 +131,23 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
             }
             if (existingArgs.Contains(restSym)) {
               throw ThrowSyntaxError(
-                "argument list contains argument '{0} more than once", restSym)
+                "argument list contains argument '{0} more than once", restSym);
             }
             var binding = innerContext.AddBinding(restSym);
             args.Add(
-              Tuple.Create<ArgumentProperties, AstBindng, AstOp>(
+              Tuple.Create<ArgumentProperties, AstBinding, AstOp>(
                 new ArgumentProperties(ArgumentType.RestCapture), binding, null));
             existingArgs.Add(restSym);
             lastType = ArgumentType.RestCapture;
-          } else if (sym == KeywordSymbolType.Create("&kw-")) {
+          } else if (sym == KeywordSymbolType.Create("&kw+")) {
+            // &kw+ means igore rest keyword arguments.
             CheckRestKwAllowed(lastType);
             args.Add(
               Tuple.Create<ArgumentProperties, AstBinding, AstOp>(
                 new ArgumentProperties(ArgumentType.RestKwIgnore), null, null));
             lastType = ArgumentType.RestKwIgnore;
           } else if (sym == KeywordSymbolType.Create("&kw")) {
+            // For &kw, read the next argument to find out where to put the rest argument.
             CheckRestKwAllowed(lastType);
             arglist = ListOperations.GetCdr(arglist);
             if (ReferenceEquals(arglist, NilType.Nil)) {
@@ -153,7 +162,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
                 "type {0}",
                 restKwArg.__class__);
             }
-            var restKwSym = (SymbolType)restKwSym;
+            var restKwSym = (SymbolType)restKwArg;
             if (restKwSym.IsSelfEvaluating) {
               throw ThrowSyntaxError(
                 "cannot capture rest-keyword args in self-evalutating symbol '{0}",
@@ -161,7 +170,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
             }
             if (existingArgs.Contains(restKwSym)) {
               throw ThrowSyntaxError(
-                "argument list contains argument '{0} more than once", restKwSym)
+                "argument list contains argument '{0} more than once", restKwSym);
             }
             var binding = innerContext.AddBinding(restKwSym);
             args.Add(
@@ -170,17 +179,21 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
             existingArgs.Add(restKwSym);
             lastType = ArgumentType.RestKwCapture;
           } else if (sym.IsSelfEvaluating) {
+            // If it doesn't match one of the explicit keyword types, block it if self
+            // evaluating.
             throw ThrowSyntaxError(
               "found invalid argument (self-evaluating symbol) '{0}", sym);
           } else if (existingArgs.Contains(sym)) {
+            // Prevent a duplicate argument name.
             throw ThrowSyntaxError(
-              "argument list contains argument '{0} more than once", sym)
+              "argument list contains argument '{0} more than once", sym);
           } else {
-            var argType = GetRequiredType(lastType, lastOptional);
+            // Remaining non-duplicate, non-self-evaluating symbols are just arguments.
+            var argType = GetRequiredArgumentType(lastType, lastOptional);
             var binding = innerContext.AddBinding(sym);
             args.Add(
               Tuple.Create<ArgumentProperties, AstBinding, AstOp>(
-                new ArumentProperties(argType, name: sym, isOptional: false),
+                new ArgumentProperties(argType, name: sym, isOptional: false),
                 binding, null));
             existingArgs.Add(sym);
             lastType = argType;
@@ -188,6 +201,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
         } else if (current is ConsType) {
           int len;
           try {
+            len = ListOperations.Count(current);
           } catch (ExceptionWrapper ex) {
             throw ThrowSyntaxError(ex, "default-valued argument must be a proper list");
           }
@@ -207,7 +221,7 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
 
           if (existingArgs.Contains(sym)) {
             throw ThrowSyntaxError(
-              "argument list contains argument '{0} more than once", sym)
+              "argument list contains argument '{0} more than once", sym);
           }
           var val = ListOperations.GetCar(ListOperations.GetCdr(current));
 
@@ -224,6 +238,8 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
           lastOptional = true;
         }
       }
+
+      return innerContext;
     }
 
     /// <summary>
@@ -243,7 +259,74 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
         case ArgumentType.RestKwIgnore:
           throw ThrowSyntaxError("found optional argument after rest-keyword argument");
         default:
-          throw InvalidOperationException("this should be impossible.");
+          throw new InvalidOperationException("this should be impossible.");
+      }
+    }
+
+    /// <summary>
+    /// Ensures that is is legal for a required argument to follow the given previous
+    /// argument and returns the type that such and argument should be.
+    /// </summary>
+    protected ArgumentType GetRequiredArgumentType(
+        ArgumentType lastType, bool lastOptional) {
+      switch (lastType) {
+        case ArgumentType.PositionalOrKeyword:
+          if (lastOptional) {
+            throw ThrowSyntaxError(
+              "found required positional arument after optional positional argument");
+          }
+          return ArgumentType.PositionalOrKeyword;
+        case ArgumentType.RestCapture:
+        case ArgumentType.RestIgnore:
+        case ArgumentType.RestBlock:
+        case ArgumentType.Keyword:
+          return ArgumentType.Keyword;
+        case ArgumentType.RestKwCapture:
+        case ArgumentType.RestKwIgnore:
+          throw ThrowSyntaxError("found required argument after rest-keyword argument");
+        default:
+          throw new InvalidOperationException("this should be impossible.");
+      }
+    }
+
+    /// <summary>
+    /// Raises an error if any rest-type argument (&rest &rest- &rest+) would be illegal
+    /// after the given argument type.
+    /// </summary>
+    protected void CheckRestAllowed(ArgumentType lastType) {
+      switch (lastType) {
+        case ArgumentType.PositionalOrKeyword:
+          break;
+        case ArgumentType.RestCapture:
+        case ArgumentType.RestIgnore:
+        case ArgumentType.RestBlock:
+        case ArgumentType.Keyword:
+          throw ThrowSyntaxError("found repeated rest argument");
+        case ArgumentType.RestKwCapture:
+        case ArgumentType.RestKwIgnore:
+          throw ThrowSyntaxError("found rest argument after rest keyword argument");
+        default:
+          throw new InvalidOperationException("this should be impossible.");
+      }
+    }
+
+    /// <summary>
+    /// Raises an error if any rest-keyword-type argument (&kw &kw+) would be illegal
+    /// after the given argument type.
+    /// </summary>
+    protected void CheckRestKwAllowed(ArgumentType lastType) {
+      switch (lastType) {
+        case ArgumentType.PositionalOrKeyword:
+        case ArgumentType.RestCapture:
+        case ArgumentType.RestIgnore:
+        case ArgumentType.RestBlock:
+        case ArgumentType.Keyword:
+          break;
+        case ArgumentType.RestKwCapture:
+        case ArgumentType.RestKwIgnore:
+          throw ThrowSyntaxError("found rest argument after rest keyword argument");
+        default:
+          throw new InvalidOperationException("this should be impossible.");
       }
     }
   }

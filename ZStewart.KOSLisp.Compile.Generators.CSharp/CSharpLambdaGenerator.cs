@@ -16,7 +16,8 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// <summary>
     /// A list of generators which generate the argument bindings for this function.
     /// </summary>
-    public ImmutableList<CSharpBindingGenerator> Args { get; }
+    public ImmutableList<
+      Tuple<ArgumentProperties, CSharpBindingGenerator, CSharpGenerator>> Args { get; }
 
     /// <summary>
     /// Creates a lambda which evaluates the given expressions.
@@ -31,7 +32,11 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     internal CSharpLambdaGenerator(AstLambda op, CSharpGeneratorFactory factory)
         : base(op, factory) {
       Args = ImmutableList.CreateRange(
-        op.Args.Select(arg => factory.Create(arg)));
+        op.Args.Select(
+          arg => Tuple.Create(
+            arg.Item1,
+            arg.Item2 != null ? factory.Create(arg.Item2) : null,
+            arg.Item3 != null ? factory.Create(arg.Item3) : null)));
     }
 
     /// <summary>
@@ -47,17 +52,46 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// Produce an expression representing executing the specified expressions.
     /// </summary>
     public override Expression Emit() {
-      var pargsParameter = Expression.Parameter(typeof(List<LispObject>), "--in-pargs--");
-      var kwargsParameter = Expression.Parameter(
-        typeof(Dictionary<SymbolType, LispObject>), "--in-kwargs--");
       return Expression.Call(
         typeof(FunctionType), "Create", null,
         Expression.Constant(GetFunctionName()),
+        EmitLambda());
+    }
+
+    /// <summary>
+    /// Produce an expression that evaluates to the lambda being handled. This also binds
+    /// the default values to variables which will be captured by the lambda.
+    /// </summary>
+    protected Expression EmitLambda() {
+      var pargsParameter = Expression.Parameter(typeof(List<LispObject>), "--in-pargs--");
+      var kwargsParameter = Expression.Parameter(
+        typeof(Dictionary<SymbolType, LispObject>), "--in-kwargs--");
+
+      var defaultValueBindings =
+        ImmutableList.CreateRange(
+          Args.Select(
+            arg => arg.Item3 != null ? Expression.Variable(typeof(LispObject)) : null));
+
+      var expressions = new List<Expression>();
+
+      // Bind the default values for any optional arguments to the variable allocated
+      // for it.
+      expressions.AddRange(
+        Args.Zip(defaultValueBindings, (a,b) => Tuple.Create(a,b))
+          .Where(pair => pair.Item2 != null)
+          .Select(pair => Expression.Assign(pair.Item2, pair.Item1.Item3.Emit())));
+
+      expressions.Add(
         Expression.Lambda(
           typeof(FunctionType.Impl),
-          EmitLambdaBody(pargsParameter, kwargsParameter),
+          EmitLambdaBody(pargsParameter, kwargsParameter, defaultValueBindings),
           GetFunctionName().Identifier,
           ImmutableList.Create(pargsParameter, kwargsParameter)));
+
+      return Expression.Block(
+        typeof(FunctionType.Impl),
+        defaultValueBindings.Where(binding => binding != null),
+        expressions);
     }
 
     /// <summary>
@@ -67,11 +101,15 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// </summary>
     private Expression EmitLambdaBody(
         ParameterExpression pargsParameter,
-        ParameterExpression kwargsParameter) {
+        ParameterExpression kwargsParameter,
+        ImmutableList<ParameterExpression> defaultValueBindings) {
+
       return Expression.Block(
         typeof(LispObject),
-        Args.Select(b => (ParameterExpression)b.Emit()),
-        EmitBindArgs(pargsParameter, kwargsParameter),
+        Args.Where(arg => arg.Item2 != null)
+          .Select(arg => arg.Item2)
+          .Select(binding => (ParameterExpression)binding.Emit()),
+        EmitBindArgs(pargsParameter, kwargsParameter, defaultValueBindings),
         EmitForms());
     }
 
@@ -85,52 +123,69 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// </summary>
     private Expression EmitBindArgs(
         ParameterExpression pargsParameter,
-        ParameterExpression kwargsParameter) {
-      var argCount = Expression.Variable(typeof(int), "Arg Count");
+        ParameterExpression kwargsParameter,
+        ImmutableList<ParameterExpression> defaultValueBindings) {
 
-      // TODO(zstewar1): Check kwargs, pargs wrapping into kwargs, rest, and kwrest
-      return Expression.Block(
-        typeof(LispObject),
-        ImmutableList.Create(argCount),
+      var argumentProps = ImmutableList.CreateRange(Args.Select(arg => arg.Item1));
+
+      var collected = Expression.Variable(typeof(object[]), "--collected--");
+
+      var bindExpressions = new List<Expression>();
+
+      bindExpressions.Add(
         Expression.Assign(
-          argCount,
-          Expression.Property(pargsParameter, "Count")),
-        // Check if the list has the correct number of arguments.
-        Expression.IfThen(
-          Expression.NotEqual(argCount, Expression.Constant(Args.Count)),
-          Expression.Throw(
-            Expression.Call(
-              typeof(ExceptionType), "ThrowTypeError", null,
-              Expression.Constant(
-                "function " + GetFunctionName().Identifier + " expected " +
-                Args.Count + " arguments, got {0}"),
-              Expression.NewArrayInit(
-                typeof(object),
-                Expression.Convert(argCount, typeof(object)))))),
-        EmitInstantiateArgs(pargsParameter, kwargsParameter));
-    }
+          collected,
+          Expression.Call(
+            typeof(Arguments), "CollectArguments", null,
+            pargsParameter, kwargsParameter, Expression.Constant(argumentProps))));
 
-    /// <summary>
-    /// Return an expression which evaluates to assigning a value to each argument binding
-    /// from a list of arguments. The list of arguments and the number of argument
-    /// bindings are assumend to be equal.
-    /// </summary>
-    private Expression EmitInstantiateArgs(
-        ParameterExpression pargsParameter,
-        ParameterExpression kwargsParameter) {
-      if (Args.Count == 0) return Expression.Constant(NilType.Nil);
+      for(int i = 0; i < Args.Count; i++) {
+        var prop = Args[i].Item1;
+        var bind = Args[i].Item2;
+        var @default = defaultValueBindings[i];
 
-      var bindExpressions = new List<Expression>(Args.Count);
-
-      int item = 0;
-      foreach (var arg in Args) {
-        bindExpressions.Add(
-          arg.EmitSet(
-            Expression.Property(pargsParameter, "Item", Expression.Constant(item++))));
+        switch (prop.Type) {
+          case ArgumentType.PositionalOrKeyword:
+          case ArgumentType.Keyword:
+            if (prop.IsOptional) {
+              bindExpressions.Add(
+                bind.EmitSet(
+                  Expression.Condition(
+                    Expression.ReferenceEqual(
+                      Expression.ArrayAccess(collected, Expression.Constant(i)),
+                      Expression.Constant(null, typeof(object))),
+                    @default,
+                    Expression.Convert(
+                      Expression.ArrayAccess(collected, Expression.Constant(i)),
+                      typeof(LispObject)))));
+            } else {
+              bindExpressions.Add(
+                bind.EmitSet(
+                  Expression.Convert(
+                    Expression.ArrayAccess(collected, Expression.Constant(i)),
+                    typeof(LispObject))));
+            }
+            break;
+          case ArgumentType.RestIgnore:
+          case ArgumentType.RestBlock:
+          case ArgumentType.RestKwIgnore:
+            break;
+          case ArgumentType.RestCapture:
+          case ArgumentType.RestKwCapture:
+            bindExpressions.Add(
+              bind.EmitSet(
+                Expression.Call(
+                  typeof(Arguments), "Unmarshal", null,
+                  Expression.ArrayAccess(collected, Expression.Constant(i)))));
+            break;
+          default:
+            throw new InvalidOperationException("This should be impossible.");
+        }
       }
 
       return Expression.Block(
-        typeof(LispObject),
+        typeof(void),
+        ImmutableList.Create(collected),
         bindExpressions);
     }
   }

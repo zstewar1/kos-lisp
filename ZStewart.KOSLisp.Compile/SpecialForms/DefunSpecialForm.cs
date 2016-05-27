@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using ZStewart.KOSLisp.Compile.AST;
@@ -48,13 +49,13 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
           "cannot declare function with self-evaluating name {0}", name);
       }
 
-      // Add a binding for the function name to the outer context befoe parsing. This
+      // Add a binding for the function name to the outer context before parsing. This
       // allows functions to reference their own name and recurse.
       var binding = context.AddBinding(name);
 
       var rest = ListOperations.GetCdr(expression);
-      IEnumerable<AstBinding> args;
-      IEnumerable<AstOp> forms;
+      List<Tuple<ArgumentProperties, AstBinding, AstOp>> args;
+      List<AstOp> forms;
       ParseArgsAndForms(rest, context, compiler, out args, out forms);
 
       return Ast.Defun(binding, args, forms);

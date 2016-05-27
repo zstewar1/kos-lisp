@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using ZStewart.KOSLisp.Compile.AST;
@@ -49,8 +50,8 @@ namespace ZStewart.KOSLisp.Compile.SpecialForms {
       }
 
       var rest = ListOperations.GetCdr(expression);
-      IEnumerable<AstBinding> args;
-      IEnumerable<AstOp> forms;
+      List<Tuple<ArgumentProperties, AstBinding, AstOp>> args;
+      List<AstOp> forms;
       ParseArgsAndForms(rest, context, compiler, out args, out forms);
 
       // Macro definition adds binding after parsing args and forms. Macros cannot
