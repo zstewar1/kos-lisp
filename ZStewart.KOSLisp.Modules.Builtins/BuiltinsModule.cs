@@ -106,6 +106,10 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddBuiltin(builtins, typeof(ComparisonOperations), "Hash");
       AddBuiltin(builtins, typeof(ComparisonOperations), "Is");
 
+      // Common boolean operations
+      AddBuiltin(builtins, typeof(BoolType), "Any");
+      AddBuiltin(builtins, typeof(BoolType), "All");
+
       // String Ops
       AddBuiltin(builtins, typeof(StringType), "GetRepr", "repr");
 
@@ -150,6 +154,10 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       return NilType.Nil;
     }
 
+    /// <summary>
+    /// Applies a function to sequential elements of all of the given lists until the
+    /// shortest list runs out, returning a list of the results.
+    /// </summary>
     public static LispObject Map(
         [Required] LispObject func,
         [RestCapture] List<LispObject> lists) {

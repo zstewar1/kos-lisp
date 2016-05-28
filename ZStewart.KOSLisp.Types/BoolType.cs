@@ -72,6 +72,30 @@ namespace ZStewart.KOSLisp.Types {
       throw ExceptionType.ThrowTypeError(
         "unable to convert {0} object to bool.", obj.__class__);
     }
+
+    /// <summary>
+    /// Returns true if any of the given values is true.
+    /// </summary>
+    public static bool Any([Required] List<LispObject> values) {
+      foreach(var val in values) {
+        if (From(val).Value) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /// <summary>
+    /// Returns true if none of the given values are false.
+    /// </summary>
+    public static bool All([Required] List<LispObject> values) {
+      foreach (var val in values) {
+        if (!From(val).Value) {
+          return false;
+        }
+      }
+      return true;
+    }
     #endregion
 
     private static BoolType _f;
