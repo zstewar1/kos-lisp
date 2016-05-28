@@ -73,6 +73,8 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddBuiltin(builtins, typeof(ListOperations), "GetCdr", "cdr");
       AddBuiltin(builtins, typeof(ListOperations), "SetCar", "%setcar");
       AddBuiltin(builtins, typeof(ListOperations), "SetCdr", "%setcdr");
+      AddBuiltin(builtins, typeof(ListOperations), "Count");
+      AddBuiltin(builtins, typeof(ListOperations), "Proper");
       AddBuiltin(builtins, typeof(BuiltinsModule), "Append");
       AddBuiltin(builtins, typeof(BuiltinsModule), "IAppend");
 

@@ -86,7 +86,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </summary>
     /// <param name="list">The list.</param>
     /// <returns>The number of elements or null if there is an error counting.</returns>
-    public static int Count(LispObject list) {
+    public static int Count([Required] LispObject list) {
       int cnt = 0;
       while (!ReferenceEquals(list, NilType.Nil)) {
         cnt++;
@@ -106,7 +106,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// <summary>
     /// Checks if a lisp list is a proper list (i.e. not dotted)
     /// </summary>
-    public static bool Proper(LispObject list) {
+    public static bool Proper([Required] LispObject list) {
       try {
         Count(list);
         return true;
