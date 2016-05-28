@@ -6,7 +6,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
   /// A set of helper functions which make it easier to implement looping lookup
   /// functions. These are macros for poor people.
   /// </summary>
-  internal static class LookupHelpers {
+  public static class LookupHelpers {
     /// <summary>
     /// Lookup and perform a unary operation on the target.
     /// </summary>
@@ -30,7 +30,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// fallback method found in the target type's method resolution order, or null (with
     /// an error set) if no appropriate method is found.
     /// </returns>
-    internal static LispObject Lookup(
+    public static LispObject Lookup(
         LispObject target,
         Func<LispType, Func<LispObject, LispObject>> getBuiltinOrNull,
         LispObject fallbackSymbol,
@@ -70,7 +70,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// fallback method found in the target type's method resolution order, or null (with
     /// an error set) if no appropriate method is found.
     /// </returns>
-    internal static LispObject Lookup(
+    public static LispObject Lookup(
         LispObject target,
         LispObject arg1,
         Func<LispType, Func<LispObject, LispObject, LispObject>> getBuiltinOrNull,
@@ -114,7 +114,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// fallback method found in the target type's method resolution order, or null (with
     /// an error set) if no appropriate method is found.
     /// </returns>
-    internal static LispObject Lookup(
+    public static LispObject Lookup(
         LispObject target,
         LispObject arg1,
         LispObject arg2,
@@ -160,7 +160,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// fallback method found in the target type's method resolution order, or null (with
     /// an error set) if no appropriate method is found.
     /// </returns>
-    internal static LispObject Lookup(
+    public static LispObject Lookup(
         LispObject target,
         List<LispObject> pargs,
         Dictionary<SymbolType, LispObject> kwargs,

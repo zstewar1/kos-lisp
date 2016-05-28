@@ -49,17 +49,16 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         // expand". All other errors are propagated because they are unexpected.
         return null;
       }
-      // Try to getattribute the macroexpand function. If this passes, we have a macro.
-      // Use a default value of Nil so we don't need to try catch more.
-      var macroExpand = LispObject.GetAttribute(
-        maybeMacro, PropConsts.MacroExpand, NilType.Nil);
-      if (ReferenceEquals(macroExpand, NilType.Nil)) {
-        return null;
-      }
 
-      // We have a macro's macroexpand funciton. Try to call it, and return the result as
-      // the new expression.
-      return CallableOperations.Call(macroExpand, ListOperations.IterList(args).ToList());
+      // Do a special lookup to find and call the macroexpand function, with the not-found
+      // result as null to send a "don't replace" signal.
+      return LookupHelpers.Lookup(
+        maybeMacro,
+        Arguments.Marshal<List<LispObject>>(args),
+        new Dictionary<SymbolType, LispObject>(),
+        type => null,
+        PropConsts.MacroExpand,
+        () => null);
     }
   }
 }
