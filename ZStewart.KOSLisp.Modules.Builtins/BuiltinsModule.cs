@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using static ZStewart.KOSLisp.Types.ExceptionType;
+
 using ZStewart.KOSLisp.Types;
 using ZStewart.KOSLisp.Types.Attributes;
 using ZStewart.KOSLisp.Types.Helpers;
@@ -74,6 +76,8 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddBuiltin(builtins, typeof(BuiltinsModule), "Append");
       AddBuiltin(builtins, typeof(BuiltinsModule), "IAppend");
 
+      AddBuiltin(builtins, typeof(BuiltinsModule), "Map");
+
       // The convienience list/tuple constructors.
       var toList = typeof(ConsType).GetMethod(
           "ToLispList", new Type[] {typeof(IReadOnlyList<LispObject>)});
@@ -144,6 +148,30 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       }
       Console.WriteLine();
       return NilType.Nil;
+    }
+
+    public static LispObject Map(
+        [Required] LispObject func,
+        [RestCapture] List<LispObject> lists) {
+      if (lists.Count < 1) {
+        throw ThrowTypeError("at least 1 list is required, got 0");
+      }
+      return ConsType.ToLispList(
+        MapZipHelper(lists)
+          .Select(args => CallableOperations.Call(func, args))
+          .ToList());
+    }
+
+    /// <summary>
+    /// Creates an enumerator that returns lists enumerating over all of the elements of
+    /// the given lists in parallel, until any list runs out of elements.
+    /// </summary>
+    private static IEnumerable<List<LispObject>> MapZipHelper(List<LispObject> lists) {
+      var enumerators = lists.Select(l => ListOperations.IterList(l).GetEnumerator())
+        .ToList();
+      while (enumerators.All(e => e.MoveNext())) {
+        yield return enumerators.Select(e => e.Current).ToList();
+      }
     }
 
     /// <summary>
