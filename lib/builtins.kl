@@ -23,3 +23,5 @@
     (t (let ((c (gensym)))
          (list 'let (list (list c current))
                (cons 'or (cons c rest)))))))
+
+(defun not (arg) (if arg f t))
