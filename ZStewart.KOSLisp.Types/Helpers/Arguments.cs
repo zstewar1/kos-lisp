@@ -251,6 +251,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     /// </summary>
     public static bool IsUnmarshalable(Type sourceType) {
       return sourceType == typeof(double)
+        || sourceType == typeof(int)
         || sourceType == typeof(bool)
         || sourceType == typeof(string)
         || typeof(LispObject).IsAssignableFrom(sourceType)
@@ -280,6 +281,8 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         var type = value.GetType();
         if (type == typeof(double)) {
           return NumberType.Create((double)value);
+        } else if (type == typeof(int)) {
+          return NumberType.Create((double)(int)value);
         } else if (type == typeof(bool)) {
           return BoolType.Create((bool)value);
         } else if (type == typeof(string)) {
