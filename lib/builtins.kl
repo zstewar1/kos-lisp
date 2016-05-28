@@ -1,1 +1,25 @@
 (import _builtins :all)
+
+(defmacro cond (&rest args)
+  (if (is args nil)
+    nil
+    (let ((current (car args))
+          (rest (cdr args)))
+      (list 'if (car current) (cons 'progn (cdr current))
+            (cons 'cond rest)))))
+
+(defmacro and (current &rest rest)
+  (cond
+    ((is rest nil) current)
+    ((isinstance current sym) (list 'if current (cons 'and rest) current))
+    (t (let ((c (gensym)))
+         (list 'let (list (list c current))
+               (cons 'and (cons c rest)))))))
+
+(defmacro or (current &rest rest)
+  (cond
+    ((is rest nil) current)
+    ((isinstance current sym) (list 'if current current (cons 'or rest)))
+    (t (let ((c (gensym)))
+         (list 'let (list (list c current))
+               (cons 'or (cons c rest)))))))

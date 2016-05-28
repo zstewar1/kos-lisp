@@ -154,6 +154,12 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       if (destType.IsAssignableFrom(source.GetType())) {
         return source;
       }
+
+      // Capture lists before capturing nils as null, as nil is a valid empty list.
+      if (destType.IsAssignableFrom(typeof(List<LispObject>))) {
+        return ListOperations.IterList(source).ToList();
+      }
+
       // Marshal any nullable which received Nil as null (unless it was captured as a
       // lisp object, in which case it would be captured as itself.
       if (ReferenceEquals(source, NilType.Nil)
@@ -182,10 +188,6 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         if (source is BoolType) {
           return ((BoolType)source).Value;
         }
-      }
-
-      if (destType.IsAssignableFrom(typeof(List<LispObject>))) {
-        return ListOperations.IterList(source).ToList();
       }
 
       if (destType.IsAssignableFrom(typeof(Dictionary<LispObject, LispObject>))) {
