@@ -1,0 +1,26 @@
+(defun is-unquote (item)
+  (and (tuple? item)
+       (is (car item) ':--unquote--)
+       (eq (count item) 2)))
+
+(defun is-splice (item)
+  (and (tuple? item)
+       (is (car item) ':--splice--)
+       (eq (count item) 2)))
+
+(defun bq (item)
+  (let ((current (car item)))
+    (cond
+      ((is-unquote current) (list 'cons (car (cdr current)) (bq-next (cdr item))))
+      ((is-splice current) (list 'append (car (cdr current)) (bq-next (cdr item))))
+      ((tuple? current) (list 'cons (bq current) (bq-next (cdr item))))
+      (t (list 'cons (list 'quote current) (bq-next (cdr item)))))))
+
+(defun bq-next (item)
+  (cond
+    ((is-unquote item) (car (cdr item)))
+    ((tuple? item) (bq item))
+    (t (list 'quote item))))
+
+(defmacro --backquote-- (item)
+  (bq-next item))

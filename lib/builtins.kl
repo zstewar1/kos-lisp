@@ -25,3 +25,5 @@
                (cons 'or (cons c rest)))))))
 
 (defun not (arg) (if arg f t))
+
+(import _backquote : --backquote--)

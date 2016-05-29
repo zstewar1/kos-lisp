@@ -58,16 +58,31 @@ namespace ZStewart.KOSLisp.Compile.AST {
 
     public override StringBuilder AppendAstStringIndented(
         StringBuilder sb, int baseIndent) {
-      return sb.AppendLine("[AST-Import:")
+      sb.AppendLine("[AST-Import:")
         .Append(' ', baseIndent + 2)
         .Append("Identifier: ")
         .Append(string.Join(".", ModuleIdentifier))
-        .AppendLine()
-        .Append(' ', baseIndent + 2)
-        .Append("Bind Name: ")
-        .AppendIndented(Name, baseIndent + 2)
-        .AppendLine()
-        .Append(' ', baseIndent)
+        .AppendLine();
+      if (Name != null) {
+        sb.Append(' ', baseIndent + 2)
+          .Append("Bind Name: ")
+          .AppendIndented(Name, baseIndent + 2)
+          .AppendLine();
+      }
+      if (FromImport != null) {
+        foreach(var fi in FromImport) {
+          sb.Append(' ', baseIndent + 2)
+            .AppendFormat("From Import {0} as ", fi.Key)
+            .AppendIndented(fi.Value, baseIndent + 2)
+            .AppendLine();
+        }
+      }
+      if (AllTo != null) {
+        sb.Append(' ', baseIndent + 2)
+          .AppendFormat("Import All To: {0}", AllTo)
+          .AppendLine();
+      }
+      return sb.Append(' ', baseIndent)
         .Append("]");
     }
   }
