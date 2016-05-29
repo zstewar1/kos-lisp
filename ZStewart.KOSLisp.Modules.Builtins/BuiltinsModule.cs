@@ -108,6 +108,19 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddBuiltin(builtins, typeof(ComparisonOperations), "Hash");
       AddBuiltin(builtins, typeof(ComparisonOperations), "Is");
 
+      // Number Operations
+      // (binary-only versions)
+      AddBuiltin(builtins, typeof(NumberOperations), "Add");
+      AddBuiltin(builtins, typeof(NumberOperations), "Sub");
+      AddBuiltin(builtins, typeof(NumberOperations), "Mul");
+      AddBuiltin(builtins, typeof(NumberOperations), "Div");
+      AddBuiltin(builtins, typeof(NumberOperations), "FloorDiv");
+      AddBuiltin(builtins, typeof(NumberOperations), "Rem");
+      // unary operations
+      AddBuiltin(builtins, typeof(NumberOperations), "Neg");
+      AddBuiltin(builtins, typeof(NumberOperations), "Pos");
+      AddBuiltin(builtins, typeof(NumberOperations), "Abs", "||");
+
       // Common boolean operations
       AddBuiltin(builtins, typeof(BoolType), "Any");
       AddBuiltin(builtins, typeof(BoolType), "All");

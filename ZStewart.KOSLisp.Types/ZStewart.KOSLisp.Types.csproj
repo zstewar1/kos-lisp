@@ -43,11 +43,11 @@
     <Compile Include="Helpers\CallableOperations.cs" />
     <Compile Include="Helpers\DescriptorOperations.cs" />
     <Compile Include="Helpers\ComparisonOperations.cs" />
+    <Compile Include="Helpers\NumberOperations.cs" />
     <Compile Include="Helpers\MappingOperations.cs" />
     <Compile Include="TypeCategories\ComparisonMethods.cs" />
     <Compile Include="TypeCategories\MappingMethods.cs" />
     <Compile Include="TypeCategories\ListMethods.cs" />
-    <Compile Include="TypeCategories\NumberMethods.cs" />
     <Compile Include="ArgumentProperties.cs" />
     <Compile Include="CallMagic.cs" />
     <Compile Include="DictType.cs" />

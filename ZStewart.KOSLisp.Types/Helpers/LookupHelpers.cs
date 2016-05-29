@@ -222,7 +222,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         Func<LispObject, LispObject> doFallbackCall,
         Func<LispObject> notFoundResult) {
       foreach (var targetType in ListOperations.IterMro(obj)) {
-        var builtin = getBuiltinOrNull(targetType);
+        var builtin = getBuiltinOrNull?.Invoke(targetType);
         if (builtin != null) {
           return doBuiltinCall(builtin);
         } else {
@@ -252,7 +252,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     public static bool Query(
         LispObject target, Predicate<LispType> hasBuiltin, LispObject fallbackSymbol) {
       foreach (var targetType in ListOperations.IterMro(target)) {
-        if (hasBuiltin(targetType)) return true;
+        if (hasBuiltin.Invoke(targetType)) return true;
         try {
           MappingOperations.GetItem(targetType.__dict__, fallbackSymbol);
           return true;
@@ -284,7 +284,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
         if (ReferenceEquals(targetType, type)) {
           // It is a subtype, and does not redefine the given operation.
           return false;
-        } else if (hasBuiltin(targetType)) {
+        } else if (hasBuiltin.Invoke(targetType)) {
           // It does redefine the given operation.
           return true;
         } else {

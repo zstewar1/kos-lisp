@@ -198,5 +198,62 @@ namespace ZStewart.KOSLisp.Types {
 
     private readonly double value;
     public double Value { get { return value; } }
+
+    #region Numeric Method Implementations
+    [BuiltinFunction(Name = "--add--")]
+    private LispObject Add([Required] LispObject other) {
+      if (!(other is NumberType)) {
+        return NotImplemented;
+      }
+      return NumberType.Create(Value + ((NumberType)other).Value);
+    }
+    [BuiltinFunction(Name = "--sub--")]
+    private LispObject Sub([Required] LispObject other) {
+      if (!(other is NumberType)) {
+        return NotImplemented;
+      }
+      return NumberType.Create(Value - ((NumberType)other).Value);
+    }
+    [BuiltinFunction(Name = "--mul--")]
+    private LispObject Mul([Required] LispObject other) {
+      if (!(other is NumberType)) {
+        return NotImplemented;
+      }
+      return NumberType.Create(Value * ((NumberType)other).Value);
+    }
+    [BuiltinFunction(Name = "--div--")]
+    private LispObject Div([Required] LispObject other) {
+      if (!(other is NumberType)) {
+        return NotImplemented;
+      }
+      return NumberType.Create(Value / ((NumberType)other).Value);
+    }
+    [BuiltinFunction(Name = "--floordiv--")]
+    private LispObject FloorDiv([Required] LispObject other) {
+      if (!(other is NumberType)) {
+        return NotImplemented;
+      }
+      return NumberType.Create(Math.Floor(Value / ((NumberType)other).Value));
+    }
+    [BuiltinFunction(Name = "--rem--")]
+    private LispObject Rem([Required] LispObject other) {
+      if (!(other is NumberType)) {
+        return NotImplemented;
+      }
+      return NumberType.Create(Value % ((NumberType)other).Value);
+    }
+    [BuiltinFunction(Name = "--neg--")]
+    private LispObject Neg() {
+      return NumberType.Create(-Value);
+    }
+    [BuiltinFunction(Name = "--pos--")]
+    private LispObject Pos() {
+      return this;
+    }
+    [BuiltinFunction(Name = "--abs--")]
+    private LispObject Abs() {
+      return NumberType.Create(Math.Abs(Value));
+    }
+    #endregion Numeric Method Implementations
   }
 }
