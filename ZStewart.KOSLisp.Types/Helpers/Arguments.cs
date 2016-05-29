@@ -81,7 +81,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
             {
               // Arguments after this will all be Keyword or RestKw*, so we don't have
               // to worry about doing anything with pargs (like clearing it).
-              var rest = new List<LispObject>(pargs.Count - i);
+              var rest = new List<LispObject>(Math.Max(pargs.Count - i, 0));
               for (int j = i; j < pargs.Count; j++) {
                 rest.Add(pargs[j]);
               }

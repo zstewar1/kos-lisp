@@ -137,6 +137,18 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddType(builtins, KeywordSymbolType.KeywordSymbol);
       AddType(builtins, MacroType.Macro);
 
+      // Exception types.
+      AddType(builtins, ExceptionType.Exception);
+      AddType(builtins, ExceptionType.TypeError);
+      AddType(builtins, ExceptionType.ValueError);
+      AddType(builtins, ExceptionType.RuntimeError);
+      AddType(builtins, ExceptionType.AttributeError);
+      AddType(builtins, ExceptionType.NameError);
+      AddType(builtins, ExceptionType.KeyError);
+      AddType(builtins, ExceptionType.NotImplementedException);
+      AddType(builtins, ExceptionType.SyntaxError);
+      AddType(builtins, ExceptionType.ImportError);
+
       // Type defined in builtins.
       AddType(builtins, GenSymType.GenSym);
 
