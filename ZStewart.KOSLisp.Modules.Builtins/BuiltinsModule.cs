@@ -149,6 +149,8 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddType(builtins, ExceptionType.SyntaxError);
       AddType(builtins, ExceptionType.ImportError);
 
+      AddBuiltin(builtins, typeof(BuiltinsModule), "Throw", "raise");
+
       // Type defined in builtins.
       AddType(builtins, GenSymType.GenSym);
 
@@ -230,6 +232,13 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         }
       }
       return result;
+    }
+
+    /// <summary>
+    /// Throws the given exception.
+    /// </summary>
+    private static void Throw([Required] ExceptionType exception) {
+      throw new ExceptionWrapper(exception);
     }
     #endregion Simple Builtin Functions
 

@@ -29,6 +29,7 @@ namespace ZStewart.KOSLisp.Types {
         _type = new LispType {
           __name__ = "type",
           __call__ = Call,
+          __getattr__ = GetAttr,
           _instance_type = typeof(LispType),
         };
         _type.__class__ = _type;
@@ -83,6 +84,65 @@ namespace ZStewart.KOSLisp.Types {
             "{0} has no method {1}", created.__class__, PropConsts.Init));
       }
       return created;
+    }
+
+    private static LispObject GetAttr(LispObject obj, LispObject attr) {
+      if (!LispType.IsInstance(attr, SymbolType.Symbol)) {
+        throw ThrowTypeError(
+          "attribute name must be symbol, not \"{0}\"", attr.__class__);
+      }
+      if (((SymbolType)attr).IsSelfEvaluating) {
+        throw ThrowTypeError(
+          "attribute name must not be a self-evaluating symbol");
+      }
+      if (!(obj is LispType)) {
+        throw ThrowTypeError("object to access must be a type, got {0}", obj.__class__);
+      }
+
+      var self = (LispType)obj;
+      // Check if the item is in the object's dictionary, then check the class. If the
+      // class item is a data descriptor fetch the value and return it, otherwise return
+      // the object item, if available, otherwise return the fetch result.
+      LispObject objdictitem = null;
+      foreach (var targetType in ListOperations.IterList<LispType>(self.__mro__)) {
+        try {
+          objdictitem = MappingOperations.GetItem(targetType.__dict__, attr);
+          break;
+        } catch (ExceptionWrapper ex)
+          when (CheckException(ex, KeyError)) {}
+      }
+      LispObject classitem = null;
+      foreach (var targetType in ListOperations.IterMro(obj)) {
+        try {
+          classitem = MappingOperations.GetItem(targetType.__dict__, attr);
+          break;
+        } catch (ExceptionWrapper ex)
+          when (CheckException(ex, KeyError)) {}
+      }
+
+      // If neither is null, we have to preference data-descriptors.
+      if (classitem != null && objdictitem != null) {
+        // Always give the object item if not get-able.
+        if (!DescriptorOperations.IsDescriptor(classitem)) return objdictitem;
+
+        // If there is an __get__, preference the class item only if there is also an
+        // __set__ or __del__.
+
+        // TODO(zstewar1): Also check if deleteable (either set or delete is data).
+        if (DescriptorOperations.IsDataDescriptor(classitem)) {
+          return DescriptorOperations.Get(classitem, obj, obj.__class__);
+        }
+        return objdictitem;
+      }
+      if (objdictitem != null) return objdictitem;
+      if (classitem != null) {
+        if (DescriptorOperations.IsDescriptor(classitem))
+          return DescriptorOperations.Get(classitem, obj, obj.__class__);
+        return classitem;
+      }
+
+      throw ThrowAttributeError(
+        "\"{0}\" object has no attribute {1}", obj.__class__, attr);
     }
 
     [BuiltinFunction(Name = "--repr--")]

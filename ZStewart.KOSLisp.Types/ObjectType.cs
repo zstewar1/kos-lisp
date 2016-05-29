@@ -89,6 +89,9 @@ namespace ZStewart.KOSLisp.Types {
       }
     }
 
+    [BuiltinFunction(Name = "--init--")]
+    private void Init([RestIgnore] byte ri, [RestKwIgnore] byte rki) {}
+
     private static LispObject GetAttr(LispObject obj, LispObject attr) {
       if (!LispType.IsInstance(attr, SymbolType.Symbol)) {
         throw ThrowTypeError(
