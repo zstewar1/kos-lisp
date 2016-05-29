@@ -91,8 +91,8 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddBuiltin(builtins, typeof(IConsType), "Copy", "icopy");
 
       // Mapping Operations.
-      AddBuiltin(builtins, typeof(MappingOperations), "GetItem");
-      AddBuiltin(builtins, typeof(MappingOperations), "SetItem");
+      AddBuiltin(builtins, typeof(MappingOperations), "GetItem", "item");
+      AddBuiltin(builtins, typeof(MappingOperations), "SetItem", "%setitem");
 
       // Attribute retrieval
       AddBuiltin(builtins, typeof(LispObject), "GetAttribute", "getattr");

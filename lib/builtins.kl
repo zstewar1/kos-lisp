@@ -27,3 +27,16 @@
 (defun not (arg) (if arg f t))
 
 (import _backquote : --backquote--)
+
+(defmacro set (thing value)
+  (cond
+    ((isinstance thing sym)
+     `(%setvar ,thing ,value))
+    ((tuple? thing)
+     (let ((head (car thing))
+           (tail (cdr thing)))
+       (cond
+         ((is head 'getattr) `(%setattr ,@tail ,value))
+         ((is head 'item) `(%setitem ,@tail ,value))
+         ((is head 'car) `(%setcar ,@tail ,value))
+         ((is head 'cdr) `(%setcdr ,@tail ,value)))))))
