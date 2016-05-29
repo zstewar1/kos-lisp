@@ -39,4 +39,12 @@
          ((is head 'getattr) `(%setattr ,@tail ,value))
          ((is head 'item) `(%setitem ,@tail ,value))
          ((is head 'car) `(%setcar ,@tail ,value))
-         ((is head 'cdr) `(%setcdr ,@tail ,value)))))))
+         ((is head 'cdr) `(%setcdr ,@tail ,value))
+         (t (raise
+              (SyntaxError
+                "value to set must be attr/item reference, cons cell element or variable, got: {0}"
+                thing))))))
+    (t (raise
+         (SyntaxError
+           "value to set must be attr/item reference, cons cell element or variable, got: {0}"
+           thing)))))
