@@ -242,6 +242,13 @@ namespace ZStewart.KOSLisp.Types {
       }
       return NumberType.Create(Value % ((NumberType)other).Value);
     }
+    [BuiltinFunction(Name = "--pow--")]
+    private LispObject Pow([Required] LispObject other) {
+      if (!(other is NumberType)) {
+        return NotImplemented;
+      }
+      return NumberType.Create(Math.Pow(Value, ((NumberType)other).Value));
+    }
     [BuiltinFunction(Name = "--neg--")]
     private LispObject Neg() {
       return NumberType.Create(-Value);

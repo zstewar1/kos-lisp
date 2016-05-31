@@ -127,6 +127,26 @@ namespace ZStewart.KOSLisp.Types.Helpers {
     }
 
     /// <summary>
+    /// Returns the result of raising the given lisp object to the given power.
+    /// </summary>
+    public static LispObject Pow(
+        [Required] LispObject target,
+        [Required] LispObject other) {
+      var res = LookupHelpers.Lookup(
+        target, other, null, SymbolType.Create("--pow--"), () => NotImplemented);
+      if (!ReferenceEquals(res, NotImplemented)) {
+        return res;
+      }
+      res = LookupHelpers.Lookup(
+        other, target, null, SymbolType.Create("--rpow--"), () => NotImplemented);
+      if (!ReferenceEquals(res, NotImplemented)) {
+        return res;
+      }
+      throw ThrowTypeError(
+        "unsupported operands for pow: {0} and {1}", target.__class__, other.__class__);
+    }
+
+    /// <summary>
     /// Returns the result of negating the given lisp object.
     /// </summary>
     public static LispObject Neg(

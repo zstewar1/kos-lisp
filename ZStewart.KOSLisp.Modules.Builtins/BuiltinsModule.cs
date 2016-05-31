@@ -118,6 +118,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddBuiltin(builtins, typeof(NumberOperations), "Div");
       AddBuiltin(builtins, typeof(NumberOperations), "FloorDiv");
       AddBuiltin(builtins, typeof(NumberOperations), "Rem");
+      AddBuiltin(builtins, typeof(NumberOperations), "Pow");
       // unary operations
       AddBuiltin(builtins, typeof(NumberOperations), "Neg");
       AddBuiltin(builtins, typeof(NumberOperations), "Pos");
