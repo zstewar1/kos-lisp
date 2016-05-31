@@ -79,6 +79,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       AddBuiltin(builtins, typeof(BuiltinsModule), "IAppend");
 
       AddBuiltin(builtins, typeof(BuiltinsModule), "Map");
+      AddBuiltin(builtins, typeof(BuiltinsModule), "MapList");
 
       // The convienience list/tuple constructors.
       var toList = typeof(ConsType).GetMethod(
@@ -187,16 +188,15 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
     /// Applies a function to sequential elements of all of the given lists until the
     /// shortest list runs out, returning a list of the results.
     /// </summary>
-    public static LispObject Map(
+    public static List<LispObject> Map(
         [Required] LispObject func,
         [RestCapture] List<LispObject> lists) {
       if (lists.Count < 1) {
         throw ThrowTypeError("at least 1 list is required, got 0");
       }
-      return ConsType.ToLispList(
-        MapZipHelper(lists)
+      return MapZipHelper(lists)
           .Select(args => CallableOperations.Call(func, args))
-          .ToList());
+          .ToList();
     }
 
     /// <summary>
@@ -209,6 +209,26 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       while (enumerators.All(e => e.MoveNext())) {
         yield return enumerators.Select(e => e.Current).ToList();
       }
+    }
+
+    /// <summary>
+    /// Like map, but instead of passing the car of each cons cell, the entire cons cell
+    /// is passed.
+    /// </summary>
+    public static List<LispObject> MapList(
+        [Required] LispObject func,
+        [RestCapture] List<LispObject> lists) {
+      if (lists.Count < 1) {
+        throw ThrowTypeError("at least 1 list is required, got 0");
+      }
+      var results = new List<LispObject>();
+      while (lists.All(list => !ReferenceEquals(list, NilType.Nil))) {
+        results.Add(CallableOperations.Call(func, new List<LispObject>(lists)));
+        for (int i = 0; i < lists.Count; i++) {
+          lists[i] = ListOperations.GetCdr(lists[i]);
+        }
+      }
+      return results;
     }
 
     /// <summary>
