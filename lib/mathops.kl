@@ -1,0 +1,27 @@
+;; Implementations of common math operations, defined in terms of the base operations
+;; implemented in the _builtins core.
+
+(defun + (first &rest rest)
+  (if (is rest nil)
+    (pos first)
+    (reduce add rest first)))
+
+(defun - (first &rest rest)
+  (if (is rest nil)
+    (neg first)
+    (reduce sub rest first)))
+
+(defun * (&rest args)
+  (reduce mul args))
+
+(defun / (&rest args)
+  (reduce div args))
+
+(defun // (&rest args)
+  (reduce floordiv args))
+
+(defun % (&rest args)
+  (reduce rem args))
+
+(defun ** (&rest args)
+  (reduce pow args))

@@ -28,6 +28,7 @@
 
 (import _backquote : --backquote--)
 
+;; Set arbitrary things using the same syntax you usually use to access them.
 (defmacro set (thing value)
   (cond
     ((isinstance thing sym)
@@ -48,3 +49,6 @@
          (SyntaxError
            "value to set must be attr/item reference, cons cell element or variable, got: {0}"
            thing)))))
+
+;; Import definitions of the math operations.
+(import mathops :all)
