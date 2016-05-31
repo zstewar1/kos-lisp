@@ -80,6 +80,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
 
       AddBuiltin(builtins, typeof(BuiltinsModule), "Map");
       AddBuiltin(builtins, typeof(BuiltinsModule), "MapList");
+      AddBuiltin(builtins, typeof(BuiltinsModule), "Reduce");
 
       // The convienience list/tuple constructors.
       var toList = typeof(ConsType).GetMethod(
@@ -229,6 +230,29 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
         }
       }
       return results;
+    }
+
+    /// <summary>
+    /// Call the given function with elements from the given sequence and the result of
+    /// the previous call, starting with the first element of the sequence or the provided
+    /// initial value.
+    /// </summary>
+    public static LispObject Reduce(
+        [Required] LispObject func,
+        [Required] List<LispObject> sequence,
+        [Optional(null)] LispObject initial) {
+      var result = initial;
+      foreach (var obj in sequence) {
+        if (result == null) {
+          result = obj;
+        } else {
+          result = CallableOperations.Call(func, new List<LispObject> {result, obj});
+        }
+      }
+      if (result == null) {
+        throw ThrowTypeError("attempting to reduce empty sequence with no initial value");
+      }
+      return result;
     }
 
     /// <summary>
