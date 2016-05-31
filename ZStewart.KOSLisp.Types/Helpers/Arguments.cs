@@ -48,6 +48,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
       // take assignments from them. This allows us to track which ones are left at the
       // end to either set them to teh RestKwCapture/Ignore or raise an error.
       Dictionary<SymbolType, LispObject> restKwargs = null;
+      bool allPargsCaptured = false;
       for (int i = 0; i < result.Length; i++) {
         var arg = arguments[i];
         switch (arg.Type) {
@@ -61,6 +62,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
                     "got multiple values for argument '{0}", arg.Name);
                 }
                 result[i] = pargs[i];
+                if (i == pargs.Count - 1) {
+                  allPargsCaptured = true;
+                }
               } else {
                 // Setup restKwargs if it hasn't been created yet, since now we know we will
                 // need to do keyword arguments.
@@ -86,12 +90,14 @@ namespace ZStewart.KOSLisp.Types.Helpers {
                 rest.Add(pargs[j]);
               }
               result[i] = rest;
+              allPargsCaptured = true;
             }
             break;
           case ArgumentType.RestIgnore:
             {
               // ignore just puts in a null in that slot.
               result[i] = null;
+              allPargsCaptured = true;
             }
             break;
           case ArgumentType.RestBlock:
@@ -103,6 +109,7 @@ namespace ZStewart.KOSLisp.Types.Helpers {
                   i, pargs.Count);
               }
               result[i] = null;
+              allPargsCaptured = true;
             }
             break;
           case ArgumentType.Keyword:
@@ -135,6 +142,9 @@ namespace ZStewart.KOSLisp.Types.Helpers {
           default:
             throw new InvalidOperationException("This should be impossible.");
         }
+      }
+      if (!allPargsCaptured) {
+        throw ExceptionType.ThrowTypeError("got unepxected extra positional arguments");
       }
       if (restKwargs != null && restKwargs.Count > 0) {
         throw ExceptionType.ThrowTypeError("got unexpected additional keyword arguments");

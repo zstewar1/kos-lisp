@@ -119,7 +119,7 @@ namespace ZStewart.KOSLisp.Modules.Builtins {
       // unary operations
       AddBuiltin(builtins, typeof(NumberOperations), "Neg");
       AddBuiltin(builtins, typeof(NumberOperations), "Pos");
-      AddBuiltin(builtins, typeof(NumberOperations), "Abs", "||");
+      AddBuiltin(builtins, typeof(NumberOperations), "Abs");
 
       // Common boolean operations
       AddBuiltin(builtins, typeof(BoolType), "Any");
