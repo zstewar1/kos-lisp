@@ -270,6 +270,14 @@ namespace ZStewart.KOSLisp.Types {
     private LispObject ToBool() {
       return BoolType.Create(Value.Length != 0);
     }
+
+    [BuiltinFunction(Name = "--add--")]
+    private LispObject Add([Required] LispObject other) {
+      if (!(other is StringType)) {
+        return NotImplemented;
+      }
+      return StringType.Create(Value + ((StringType)other).Value);
+    }
     #endregion Non-special Methods
   }
 }
