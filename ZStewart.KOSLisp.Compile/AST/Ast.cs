@@ -114,6 +114,21 @@ namespace ZStewart.KOSLisp.Compile.AST {
     }
 
     /// <summary>
+    /// Creates and AstTry with the given try-catch-finally.
+    /// </summary>
+    public static AstTry Try(
+        AstOp guarded,
+        IEnumerable<Tuple<AstOp, AstBinding, AstOp>> catches,
+        AstOp @finally) {
+      return new AstTry(guarded, catches, @finally);
+    }
+
+    public static AstTry Try(
+        AstOp guarded, IEnumerable<Tuple<AstOp, AstBinding, AstOp>> catches) {
+      return Try(guarded, catches, null);
+    }
+
+    /// <summary>
     /// Creates a new AstOp that evaluates a series of forms in sequence, then returns the
     /// result of the last one.
     /// </summary>
