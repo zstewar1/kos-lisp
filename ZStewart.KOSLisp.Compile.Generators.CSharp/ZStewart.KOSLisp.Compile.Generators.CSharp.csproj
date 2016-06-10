@@ -44,6 +44,7 @@
     <Compile Include="CSharpSetVarGenerator.cs" />
     <Compile Include="CSharpFuncCallGenerator.cs" />
     <Compile Include="CSharpIfGenerator.cs" />
+    <Compile Include="CSharpTryGenerator.cs" />
     <Compile Include="CSharpImportGenerator.cs" />
     <Compile Include="CSharpPrognGenerator.cs" />
     <Compile Include="CSharpLetGenerator.cs" />
