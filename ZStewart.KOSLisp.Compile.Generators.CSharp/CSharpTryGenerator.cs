@@ -54,9 +54,26 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// Produce an expression representing a conditional result.
     /// </summary>
     public Expression Emit() {
+      var guarded = Guarded.Emit();
+
+      var catches = Catches.Select(c => CreateCatch(c.Item1, c.Item2, c.Item3))
+        .ToArray();
+
+      var @finally = Finally != null ? Finally.Emit() : null;
+
+      if (catches.Length > 0 && @finally != null) {
+        return Expression.TryCatchFinally(guarded, @finally, catches);
+      } else if (catches.Length > 0) {
+        return Expression.TryCatch(guarded, catches);
+      } else if (@finally != null) {
+        return Expression.TryFinally(guarded, @finally);
+      } else {
+        throw ExceptionType.ThrowSyntaxError(
+          "try must have either at least one catch or a finally");
+      }
     }
 
-    protected CatchBlock CreateCatch(
+    private CatchBlock CreateCatch(
         CSharpGenerator exceptionTypeGenerator,
         CSharpBindingGenerator optionalExceptionBindingGenerator,
         CSharpGenerator fallbackExpressionGenerator) {
@@ -74,7 +91,8 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         Expression.IfThen(
           Expression.Not(
             Expression.Call(
-              typeof(LispType), "IsSubtype", null, exceptionType,
+              typeof(LispType), "IsSubtype", null,
+              exceptionType,
               Expression.Constant(ExceptionType.Exception, typeof(LispObject)))),
           Expression.Throw(
             Expression.Call(

@@ -302,8 +302,16 @@ namespace ZStewart.KOSLisp.Types {
     /// True if subtype is a subtype of parentType, false if it is not.
     /// </returns>
     public static bool IsSubtype(
-        [Required] LispType subtype,
-        [Required] LispType parentType) {
+        [Required] LispObject st,
+        [Required] LispObject pt) {
+      if (!(st is LispType)) {
+        throw ThrowTypeError("First argument must be a type, got {0}", st);
+      }
+      if (!(pt is LispType)) {
+        throw ThrowTypeError("Second argument must be a type, got {0}", pt);
+      }
+      var subtype = (LispType)st;
+      var parentType = (LispType)pt;
       foreach (var t in ListOperations.IterList<LispType>(subtype.__mro__)) {
         if (ReferenceEquals(t,  parentType)) return true;
       }
