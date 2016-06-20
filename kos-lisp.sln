@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZStewart.KOSLisp.Modules.Bu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZStewart.KOSLisp.Modules", "ZStewart.KOSLisp.Modules\ZStewart.KOSLisp.Modules.csproj", "{39638BBB-F272-4627-AAB8-20054B3FBBD5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZStewart.KOSLisp.Compile.Generators.Json", "ZStewart.KOSLisp.Compile.Generators.Json\ZStewart.KOSLisp.Compile.Generators.Json.csproj", "{91614143-8404-421C-ADFB-A9AA0F41456E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -45,6 +47,10 @@ Global
 		{7CA91E06-D389-453D-9F3E-E9D7DA6199A1}.Debug|x86.Build.0 = Debug|Any CPU
 		{7CA91E06-D389-453D-9F3E-E9D7DA6199A1}.Release|x86.ActiveCfg = Release|Any CPU
 		{7CA91E06-D389-453D-9F3E-E9D7DA6199A1}.Release|x86.Build.0 = Release|Any CPU
+		{91614143-8404-421C-ADFB-A9AA0F41456E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{91614143-8404-421C-ADFB-A9AA0F41456E}.Debug|x86.Build.0 = Debug|Any CPU
+		{91614143-8404-421C-ADFB-A9AA0F41456E}.Release|x86.ActiveCfg = Release|Any CPU
+		{91614143-8404-421C-ADFB-A9AA0F41456E}.Release|x86.Build.0 = Release|Any CPU
 		{BE92492D-605F-4527-830A-FC7269C61380}.Debug|x86.ActiveCfg = Debug|x86
 		{BE92492D-605F-4527-830A-FC7269C61380}.Debug|x86.Build.0 = Debug|x86
 		{BE92492D-605F-4527-830A-FC7269C61380}.Release|x86.ActiveCfg = Release|x86
