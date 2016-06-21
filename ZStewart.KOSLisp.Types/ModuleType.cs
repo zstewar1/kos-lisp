@@ -101,7 +101,7 @@ namespace ZStewart.KOSLisp.Types {
     }
     #endregion Static Helper Methods
 
-    public  SymbolType Name { get; }
+    public SymbolType Name { get; set; }
 
     protected ModuleType(string name) : this(SymbolType.Create(name)) { }
 

@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace ZStewart.KOSLisp.Compile.Generators.Json {
   public enum ConstantType {
@@ -19,6 +20,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     /// <summary>
     /// The type of this constant (for deserialization).
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     ConstantType Type { get; }
   }
 

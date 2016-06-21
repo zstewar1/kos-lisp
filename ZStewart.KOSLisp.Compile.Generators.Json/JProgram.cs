@@ -17,13 +17,20 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     /// JConstantReference containing the integer id of the constant.
     /// </summary>
     [JsonProperty]
-    private List<JConstant> ReferencedConstants { get; set; } = new List<JConstant>();
+    private List<JConstant> ReferencedConstants { get; } = new List<JConstant>();
+
+    /// <summary>
+    /// The list of modules which are included in this program.
+    /// </summary>
+    [JsonProperty]
+    private Dictionary<string, JModule> Modules { get; } =
+      new Dictionary<string, JModule>();
 
     /// <summary>
     /// A dictionary used when lookup up reference constants when building the program's
     /// syntax tree.
     /// </summary>
-    private Dictionary<LispObject, JConstantReference> reverseConstantLookup =
+    private readonly Dictionary<LispObject, JConstantReference> reverseConstantLookup =
       new Dictionary<LispObject, JConstantReference>();
 
     /// <summary>

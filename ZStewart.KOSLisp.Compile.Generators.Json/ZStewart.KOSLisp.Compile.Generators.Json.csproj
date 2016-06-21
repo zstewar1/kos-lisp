@@ -35,8 +35,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="JProgram.cs" />
+    <Compile Include="JAst.cs" />
     <Compile Include="JConstants.cs" />
+    <Compile Include="JModule.cs" />
+    <Compile Include="JProgram.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
