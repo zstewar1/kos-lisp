@@ -98,7 +98,7 @@ namespace ZStewart.KOSLisp {
       var eval = new CSharpEvaluator(path);
 
       if (printAst) {
-        eval.OnSemantics += (ast) => Console.WriteLine(ast);
+        eval.OnSemantics += (ast, unusedContext) => Console.WriteLine(ast);
       }
       if (printExpr) {
         eval.OnParse += (expr) => Console.WriteLine(StringType.GetReprString(expr));
@@ -123,7 +123,7 @@ namespace ZStewart.KOSLisp {
       var eval = new CSharpEvaluator(path);
 
       if (printAst) {
-        eval.OnSemantics += (ast) => Console.WriteLine(ast);
+        eval.OnSemantics += (ast, unusedContext) => Console.WriteLine(ast);
       }
       if (printExpr) {
         eval.OnParse += (expr) => Console.WriteLine(StringType.GetReprString(expr));

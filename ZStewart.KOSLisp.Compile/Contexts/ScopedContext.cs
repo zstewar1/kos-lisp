@@ -17,6 +17,8 @@ namespace ZStewart.KOSLisp.Compile.Contexts {
     /// </summary>
     public Context ParentScope { get; }
 
+    public ModuleType Module => ParentScope.Module;
+
     protected readonly Dictionary<SymbolType, AstBinding> bindings =
       new Dictionary<SymbolType, AstBinding>();
 

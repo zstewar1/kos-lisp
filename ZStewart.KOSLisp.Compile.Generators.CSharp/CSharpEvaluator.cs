@@ -29,14 +29,25 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
 
     /// <summary>
     /// Callback that happens after ever time the parsed expression is converted to an AST
-    /// and before it is evaluated.
+    /// and before it is evaluated. Includes the global context that the transformation is
+    /// done within.
     /// </summary>
-    public event Action<AstOp> OnSemantics;
+    public event Action<AstOp, Context> OnSemantics;
 
     /// <summary>
     /// Callback that is called with the result of evaluating each expression.
     /// </summary>
     public event Action<LispObject> OnEvaluate;
+
+    /// <summary>
+    /// Callback that is called whenver a module is loaded. For lisp modules (non-builtin)
+    /// this will be called before the module is evaluated, so the module will be
+    /// initially empty.
+    /// Argument 1: true if the module is built-in.
+    /// Argument 2: module identifier.
+    /// Argument 3: the loaded module.
+    /// </summary>
+    public event Action<bool, string, ModuleType> OnModuleLoad;
 
     /// <summary>
     /// Comparer used when checking for modules.
@@ -232,7 +243,10 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
             "single parameter for a module importer.");
         }
 
-        return CallImportFunction(method);
+        var imported = CallImportFunction(method);
+        importedModules.Add(moduleIdentifier, imported);
+        OnModuleLoad?.Invoke(true, moduleIdentifier, imported);
+        return imported;
       }
 
       throw ThrowImportError("no import function found");
@@ -258,6 +272,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     protected virtual ModuleType ImportFromLispFile(
         string filePath, string moduleIdentifier, string moduleName) {
       var mod = GetFreshModule(moduleIdentifier, moduleName);
+      OnModuleLoad?.Invoke(false, moduleIdentifier, mod);
       using (var file = File.OpenText(filePath)) {
         var textSource = new TextReaderSource(moduleName, file);
         try {
@@ -326,7 +341,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
         var parsed = parseStream.Current;
         OnParse?.Invoke(parsed);
         var ast = semantizer.ToAst(parsed, context);
-        OnSemantics?.Invoke(ast);
+        OnSemantics?.Invoke(ast, context);
         var func = Expression.Lambda<Func<LispObject>>(
           generatorFactory.Create(ast).Emit()).Compile();
         result = func();

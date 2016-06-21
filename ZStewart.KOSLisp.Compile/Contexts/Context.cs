@@ -43,5 +43,10 @@ namespace ZStewart.KOSLisp.Compile.Contexts {
     /// interface.
     /// </summary>
     AstBinding AddBinding(SymbolType symbol);
+
+    /// <summary>
+    /// The module which this context exists within.
+    /// </summary>
+    ModuleType Module { get; }
   }
 }
