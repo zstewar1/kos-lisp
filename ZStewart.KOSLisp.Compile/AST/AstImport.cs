@@ -25,6 +25,8 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     public AstBinding Name { get; }
 
+    // TODO(zstewar1): Allow importing the same symbol multiple times with various
+    // bindings.
     /// <summary>
     /// A collection representing things to import from the module. The symbol is the
     /// identifier to retrieve from the module, the binding is the symbol to bind it to.

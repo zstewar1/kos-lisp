@@ -22,9 +22,9 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     /// <summary>
     /// The collection of operations that make up this module (if not builtin).
     /// </summary>
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public IReadOnlyList<JAst> Operations {
       get {
-        checkBuiltin();
         return operations.AsReadOnly();
       }
     }

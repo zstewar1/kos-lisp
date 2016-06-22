@@ -27,11 +27,18 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
       new Dictionary<string, JModule>();
 
     /// <summary>
-    /// A dictionary used when lookup up reference constants when building the program's
-    /// syntax tree.
+    /// A dictionary used to ensure consistent constant references when building the
+    /// program's syntax tree.
     /// </summary>
-    private readonly Dictionary<LispObject, JConstantReference> reverseConstantLookup =
-      new Dictionary<LispObject, JConstantReference>();
+    private readonly Dictionary<LispObject, int> reverseConstantLookup =
+      new Dictionary<LispObject, int>();
+
+    /// <summary>
+    /// A dictionary used to ensure consistent module references when building the
+    /// program's syntax tree.
+    /// </summary>
+    private readonly Dictionary<ModuleType, string> reverseModuleLookup =
+      new Dictionary<ModuleType, string>();
 
     /// <summary>
     /// Gets a reference to the converted form of the given lisp object.
@@ -42,31 +49,57 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     /// Otherwise, creates a new JConstant, dedupes it against the list of existing
     /// constants, adds it to the constants and returns a reference to it.
     /// </summary>
-    public JConstantReference ReferTo(LispObject obj) {
-      JConstantReference reference;
+    public int ReferToConstant(LispObject obj) {
+      int reference;
       if (reverseConstantLookup.TryGetValue(obj, out reference)) {
         return reference;
       } else {
         var newConstant = ConvertConstant(obj);
-        var nextId = ReferencedConstants.Count;
+        reference = ReferencedConstants.Count;
         ReferencedConstants.Add(newConstant);
-        var newReference = new JConstantReference(nextId, this);
-        reverseConstantLookup.Add(obj, newReference);
+        reverseConstantLookup.Add(obj, reference);
         return newReference;
       }
     }
 
     /// <summary>
+    /// Get the reference string for the given module. Does not add a new module if the
+    /// module is not known already.
+    /// </summary>
+    public string ReferToModule(ModuleType module) {
+      string reference;
+      if (reverseModuleLookup.TryGetValue(module, out reference)) {
+        return reference;
+      } else {
+        throw new InvalidOperationException("Unknown module");
+      }
+    }
+
+    /// <summary>
+    /// Adds a module so it can be referenced.
+    /// </summary>
+    public JModule AddModule(ModuleType module, string moduleIdentifier, bool builtin) {
+      var created = new JModule(builtin, module.Name.Identifier);
+      reverseModuleLookup.Add(module, moduleIdentifier);
+      Modules.Add(moduleIdentifier, created);
+      return created;
+    }
+
+    /// <summary>
     /// Gets the JConstant referred to by the reference.
     /// </summary>
-    public JConstant Dereference(JConstantReference reference) {
-      if (reference.Arena != this) {
-        throw new ArgumentException("bad reference: refers to different arena");
-      }
+    public JConstant DereferenceConstant(int reference) {
       if (reference.Id < 0 || reference.Id >= ReferencedConstants.Count) {
         throw new ArgumentException("bad reference: id out of range");
       }
       return ReferencedConstants[reference.Id];
+    }
+
+    /// <summary>
+    /// Gets the JModule referred to by the given identifier.
+    /// </summary>
+    public JModule DereferenceModule(string moduleIdentifer) {
+      return Modules[moduleIdentifier];
     }
 
     /// <summary>
@@ -79,7 +112,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
         return new JBool(((BoolType)obj).Value);
       } else if (type == typeof(ConsType)) {
         var cons = (ConsType)obj;
-        return new JCons(ReferTo(cons.Car), ReferTo(cons.Cdr));
+        return new JCons(ReferToConstant(cons.Car), ReferToConstant(cons.Cdr));
       } else if (type == typeof(KeywordSymbolType)) {
         return new JKeyword(((KeywordSymbolType)obj).Identifier);
       } else if (type == typeof(NilType)) {
