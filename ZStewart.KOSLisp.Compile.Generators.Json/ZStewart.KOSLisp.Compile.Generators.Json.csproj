@@ -32,6 +32,9 @@
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
       <Package>monodevelop</Package>
     </Reference>
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\packages\System.Collections.Immutable.1.1.37\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -46,5 +49,16 @@
       <Project>{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}</Project>
       <Name>ZStewart.KOSLisp.Types</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Compile.Generators.CSharp\ZStewart.KOSLisp.Compile.Generators.CSharp.csproj">
+      <Project>{E46FD6E2-AA5A-4568-8DC5-26AFE04B55C8}</Project>
+      <Name>ZStewart.KOSLisp.Compile.Generators.CSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Compile\ZStewart.KOSLisp.Compile.csproj">
+      <Project>{7CA91E06-D389-453D-9F3E-E9D7DA6199A1}</Project>
+      <Name>ZStewart.KOSLisp.Compile</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

@@ -14,6 +14,7 @@ namespace ZStewart.KOSLisp.Compile.AST {
     /// </summary>
     public AstOp Guarded { get; }
 
+    // TODO(zstewar1): Allow unconditional catch (with exception type missing/null).
     /// <summary>
     /// A collection of catch expressions, containing the exception to catch, the binding
     /// to bind it to while executing the catch expression, and the expression to handle

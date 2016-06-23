@@ -1,3 +1,11 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
+using ZStewart.KOSLisp.Types;
+
 namespace ZStewart.KOSLisp.Compile.Generators.Json {
   public enum AstType {
     Const,
@@ -22,7 +30,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     /// <summary>
     /// The type of this AST.
     /// </summary>
-    [JsonConvert(typeof(StringEnumConverter))]
+    [JsonConverter(typeof(StringEnumConverter))]
     public abstract AstType Type { get; }
 
     /// <summary>
@@ -36,7 +44,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
   /// Marker base class for bindings.
   /// </summary>
   public abstract class JBinding : JAst {
-    inernal JBinding(string identifier) {
+    internal JBinding(string identifier) {
       Identifier = identifier;
     }
 
@@ -57,8 +65,10 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
   public class JDefunOrMacro : JProgn {
     internal JDefunOrMacro(
         IEnumerable<JAst> forms,
-        IEnumerable<JArgument> args,
-        JBinding name, bool isMacro) : base(forms) {
+        IEnumerable<Argument> args,
+        JBinding name,
+        bool isMacro)
+        : base(forms) {
       if (isMacro && name == null) {
         throw new ArgumentException("macros must have a name");
       }
@@ -73,22 +83,22 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
       }
     }
     public override AstType Type { get; }
-    public ImmutableList<JArgument> Args { get; }
+    public ImmutableList<Argument> Args { get; }
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public JBinding Name { get; }
 
     /// <summary>
     /// Represents an argument in a defun/defmacro/lambda.
     /// </summary>
-    public class JArgument {
-      [JsonConvert(typeof(StringEnumConverter))]
+    public class Argument {
+      [JsonConverter(typeof(StringEnumConverter))]
       public ArgumentType Type { get; }
       [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
       public JBinding Binding { get; }
       [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
       public JAst Default { get; }
 
-      internal JArgument(ArgumentType type, JBinding binding, JAst @default) {
+      internal Argument(ArgumentType type, JBinding binding, JAst @default) {
         Type = type;
         Binding = binding;
         Default = @default;
@@ -116,22 +126,25 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
 
   public class JCall : JAst {
     internal JCall(
+        JAst function,
         IEnumerable<JAst> pargs,
         IEnumerable<KeyValuePair<int, JAst>> kwargs) {
+      Function = function;
       PositionalArguments = ImmutableList.CreateRange(pargs);
-      KeywordArguments = ImmutableList.CreateRange(kwargs);
+      KeywordArguments = ImmutableDictionary.CreateRange(kwargs);
     }
     public override AstType Type => AstType.Call;
+    public JAst Function { get; }
     public ImmutableList<JAst> PositionalArguments { get; }
     public ImmutableDictionary<int, JAst> KeywordArguments { get; }
   }
 
-  public class JGlobal : JBinding {
-    internal JGlobal(string identifier, string module) : base(identifier) {
-      Module = module;
+  public sealed class JGlobal : JBinding {
+    internal JGlobal(string identifier, int symbol) : base(identifier) {
+      Symbol = symbol;
     }
     public override AstType Type => AstType.Global;
-    public string Module { get; }
+    public int Symbol { get; }
   }
 
   public class JIf : JAst {
@@ -146,7 +159,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     public JAst ValueIfFalse { get; }
   }
 
-  public class JImport : JAst {
+  public sealed class JImport : JAst {
     internal JImport(
         string module,
         JBinding name,
@@ -154,9 +167,10 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
         string allTo) {
       Module = module;
       Name = name;
-      FromImport = fromImports != null ? ImmutableList.CreateRange(fromImports);
+      FromImport = fromImports != null ? ImmutableList.CreateRange(fromImports) : null;
       AllTo = allTo;
     }
+    public override AstType Type => AstType.Import;
     public string Module { get; }
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public JBinding Name { get; }
@@ -165,7 +179,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public string AllTo { get; }
 
-    public class FromImportItem {
+    public sealed class FromImportItem {
       internal FromImportItem(int symbol, JBinding destination) {
         Symbol = symbol;
         Destination = destination;
@@ -175,11 +189,75 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     }
   }
 
+  public sealed class JLet : JProgn {
+    internal JLet(IEnumerable<JAst> forms, IEnumerable<LetBinding> bindings)
+        : base(forms) {
+      Bindings = ImmutableList.CreateRange(bindings);
+    }
+    public override AstType Type => AstType.Let;
+    public ImmutableList<LetBinding> Bindings { get; }
+
+    public sealed class LetBinding {
+      public JBinding Binding { get; }
+      [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+      public JAst InitialValue { get; }
+      internal LetBinding(JBinding binding, JAst initialValue) {
+        Binding = binding;
+        InitialValue = initialValue;
+      }
+    }
+  }
+
+  public sealed class JLocal : JBinding {
+    internal JLocal(string identifier) : base(identifier) {
+      UniqueId = nextUniqueId++;
+    }
+    public override AstType Type => AstType.Local;
+    public int UniqueId { get; }
+
+    private static int nextUniqueId = 0;
+  }
+
   public class JProgn : JAst {
     internal JProgn(IEnumerable<JAst> forms) {
       Forms = ImmutableList.CreateRange(forms);
     }
     public override AstType Type => AstType.Progn;
     public ImmutableList<JAst> Forms { get; }
+  }
+
+  public sealed class JSet : JAst {
+    internal JSet(JBinding variable, JAst value) {
+      Variable = variable;
+      Value = value;
+    }
+    public override AstType Type => AstType.Set;
+    public JBinding Variable { get; }
+    public JAst Value { get; }
+  }
+
+  public sealed class JTry : JAst {
+    internal JTry(JAst guarded, IEnumerable<CatchExpr> catches, JAst @finally) {
+      Guarded = guarded;
+      Catches = ImmutableList.CreateRange(catches);
+      Finally = @finally;
+    }
+    public override AstType Type => AstType.Try;
+    public JAst Guarded { get; }
+    public ImmutableList<CatchExpr> Catches { get; }
+    public JAst Finally { get; }
+
+    public sealed class CatchExpr {
+      internal CatchExpr(JAst exceptionType, JBinding exceptionBinding, JAst fallback) {
+        ExceptionType = exceptionType;
+        ExceptionBinding = exceptionBinding;
+        Fallback = fallback;
+      }
+      [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+      public JAst ExceptionType { get; }
+      [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+      public JBinding ExceptionBinding { get; }
+      public JAst Fallback { get; }
+    }
   }
 }
