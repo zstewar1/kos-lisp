@@ -12,7 +12,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     /// <summary>
     /// Whether this is a builtin module or lisp module.
     /// </summary>
-    public bool IsBuiltin { get; }
+    public bool IsBuiltin { get { return operations == null; } }
 
     /// <summary>
     /// The module's string identifier.
@@ -25,12 +25,11 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public IReadOnlyList<JAst> Operations {
       get {
-        return operations.AsReadOnly();
+        return operations?.AsReadOnly();
       }
     }
 
     internal JModule(bool isBuiltin, string identifier) {
-      IsBuiltin = isBuiltin;
       Identifier = identifier;
       if (!isBuiltin) {
         operations = new List<JAst>();

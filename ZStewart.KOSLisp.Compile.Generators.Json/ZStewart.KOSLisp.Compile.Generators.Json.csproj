@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JAst.cs" />
+    <Compile Include="JCompiler.cs" />
     <Compile Include="JConstants.cs" />
     <Compile Include="JModule.cs" />
     <Compile Include="JProgram.cs" />
@@ -48,6 +49,14 @@
     <ProjectReference Include="..\ZStewart.KOSLisp.Types\ZStewart.KOSLisp.Types.csproj">
       <Project>{F8FDE0FF-E961-4E38-A5F6-6FCCEA3970FF}</Project>
       <Name>ZStewart.KOSLisp.Types</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Modules\ZStewart.KOSLisp.Modules.csproj">
+      <Project>{39638BBB-F272-4627-AAB8-20054B3FBBD5}</Project>
+      <Name>ZStewart.KOSLisp.Modules</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Parse\ZStewart.KOSLisp.Parse.csproj">
+      <Project>{213150F8-6AC2-4AF7-A4A9-4EA03651D46A}</Project>
+      <Name>ZStewart.KOSLisp.Parse</Name>
     </ProjectReference>
     <ProjectReference Include="..\ZStewart.KOSLisp.Compile.Generators.CSharp\ZStewart.KOSLisp.Compile.Generators.CSharp.csproj">
       <Project>{E46FD6E2-AA5A-4568-8DC5-26AFE04B55C8}</Project>

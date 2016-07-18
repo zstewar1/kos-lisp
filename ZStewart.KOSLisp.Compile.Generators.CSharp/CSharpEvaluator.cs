@@ -43,11 +43,11 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     /// Callback that is called whenver a module is loaded. For lisp modules (non-builtin)
     /// this will be called before the module is evaluated, so the module will be
     /// initially empty.
-    /// Argument 1: true if the module is built-in.
+    /// Argument 1: the loaded module.
     /// Argument 2: module identifier.
-    /// Argument 3: the loaded module.
+    /// Argument 3: true if the module is built-in.
     /// </summary>
-    public event Action<bool, string, ModuleType> OnModuleLoad;
+    public event Action<ModuleType, string, bool> OnModuleLoad;
 
     /// <summary>
     /// Comparer used when checking for modules.
@@ -245,7 +245,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
 
         var imported = CallImportFunction(method);
         importedModules.Add(moduleIdentifier, imported);
-        OnModuleLoad?.Invoke(true, moduleIdentifier, imported);
+        OnModuleLoad?.Invoke(imported, moduleIdentifier, true);
         return imported;
       }
 
@@ -272,7 +272,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.CSharp {
     protected virtual ModuleType ImportFromLispFile(
         string filePath, string moduleIdentifier, string moduleName) {
       var mod = GetFreshModule(moduleIdentifier, moduleName);
-      OnModuleLoad?.Invoke(false, moduleIdentifier, mod);
+      OnModuleLoad?.Invoke(mod, moduleIdentifier, false);
       using (var file = File.OpenText(filePath)) {
         var textSource = new TextReaderSource(moduleName, file);
         try {

@@ -103,6 +103,13 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     }
 
     /// <summary>
+    /// Get a module reference to an already existing module.
+    /// </summary>
+    public JModule LookupModule(ModuleType module) {
+      return DereferenceModule(ReferToModule(module));
+    }
+
+    /// <summary>
     /// Converts a lisp object representing a constant value to the equivalent export-AST
     /// value.
     /// </summary>
@@ -219,7 +226,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     }
 
     /// <summary>
-    /// Converts and AST binding into an equivalent JAst Binding, adding constants as
+    /// Converts an AST binding into an equivalent JAst Binding, adding constants as
     /// necessary to the program's constant list.
     /// </summary>
     public JBinding ConvertAst(AstBinding binding) {
