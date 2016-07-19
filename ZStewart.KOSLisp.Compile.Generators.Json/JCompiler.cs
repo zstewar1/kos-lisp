@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 
 using static ZStewart.KOSLisp.Types.ExceptionType;
@@ -55,7 +56,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
 
       evaluator.Evaluate(mainModule, source);
 
-      return "";
+      return JsonConvert.SerializeObject(arena);
     }
 
     /// <summary>
