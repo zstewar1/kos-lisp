@@ -130,7 +130,7 @@ namespace ZStewart.KOSLisp {
 
     private static void CompileFile(
         string filename, string outputFile, CSharpEvaluator eval) {
-      string output;
+      string output = "";
       using (var file = File.OpenText(filename)) {
         var source = new TextReaderSource(filename, file);
         var compiler = new JCompiler(eval, source);
