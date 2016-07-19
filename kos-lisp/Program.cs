@@ -80,6 +80,10 @@ namespace ZStewart.KOSLisp {
         Environment.Exit((int)ExitCode.UNRECOGNIZED_OPTION);
       }
       if (outputFile != null) {
+        if (outputFile == "") {
+          Console.Error.WriteLine("Illegal empty output file name.");
+          Environment.Exit((int)ExitCode.ILLEGAL_OPTION);
+        }
         compile = true;
       }
 
