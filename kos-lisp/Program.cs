@@ -10,6 +10,7 @@ using ZStewart.KOSLisp.Compile;
 using ZStewart.KOSLisp.Compile.AST;
 using ZStewart.KOSLisp.Compile.Contexts;
 using ZStewart.KOSLisp.Compile.Generators.CSharp;
+using ZStewart.KOSLisp.Compile.Generators.Json;
 using ZStewart.KOSLisp.Parse;
 using ZStewart.KOSLisp.Parse.Lisp;
 using ZStewart.KOSLisp.Types;
@@ -20,6 +21,7 @@ namespace ZStewart.KOSLisp {
     SUCCESS = 0,
     UNRECOGNIZED_OPTION = 1,
     EXTRA_INPUT = 3,
+    ILLEGAL_OPTION = 4,
   }
 
   class MainClass {
@@ -29,8 +31,9 @@ namespace ZStewart.KOSLisp {
       bool printExpr = false;
       bool printAst = false;
       bool alwaysPrint = false;
+      bool compile = false;
 
-      //string outputFile = null;
+      string outputFile = null;
 
       var optset = new OptionSet {
         { "version", "Print the version and exit", v => version = v != null },
@@ -43,7 +46,16 @@ namespace ZStewart.KOSLisp {
             "running in interactive mode",
           p => alwaysPrint = p != null
         },
-        //{ "o|outfile=", "Where to save the output file. Ignored if not compiling", o => outputFile = o },
+        {
+          "c|compile",
+          "Macroexpand the epressions and output them as a Json syntax tree",
+          c => compile = c != null
+        },
+        {
+          "o|outfile=",
+          "Where to save the output file when compiling.",
+          o => outputFile = o
+        },
       };
       var extra = optset.Parse(args);
       if (version) {
@@ -57,15 +69,18 @@ namespace ZStewart.KOSLisp {
       if (help) {
         Console.Error.WriteLine(
           "Usage: {0} [options] [file]", System.AppDomain.CurrentDomain.FriendlyName);
-        optset.WriteOptionDescriptions(Console.Out);
+        optset.WriteOptionDescriptions(Console.Error);
         Environment.Exit((int)ExitCode.SUCCESS);
       }
       var unrecognized = extra.Where(arg => arg.StartsWith("-")).ToList();
       if (unrecognized.Count > 0) {
-        Console.WriteLine(
+        Console.Error.WriteLine(
           "Unrecognized option{0}: {1}", unrecognized.Count == 1 ? "" : "s",
           String.Join(" ", unrecognized));
         Environment.Exit((int)ExitCode.UNRECOGNIZED_OPTION);
+      }
+      if (outputFile != null) {
+        compile = true;
       }
 
       var path = new List<string>();
@@ -85,53 +100,46 @@ namespace ZStewart.KOSLisp {
           "Unexpected extra argument{0}: {1}",
           extra.Count == 2 ? "" : "s",
           String.Join(" ", extra.GetRange(1, extra.Count - 1)));
-      } else if (extra.Count == 1) {
-        RunFile(extra[0], path, printAst, printExpr, alwaysPrint);
+        Environment.Exit((int)ExitCode.UNRECOGNIZED_OPTION);
+      } else if (compile && extra.Count == 0) {
+          Console.Error.WriteLine("Cannot compile in interactive mode");
+          Environment.Exit((int)ExitCode.ILLEGAL_OPTION);
       } else {
-        RunInteractive(path, printAst, printExpr, alwaysPrint);
+        var eval = new CSharpEvaluator(path);
+        SetEvaluatorPrintCallbacks(eval, printAst, printExpr, alwaysPrint);
+
+        if (extra.Count == 1) {
+          if (compile) {
+            CompileFile(extra[0], outputFile, eval);
+          } else {
+            RunFile(extra[0], eval);
+          }
+        } else {
+          RunInteractive(eval);
+        }
       }
     }
 
-    private static void RunFile(
-        string filename, IEnumerable<string> path,
-        bool printAst, bool printExpr, bool alwaysPrint) {
-      var eval = new CSharpEvaluator(path);
-
-      if (printAst) {
-        eval.OnSemantics += (ast, unusedContext) => Console.WriteLine(ast);
-      }
-      if (printExpr) {
-        eval.OnParse += (expr) => Console.WriteLine(StringType.GetReprString(expr));
-      }
-      if (alwaysPrint) {
-        eval.OnEvaluate += (res) => Console.WriteLine(StringType.GetReprString(res));
-      }
-
+    private static void RunFile(string filename, CSharpEvaluator eval) {
       using (var file = File.OpenText(filename)) {
         var source = new TextReaderSource(filename, file);
-
         var module = eval.GetFreshModule("--main--", "--main--");
-
         eval.Evaluate(module, source);
       }
     }
 
-    private static void RunInteractive(
-        IEnumerable<string> path,
-        bool printAst, bool printExpr, bool alwaysPrint) {
-      // TODO(zstewar1): handle printing.
-      var eval = new CSharpEvaluator(path);
+    private static void CompileFile(
+        string filename, string outputFile, CSharpEvaluator eval) {
+      string output;
+      using (var file = File.OpenText(filename)) {
+        var source = new TextReaderSource(filename, file);
+        var compiler = new JCompiler(eval, source);
+        output = compiler.Compile();
+      }
+      File.WriteAllText(outputFile ?? "a.out.json", output);
+    }
 
-      if (printAst) {
-        eval.OnSemantics += (ast, unusedContext) => Console.WriteLine(ast);
-      }
-      if (printExpr) {
-        eval.OnParse += (expr) => Console.WriteLine(StringType.GetReprString(expr));
-      }
-      if (alwaysPrint) {
-        eval.OnEvaluate += (res) => Console.WriteLine(StringType.GetReprString(res));
-      }
-
+    private static void RunInteractive(CSharpEvaluator eval) {
       var source = new GetlineSource("koslisp");
       var nextPrompt = "=> ";
       source.OnBeforeReadLine += () => {
@@ -166,6 +174,19 @@ namespace ZStewart.KOSLisp {
           // it in finally so it happens whenter we successfully read or have an error.
           nextPrompt = "=> ";
         }
+      }
+    }
+
+    private static void SetEvaluatorPrintCallbacks(
+        CSharpEvaluator eval, bool printAst, bool printExpr, bool alwaysPrint) {
+      if (printAst) {
+        eval.OnSemantics += (ast, unusedContext) => Console.Error.WriteLine(ast);
+      }
+      if (printExpr) {
+        eval.OnParse += (expr) => Console.Error.WriteLine(StringType.GetReprString(expr));
+      }
+      if (alwaysPrint) {
+        eval.OnEvaluate += (res) => Console.Error.WriteLine(StringType.GetReprString(res));
       }
     }
   }

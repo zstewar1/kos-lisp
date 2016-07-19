@@ -39,7 +39,7 @@
         <Variable name="KOS_LISP_PATH" value="${SolutionDir}/lib" />
       </EnvironmentVariables>
     </EnvironmentVariables>
-    <Commandlineparameters>--ast</Commandlineparameters>
+    <Commandlineparameters>--ast -c /home/zachary/dev/kos-lisp/testdata/evaltest.lisp</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -103,6 +103,10 @@
     <ProjectReference Include="..\ZStewart.KOSLisp.Modules\ZStewart.KOSLisp.Modules.csproj">
       <Project>{39638BBB-F272-4627-AAB8-20054B3FBBD5}</Project>
       <Name>ZStewart.KOSLisp.Modules</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ZStewart.KOSLisp.Compile.Generators.Json\ZStewart.KOSLisp.Compile.Generators.Json.csproj">
+      <Project>{91614143-8404-421C-ADFB-A9AA0F41456E}</Project>
+      <Name>ZStewart.KOSLisp.Compile.Generators.Json</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
