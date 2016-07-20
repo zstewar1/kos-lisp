@@ -143,6 +143,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     internal JGlobal(string identifier, int symbol) : base(identifier) {
       Symbol = symbol;
     }
+    [JsonConverter(typeof(StringEnumConverter))]
     public override AstType Type => AstType.Global;
     public int Symbol { get; }
   }
@@ -212,6 +213,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     internal JLocal(string identifier) : base(identifier) {
       UniqueId = nextUniqueId++;
     }
+    [JsonConverter(typeof(StringEnumConverter))]
     public override AstType Type => AstType.Local;
     public int UniqueId { get; }
 
