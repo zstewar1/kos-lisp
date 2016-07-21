@@ -16,6 +16,9 @@ def main():
   if args.compiler == 'raw':
     from koscomp import raw_output
     raw_output.compile(data, output)
+  elif args.compiler == 'js':
+    from koscomp import template_output
+    template_output.compile(data, output, 'jstemplates', 'program.js')
 
 def get_args():
   parser = argparse.ArgumentParser(
@@ -26,7 +29,7 @@ def get_args():
       'source', default=sys.stdin, type=argparse.FileType('r'), nargs='?',
       help='Where to read the JSON AST from. Defaults to standard in.')
   parser.add_argument(
-      '-c', '--compiler', choices=('raw'), default='raw',
+      '-c', '--compiler', choices=('raw', 'js'), default='raw',
       help='Which compiler module to use.')
 
   return parser.parse_args()
