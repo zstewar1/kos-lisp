@@ -1,6 +1,7 @@
 ﻿using NDesk.Options;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -31,8 +32,8 @@ namespace ZStewart.KOSLisp {
       bool printExpr = false;
       bool printAst = false;
       bool alwaysPrint = false;
-      bool compile = false;
 
+      string compiler = null;
       string outputFile = null;
 
       var optset = new OptionSet {
@@ -47,9 +48,9 @@ namespace ZStewart.KOSLisp {
           p => alwaysPrint = p != null
         },
         {
-          "c|compile",
+          "c|compile=",
           "Macroexpand the epressions and output them as a Json syntax tree",
-          c => compile = c != null
+          c => compiler = c
         },
         {
           "o|outfile=",
@@ -84,7 +85,10 @@ namespace ZStewart.KOSLisp {
           Console.Error.WriteLine("Illegal empty output file name.");
           Environment.Exit((int)ExitCode.ILLEGAL_OPTION);
         }
-        compile = true;
+        if (string.IsNullOrEmpty(compiler)) {
+          Console.Error.WriteLine("No compiler specified, cannot used -o");
+          Environment.Exit((int)ExitCode.ILLEGAL_OPTION);
+        }
       }
 
       var path = new List<string>();
@@ -105,7 +109,7 @@ namespace ZStewart.KOSLisp {
           extra.Count == 2 ? "" : "s",
           String.Join(" ", extra.GetRange(1, extra.Count - 1)));
         Environment.Exit((int)ExitCode.UNRECOGNIZED_OPTION);
-      } else if (compile && extra.Count == 0) {
+      } else if (!string.IsNullOrEmpty(compiler) && extra.Count == 0) {
           Console.Error.WriteLine("Cannot compile in interactive mode");
           Environment.Exit((int)ExitCode.ILLEGAL_OPTION);
       } else {
@@ -113,8 +117,8 @@ namespace ZStewart.KOSLisp {
         SetEvaluatorPrintCallbacks(eval, printAst, printExpr, alwaysPrint);
 
         if (extra.Count == 1) {
-          if (compile) {
-            CompileFile(extra[0], outputFile, eval);
+          if (!string.IsNullOrEmpty(compiler)) {
+            CompileFile(extra[0], compiler, outputFile, eval);
           } else {
             RunFile(extra[0], eval);
           }
@@ -133,14 +137,24 @@ namespace ZStewart.KOSLisp {
     }
 
     private static void CompileFile(
-        string filename, string outputFile, CSharpEvaluator eval) {
+        string filename, string externalCompiler, string outputFile,
+        CSharpEvaluator eval) {
       string output = "";
       using (var file = File.OpenText(filename)) {
         var source = new TextReaderSource(filename, file);
         var compiler = new JCompiler(eval, source);
         output = compiler.Compile();
       }
-      File.WriteAllText(outputFile ?? "a.out.json", output);
+      var args = outputFile != null ? string.Format("-o {0}", outputFile) : "";
+      var compilerParams = new ProcessStartInfo(
+          "kos-lisp-compiler-" + externalCompiler, args);
+      compilerParams.UseShellExecute = false;
+      compilerParams.RedirectStandardInput = true;
+
+      var extCompiler = Process.Start(compilerParams);
+      extCompiler.StandardInput.Write(output);
+      extCompiler.StandardInput.Close();
+      extCompiler.WaitForExit();
     }
 
     private static void RunInteractive(CSharpEvaluator eval) {
