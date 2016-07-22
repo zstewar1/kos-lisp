@@ -258,6 +258,7 @@ namespace ZStewart.KOSLisp.Types {
     private LispObject ToRepr() {
       return Create(
         new StringBuilder(Value)
+          .Replace("\\", "\\\\")
           .Replace("\"", "\\\"")
           .Replace("\n", "\\n")
           .Replace("\r", "\\r")

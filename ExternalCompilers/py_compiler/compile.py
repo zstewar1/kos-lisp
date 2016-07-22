@@ -17,8 +17,9 @@ def main():
     from koscomp import raw_output
     raw_output.compile(data, output)
   elif args.compiler == 'js':
-    from koscomp import template_output
-    template_output.compile(data, output, 'jstemplates', 'program.js')
+    from koscomp import template_output, js
+    template_output.compile(
+        data, output, 'jstemplates', 'program.js', extra_globals=js.template_globals)
 
 def get_args():
   parser = argparse.ArgumentParser(

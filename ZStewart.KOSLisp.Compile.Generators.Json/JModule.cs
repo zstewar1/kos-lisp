@@ -15,9 +15,9 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     public bool IsBuiltin { get { return operations == null; } }
 
     /// <summary>
-    /// The module's string identifier.
+    /// A reference to the module's symbol identifier.
     /// </summary>
-    public string Identifier { get; }
+    public int Identifier { get; }
 
     /// <summary>
     /// The collection of operations that make up this module (if not builtin).
@@ -29,7 +29,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
       }
     }
 
-    internal JModule(bool isBuiltin, string identifier) {
+    internal JModule(bool isBuiltin, int identifier) {
       Identifier = identifier;
       if (!isBuiltin) {
         operations = new List<JAst>();

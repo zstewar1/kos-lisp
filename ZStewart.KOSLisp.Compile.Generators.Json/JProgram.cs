@@ -79,7 +79,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     /// Adds a module so it can be referenced.
     /// </summary>
     public JModule AddModule(ModuleType module, string moduleIdentifier, bool builtin) {
-      var created = new JModule(builtin, module.Name.Identifier);
+      var created = new JModule(builtin, ReferToConstant(module.Name));
       reverseModuleLookup.Add(module, moduleIdentifier);
       Modules.Add(moduleIdentifier, created);
       return created;
