@@ -4,10 +4,12 @@ import argparse
 import json
 import sys
 
+from koscomp.gadict import GetAttrDict
+
 def main():
   args = get_args()
   try:
-    data = json.load(args.source)
+    data = json.load(args.source, object_hook=GetAttrDict)
   finally:
     args.source.close()
 
@@ -17,9 +19,8 @@ def main():
     from koscomp import raw_output
     raw_output.compile(data, output)
   elif args.compiler == 'js':
-    from koscomp import template_output, js
-    template_output.compile(
-        data, output, 'jstemplates', 'program.js', extra_globals=js.template_globals)
+    from koscomp import js
+    js.compile(data, output)
 
 def get_args():
   parser = argparse.ArgumentParser(
