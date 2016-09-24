@@ -2,6 +2,9 @@
 
 from koscomp.js.jstree import *
 
+def constant(index) -> JExpression:
+  return VarRef('ReferencedConstants')[index]
+
 def declare_constant(constant) -> JExpression:
   if constant.Type == 'Bool':
     if constant.Value:
@@ -9,29 +12,59 @@ def declare_constant(constant) -> JExpression:
     else:
       return Deref('BoolType', 'F')
   elif constant.Type == 'Cons':
-    return FCall(
-        Deref('ConsType', 'Create'),
+    return Deref('ConsType', 'Create')(
         Index('ReferencedConstants', constant.Car),
-        Index('ReferencedConstants', constant.Car))
+        Index('ReferencedConstants', constant.Cdr))
   elif constant.Type == 'Keyword':
-    return FCall(Deref('KeywordSymbolType', 'Create'), constant.Identifier)
+    return Deref('KeywordSymbolType', 'Create')(constant.Identifier)
   elif constant.Type == 'Nil':
     return Deref('NilType', 'Nil')
   elif constant.Type == 'Symbol':
-    return FCall(Deref('SymbolType', 'Create'), constant.Identifier)
+    return Deref('SymbolType', 'Create')(constant.Identifier)
   elif constant.Type == 'Number':
-    return FCall(Deref('NumberType', 'Create'), constant.Value)
+    return Deref('NumberType', 'Create')(constant.Value)
   elif constant.Type == 'String':
-    return FCall(Deref('StringType', 'Create'), constant.Value)
+    return Deref('StringType', 'Create')(constant.Value)
   raise TypeError('Unexpected constant type "%s"' % constant.Type)
+
+def declare_module(ident, module) -> JExpression:
+  if module.IsBuiltin:
+    import_func = [
+        VarDecl('mod', VarRef('Builtins')[ident]()),
+        Assign(VarRef('Modules')[ident], FDecl([], [Return(VarRef('mod'))])),
+        Return(VarRef('mod')),
+    ]
+  else:
+    import_func = [
+        VarDecl('importFunc', VarRef('Modules')[ident]),
+        VarDecl('mod', Deref('ModuleType', 'Create')(constant(module.Identifier))),
+        Assign(VarRef('Modules')[ident], FDecl([], [Return(VarRef('mod'))])),
+        Try(
+          [Empty() for op in module.Operations],
+          ('err', [
+            Assign(VarRef('Modules')[ident], VarRef('importFunc')),
+            Throw(VarRef('err')),
+          ])),
+        Return(VarRef('mod')),
+  ]
+  return FDecl([], import_func)
+
 
 def compile(ast, filename) -> str:
   prog = [
+      #Assign(VarRef('Builtins'),
       VarDecl('ReferencedConstants', Array()),
       FDecl([], [
         Deref('ReferencedConstants', 'push')(declare_constant(constant)).as_statement()
         for constant in ast.ReferencedConstants
-      ])().as_statement()
+      ])().as_statement(),
+      VarDecl(
+        'Modules',
+        Object([
+          (ident, declare_module(ident, module))
+          for ident, module in ast.Modules.items()
+        ])),
+      VarRef('Modules')['--main--'](),
   ]
   text = JProgram(prog).generate(Indenter())
   with open(filename, 'w') as outfile:

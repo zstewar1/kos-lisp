@@ -41,6 +41,10 @@ class JExpression(JAst):
     return ExprStmt(self)
 
 
+class JAssignableExpression(JExpression):
+  pass
+
+
 class JProgram(JAst):
   def __init__(self, statements: List[JStatement]=[]) -> None:
     self.statements = statements or []
@@ -56,7 +60,7 @@ class JProgram(JAst):
     return ''.join(stmts)
 
 
-class Empty(JExpression):
+class Empty(JStatement):
   def generate(self, indent: Indenter) -> str:
     return ';'
 
@@ -83,7 +87,7 @@ class Primitive(JExpression):
     return Primitive(value)
 
 
-class VarRef(JExpression):
+class VarRef(JAssignableExpression):
   def __init__(self, name: str) -> None:
     self.name = name
 
@@ -96,15 +100,29 @@ class VarRef(JExpression):
       return value
     return VarRef(value)
 
+  @staticmethod
+  def to_var_ref(value: Union['VarRef', str]) -> 'VarRef':
+    if isinstance(value, VarRef):
+      return value
+    return VarRef(value)
+
+
 class VarDecl(JStatement):
-  def __init__(self, name: str, initializer: Optional[JExpression]=None) -> None:
-    self.name = name
+  def __init__(
+      self, name: Union[VarRef, str], initializer: Optional[JExpression]=None) -> None:
+    self.name = VarRef.to_var_ref(name)
     self.initializer = initializer
 
   def generate(self, indent: Indenter) -> str:
     if self.initializer is None:
-      return 'var %s;' % self.name
-    return 'var %s = %s;' % (self.name, self.initializer.generate(indent.increase()))
+      return ''.join(['var ', self.name.generate(indent), ';'])
+    return ''.join([
+      'var ',
+      self.name.generate(indent),
+      ' = ',
+      self.initializer.generate(indent),
+      ';',
+    ])
 
 
 class Block(JStatement):
@@ -222,8 +240,16 @@ class Array(JExpression):
 
 
 class Object(JExpression):
-  def __init__(self, elements: List[Tuple[JExpression, JExpression]]=[]) -> None:
-    self.elements = elements
+  def __init__(
+      self,
+      elements: List[
+        Tuple[
+          Union[JExpression, PrimitiveTypes],
+          Union[JExpression, PrimitiveTypes]]]=[]) -> None:
+    self.elements = [
+        (Primitive.to_expression(key), Primitive.to_expression(value))
+        for key, value in elements
+    ]
 
   def generate(self, indent: Indenter) -> str:
     if not self.elements:
@@ -239,9 +265,10 @@ class Object(JExpression):
         inner_indent.indent,
       ])
     obj[-2:] = ['\n', indent.indent, '}']
+    return ''.join(obj)
 
 
-class Index(JExpression):
+class Index(JAssignableExpression):
   def __init__(
       self,
       obj: Union[JExpression, str],
@@ -258,7 +285,7 @@ class Index(JExpression):
     ])
 
 
-class Deref(JExpression):
+class Deref(JAssignableExpression):
   def __init__(self, obj: Union[JExpression, str], *elements: str) -> None:
     if isinstance(obj, str):
       self.obj = VarRef(obj) # type: JExpression
@@ -268,3 +295,60 @@ class Deref(JExpression):
 
   def generate(self, indent: Indenter) -> str:
     return '.'.join((self.obj.generate(indent),) + self.elements)
+
+
+class Assign(JStatement):
+  def __init__(self, to: JAssignableExpression, value: JExpression) -> None:
+    self.to = to
+    self.value = value
+
+  def generate(self, indent: Indenter) -> str:
+    return ''.join([self.to.generate(indent), ' = ', self.value.generate(indent), ';'])
+
+
+class Return(JStatement):
+  def __init__(self, value: JExpression) -> None:
+    self.value = value
+
+  def generate(self, indent: Indenter) -> str:
+    return ''.join(['return ', self.value.generate(indent), ';'])
+
+
+class Try(JStatement):
+  def __init__(
+      self,
+      protected: Union[Block, List[JStatement]],
+      catch: Optional[Tuple[Union[VarRef, str], Union[Block, List[JStatement]]]]=None,
+      finally_: Optional[Union[Block, List[JStatement]]]=None) -> None:
+    assert any([catch, finally_]), 'must provide at least one of catch, finally'
+    self.protected = Block.to_block(protected)
+    self.catch = (VarRef.to_var_ref(catch[0]), Block.to_block(catch[1])) \
+        if catch is not None else None
+    self.finally_ = Block.to_block(finally_) if finally_ is not None else None
+
+  def generate(self, indent: Indenter) -> str:
+    tcf = [
+        'try ',
+        self.protected.generate(indent),
+    ]
+    if self.catch is not None:
+      tcf.extend([
+        ' catch(',
+        self.catch[0].generate(indent.increase()),
+        ') ',
+        self.catch[1].generate(indent),
+      ])
+    if self.finally_ is not None:
+      tcf.extend([
+        ' finally ',
+        self.finally_.generate(indent)
+      ])
+    return ''.join(tcf)
+
+
+class Throw(JStatement):
+  def __init__(self, value: JExpression) -> None:
+    self.value = value
+
+  def generate(self, indent: Indenter) -> str:
+    return ''.join(['throw ', self.value.generate(indent), ';'])
