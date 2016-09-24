@@ -51,21 +51,22 @@ def declare_module(ident, module) -> JExpression:
 
 
 def compile(ast, filename) -> str:
-  prog = [
+  prog = []
       #Assign(VarRef('Builtins'),
-      VarDecl('ReferencedConstants', Array()),
-      FDecl([], [
-        Deref('ReferencedConstants', 'push')(declare_constant(constant)).as_statement()
-        for constant in ast.ReferencedConstants
-      ])().as_statement(),
-      VarDecl(
-        'Modules',
-        Object([
-          (ident, declare_module(ident, module))
-          for ident, module in ast.Modules.items()
-        ])),
-      VarRef('Modules')['--main--'](),
-  ]
+  prog.append(VarDecl('ReferencedConstants', Array()))
+  prog.extend([
+    Deref('ReferencedConstants', 'push')(declare_constant(constant)).as_statement()
+    for constant in ast.ReferencedConstants
+  ])
+  prog.extend([
+    VarDecl(
+      'Modules',
+      Object([
+        (ident, declare_module(ident, module))
+        for ident, module in ast.Modules.items()
+      ])),
+    VarRef('Modules')['--main--'](),
+  ])
   text = JProgram(prog).generate(Indenter())
   with open(filename, 'w') as outfile:
     outfile.write(text)
