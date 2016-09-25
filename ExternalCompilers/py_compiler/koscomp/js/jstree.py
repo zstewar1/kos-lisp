@@ -4,7 +4,39 @@ from numbers import Real
 from typing import *
 
 
-PrimitiveTypes = Union[str, Real]
+__all__ = [
+    'PrimitiveTypes',
+    'Indenter',
+    'JAst',
+    'JStatement',
+    'JExpression',
+    'JAssignableExpression',
+    'JProgram',
+    'Empty',
+    'ExprStmt',
+    'Primitive',
+    'VarRef',
+    'VarDecl',
+    'Block',
+    'If',
+    'While',
+    'Conditional',
+    'FDecl',
+    'FCall',
+    'Array',
+    'Object',
+    'Index',
+    'Deref',
+    'Assign',
+    'Return',
+    'Try',
+    'Throw',
+    'Binop',
+    'Uniop',
+]
+
+
+PrimitiveTypes = Union[str, int, bool, Real, None]
 
 
 class Indenter(object):
@@ -31,11 +63,26 @@ class JStatement(JAst):
 
 
 class JExpression(JAst):
+  def generate_unwrapped(self, indent: Indenter) -> str:
+    return self.generate(indent)
+
   def __getitem__(self, key: Union['JExpression', PrimitiveTypes]) -> 'Index':
     return Index(self, key)
 
   def __call__(self, *args: Union['JExpression', PrimitiveTypes]) -> 'FCall':
     return FCall(self, *args)
+
+  def __add__(self, other: Union['JExpression', PrimitiveTypes]) -> 'Binop':
+    return Binop('+', self, other)
+
+  def __sub__(self, other: Union['JExpression', PrimitiveTypes]) -> 'Binop':
+    return Binop('-', self, other)
+
+  def __mul__(self, other: Union['JExpression', PrimitiveTypes]) -> 'Binop':
+    return Binop('*', self, other)
+
+  def __truediv__(self, other: Union['JExpression', PrimitiveTypes]) -> 'Binop':
+    return Binop('/', self, other)
 
   def as_statement(self) -> 'ExprStmt':
     return ExprStmt(self)
@@ -159,7 +206,7 @@ class If(JStatement):
   def generate(self, indent: Indenter):
     out = [
         'if(',
-        self.condition.generate(indent.increase()),
+        self.condition.generate_unwrapped(indent.increase()),
         ') ',
         self.body.generate(indent),
     ]
@@ -167,6 +214,50 @@ class If(JStatement):
       out.extend([' else ', self.otherwise.generate(indent)])
     return ''.join(out)
 
+
+class While(JStatement):
+  def __init__(
+      self, condition: JExpression, body: JStatement) -> None:
+    self.condition = condition
+    self.body = body
+
+  def generate(self, indent: Indenter):
+    inner_indent = indent.increase()
+    return ''.join([
+        'while (',
+        self.condition.generate_unwrapped(inner_indent),
+        ') ',
+        self.body.generate(indent),
+    ])
+
+
+class Conditional(JExpression):
+  def __init__(
+      self,
+      condition: JExpression,
+      value_if_true: JExpression,
+      value_if_false: JExpression) -> None:
+    self.condition = condition
+    self.value_if_true = value_if_true
+    self.value_if_false = value_if_false
+
+  def generate(self, indent: Indenter):
+    i1 = indent.increase()
+    i2 = i1.increase()
+    result = [
+        '(',
+        self.condition.generate(i2),
+        '\n',
+        i1.indent,
+        '? ',
+        self.value_if_true.generate(i2),
+        '\n',
+        i1.indent,
+        ': ',
+        self.value_if_false.generate(i2),
+        ')',
+    ]
+    return ''.join(result)
 
 class FDecl(JExpression):
   def __init__(self, args: List[str], body: Union[Block, List[JStatement]]) -> None:
@@ -352,3 +443,67 @@ class Throw(JStatement):
 
   def generate(self, indent: Indenter) -> str:
     return ''.join(['throw ', self.value.generate(indent), ';'])
+
+
+class Binop(JExpression):
+  PRECEDENCE = {
+      '^': 5,
+      '*': 4,
+      '/': 4,
+      '+': 3,
+      '-': 2,
+  }
+
+  ASSOCIATIVE = {'*', '+'}
+
+  @classmethod
+  def precedence(cls, operator: str) -> int:
+    return cls.PRECEDENCE.get(operator, -1)
+
+  @classmethod
+  def is_associative(cls, operator: str) -> bool:
+    return operator in cls.ASSOCIATIVE
+
+  def __init__(
+      self,
+      operator: str,
+      lhs: Union[JExpression, PrimitiveTypes],
+      rhs: Union[JExpression, PrimitiveTypes],
+      *expressions: Union[JExpression, PrimitiveTypes]) -> None:
+    self.operator = operator
+    exprs = [Primitive.to_expression(lhs), Primitive.to_expression(rhs)]
+    exprs.extend(map(Primitive.to_expression, expressions))
+    self.expressions = [] # type: List[JExpression]
+    for expr in exprs:
+      if isinstance(expr, Binop) \
+          and self.is_associative(self.operator) \
+          and expr.operator == self.operator:
+        self.expressions.extend(expr.expressions)
+      else:
+        self.expressions.append(expr)
+
+  def generate(self, indent: Indenter) -> str:
+    return ''.join(['(', self.generate(indent), ')'])
+
+  def generate_unwrapped(self, indent: Indenter) -> str:
+    return (' ' + self.operator + ' ').join(
+        [self.maybe_unwrap(expression, indent) for expression in self.expressions])
+
+  def maybe_unwrap(self, expression: JExpression, indent: Indenter) -> str:
+    if isinstance(expression, Binop) \
+        and self.precedence(expression.operator) <= self.precedence(self.operator):
+      return expression.generate(indent)
+    else:
+      return expression.generate_unwrapped(indent)
+
+
+class Uniop(JExpression):
+  def __init__(self, operator: str, value: JExpression) -> None:
+    self.operator = operator
+    self.value = value
+
+  def generate(self, indent: Indenter) -> str:
+    return ''.join(['(', self.generate_unwrapped(indent), ')'])
+
+  def generate_unwrapped(self, indent: Indenter) -> str:
+    return self.operator + self.value.generate(indent)

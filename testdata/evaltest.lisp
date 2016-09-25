@@ -24,3 +24,11 @@
 
 (let ((e f))
   (if e 1))
+
+(let ((x 1)
+      (y 2)
+      (z (last '(1 2 3))))
+  (+ x y z))
+
+(defun test-1 (x)
+  (if x (print "x") (print "not x")))

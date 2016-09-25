@@ -43,6 +43,13 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
       new Dictionary<ModuleType, string>();
 
     /// <summary>
+    /// Used to deduplicate local bindings to ensure they always end up with the same
+    /// identity.
+    /// </summary>
+    private readonly Dictionary<AstLocalBinding, JLocal> localBindingDeduplicator =
+      new Dictionary<AstLocalBinding, JLocal>();
+
+    /// <summary>
     /// Gets a reference to the converted form of the given lisp object.
     ///
     /// If the object is already in the constant list, returns an existing reference to
@@ -187,7 +194,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
             im.FromImport?.Select(kvp => new JImport.FromImportItem(
                 ReferToConstant(kvp.Key),
                 ConvertAst(kvp.Value))),
-            im.AllTo != null ? ReferToModule(im.AllTo) : null);
+            im.AllTo != null);
       } else if (type == typeof(AstLambda)) {
         var la = (AstLambda)ast;
         return new JDefunOrMacro(
@@ -235,7 +242,9 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
         var global = (AstGlobalBinding)binding;
         return new JGlobal(global.Symbol.Identifier, ReferToConstant(global.Symbol));
       } else if (type == typeof(AstLocalBinding)) {
-        return new JLocal(((AstLocalBinding)binding).Symbol.Identifier);
+        var local = (AstLocalBinding)binding;
+        return localBindingDeduplicator.GetOrInsert(
+            local, () => new JLocal(local.Symbol.Identifier));
       } else {
         throw new ArgumentException("Unknown binding type: " + type);
       }
@@ -264,6 +273,21 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
 
     public static IEnumerable<JAst> Convert(this IEnumerable<AstOp> ops, JProgram arena) {
       return arena.ConvertAst(ops);
+    }
+  }
+
+  /// <summary>
+  /// Provides helper methods for working with dictionaries.
+  /// </summary>
+  public static class DictExtensions {
+    public static V GetOrInsert<K, V>(
+        this IDictionary<K, V> dict, K key, Func<V> compute) {
+      V val;
+      if (!dict.TryGetValue(key, out val)) {
+        val = compute();
+        dict.Add(key, val);
+      }
+      return val;
     }
   }
 }

@@ -1,9 +1,12 @@
 """Generate the program shell template from the Json formatted list"""
 
 from koscomp.js.jstree import *
+from koscomp.js.operations import convert, get_intermediate, block_expression
+
 
 def constant(index) -> JExpression:
   return VarRef('ReferencedConstants')[index]
+
 
 def declare_constant(constant) -> JExpression:
   if constant.Type == 'Bool':
@@ -27,6 +30,7 @@ def declare_constant(constant) -> JExpression:
     return Deref('StringType', 'Create')(constant.Value)
   raise TypeError('Unexpected constant type "%s"' % constant.Type)
 
+
 def declare_module(ident, module) -> JExpression:
   if module.IsBuiltin:
     import_func = [
@@ -40,7 +44,7 @@ def declare_module(ident, module) -> JExpression:
         VarDecl('mod', Deref('ModuleType', 'Create')(constant(module.Identifier))),
         Assign(VarRef('Modules')[ident], FDecl([], [Return(VarRef('mod'))])),
         Try(
-          [Empty() for op in module.Operations],
+          [convert(op).emit().as_statement() for op in module.Operations],
           ('err', [
             Assign(VarRef('Modules')[ident], VarRef('importFunc')),
             Throw(VarRef('err')),
@@ -51,8 +55,7 @@ def declare_module(ident, module) -> JExpression:
 
 
 def compile(ast, filename) -> str:
-  prog = []
-      #Assign(VarRef('Builtins'),
+  prog = [] # type: List[JStatement]
   prog.append(VarDecl('ReferencedConstants', Array()))
   prog.extend([
     Deref('ReferencedConstants', 'push')(declare_constant(constant)).as_statement()
@@ -65,7 +68,7 @@ def compile(ast, filename) -> str:
         (ident, declare_module(ident, module))
         for ident, module in ast.Modules.items()
       ])),
-    VarRef('Modules')['--main--'](),
+    VarRef('Modules')['--main--']().as_statement(),
   ])
   text = JProgram(prog).generate(Indenter())
   with open(filename, 'w') as outfile:

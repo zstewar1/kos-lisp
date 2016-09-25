@@ -165,11 +165,11 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
         string module,
         JBinding name,
         IEnumerable<FromImportItem> fromImports,
-        string allTo) {
+        bool allImport) {
       Module = module;
       Name = name;
       FromImport = fromImports != null ? ImmutableList.CreateRange(fromImports) : null;
-      AllTo = allTo;
+      AllImport = allImport;
     }
     public override AstType Type => AstType.Import;
     public string Module { get; }
@@ -177,8 +177,7 @@ namespace ZStewart.KOSLisp.Compile.Generators.Json {
     public JBinding Name { get; }
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public ImmutableList<FromImportItem> FromImport { get; }
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public string AllTo { get; }
+    public bool AllImport { get; }
 
     public sealed class FromImportItem {
       internal FromImportItem(int symbol, JBinding destination) {
